@@ -1,4 +1,5 @@
 pub mod documents;
+pub mod eligibility;
 pub mod error;
 pub mod install;
 pub mod model;
@@ -33,7 +34,42 @@ pub fn scan_all(install_path: Option<PathBuf>, documents_path: Option<PathBuf>) 
         Err(err) => report.errors.push(err.to_string()),
     }
 
+    add_eligibility_summaries(&mut report);
+
     report
+}
+
+fn add_eligibility_summaries(report: &mut ScanReport) {
+    let checksum_scopes = report
+        .install
+        .as_ref()
+        .map(|install| install.checksum_manifest.as_slice())
+        .unwrap_or(&[]);
+
+    let Some(documents) = &mut report.documents else {
+        return;
+    };
+
+    let enabled_mods = documents
+        .launcher
+        .as_ref()
+        .filter(|launcher| launcher.issues.is_empty())
+        .map(|launcher| launcher.enabled_mods.as_slice());
+    let dlc_load_enabled_mods = documents
+        .dlc_load
+        .as_ref()
+        .map(|dlc_load| dlc_load.enabled_mods.as_slice());
+
+    for run in &mut documents.save_runs {
+        run.eligibility = run.latest_save.as_ref().map(|save| {
+            eligibility::compute_save_eligibility(
+                save,
+                enabled_mods,
+                dlc_load_enabled_mods,
+                checksum_scopes,
+            )
+        });
+    }
 }
 
 #[derive(Debug, Parser)]

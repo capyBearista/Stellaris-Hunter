@@ -137,6 +137,7 @@ fn discover_save_runs(root: &Path) -> Result<Vec<SaveRunSummary>> {
             run_folder,
             save_count: files.len(),
             latest_save,
+            eligibility: None,
             issues,
         });
     }
