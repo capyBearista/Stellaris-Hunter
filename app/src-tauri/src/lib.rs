@@ -1,3 +1,4 @@
+pub mod commands;
 pub mod documents;
 pub mod eligibility;
 pub mod error;
@@ -86,4 +87,11 @@ pub fn run_cli() -> Result<()> {
     let json = serde_json::to_string_pretty(&report)?;
     println!("{json}");
     Ok(())
+}
+
+#[cfg(feature = "desktop")]
+pub fn run_app() -> tauri::Result<()> {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![commands::scan_local_state])
+        .run(tauri::generate_context!())
 }
