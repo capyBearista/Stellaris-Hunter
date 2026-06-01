@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/local/stellaris-hunter/catalog/schema.json",
+  "title": "Stellaris Hunter Achievement Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["catalog_version", "snapshot_kind", "updated_at", "achievements"],
+  "properties": {
+    "catalog_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "snapshot_kind": {
+      "type": "string",
+      "const": "full",
+      "description": "Catalog imports are full authoritative snapshots; omitted existing achievements are marked deprecated."
+    },
+    "stellaris_version": {
+      "type": ["string", "null"]
+    },
+    "source_url": {
+      "type": ["string", "null"]
+    },
+    "source_hash": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": "string",
+      "pattern": ".*\\S.*"
+    },
+    "achievements": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Achievement ids must be unique. The Rust importer enforces per-id uniqueness because portable JSON Schema cannot express uniqueness by object property.",
+      "items": {
+        "$ref": "#/$defs/achievement"
+      }
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "snake": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$"
+    },
+    "achievement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": ".*\\S.*"
+        },
+        "steam_app_id": {
+          "type": "integer",
+          "const": 281990,
+          "default": 281990
+        },
+        "steam_api_name": {
+          "type": ["string", "null"]
+        },
+        "local_key": {
+          "type": ["string", "null"]
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "curation": {
+          "$ref": "#/$defs/curation"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "pattern": ".*\\S.*" },
+        "description": { "type": ["string", "null"] },
+        "requirement": { "type": ["string", "null"] },
+        "hint": { "type": ["string", "null"] },
+        "group": { "type": ["string", "null"] },
+        "version_added": { "type": ["string", "null"] },
+        "difficulty": {
+          "type": ["string", "null"],
+          "enum": ["VE", "E", "M", "H", "VH", "I", "UC", null]
+        }
+      }
+    },
+    "curation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tags": { "type": "array", "items": { "$ref": "#/$defs/slug" } },
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
+        "warnings": { "type": "array", "items": { "type": "string" } },
+        "planner_notes": { "type": ["string", "null"] },
+        "known_limitations": { "type": "array", "items": { "type": "string" } },
+        "rule_confidence": { "type": ["string", "null"] }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition_type", "dimension", "operator", "value", "timing", "mutability", "severity"],
+      "properties": {
+        "condition_type": { "$ref": "#/$defs/snake" },
+        "dimension": { "$ref": "#/$defs/snake" },
+        "operator": { "$ref": "#/$defs/snake" },
+        "value": true,
+        "timing": { "$ref": "#/$defs/snake" },
+        "mutability": { "$ref": "#/$defs/snake" },
+        "severity": { "$ref": "#/$defs/snake" },
+        "source": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

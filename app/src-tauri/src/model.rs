@@ -1,5 +1,94 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::path::PathBuf;
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AchievementCatalog {
+    pub catalog_version: String,
+    pub snapshot_kind: String,
+    pub stellaris_version: Option<String>,
+    pub source_url: Option<String>,
+    pub source_hash: Option<String>,
+    pub updated_at: String,
+    pub achievements: Vec<AchievementCatalogEntry>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CatalogVersionMetadata {
+    pub catalog_version: String,
+    pub stellaris_version: Option<String>,
+    pub source_url: Option<String>,
+    pub source_hash: Option<String>,
+    pub updated_at: String,
+    pub imported_at: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CatalogEntriesLoad {
+    pub entries: Vec<AchievementCatalogEntry>,
+    pub issues: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AchievementCatalogEntry {
+    pub id: String,
+    #[serde(default = "default_steam_app_id")]
+    pub steam_app_id: u32,
+    pub steam_api_name: Option<String>,
+    pub local_key: Option<String>,
+    #[serde(default)]
+    pub deprecated: bool,
+    pub source: AchievementSourceFields,
+    #[serde(default)]
+    pub curation: AchievementCurationFields,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AchievementSourceFields {
+    pub name: String,
+    pub description: Option<String>,
+    pub requirement: Option<String>,
+    pub hint: Option<String>,
+    pub group: Option<String>,
+    pub version_added: Option<String>,
+    pub difficulty: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AchievementCurationFields {
+    #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(default)]
+    pub conditions: Vec<AchievementCondition>,
+    #[serde(default)]
+    pub warnings: Vec<String>,
+    pub planner_notes: Option<String>,
+    #[serde(default)]
+    pub known_limitations: Vec<String>,
+    pub rule_confidence: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AchievementCondition {
+    pub condition_type: String,
+    pub dimension: String,
+    pub operator: String,
+    pub value: Value,
+    pub timing: String,
+    pub mutability: String,
+    pub severity: String,
+    pub source: Option<String>,
+    pub notes: Option<String>,
+}
+
+fn default_steam_app_id() -> u32 {
+    281_990
+}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ChecksumScope {

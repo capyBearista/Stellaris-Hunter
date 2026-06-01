@@ -1,0 +1,70 @@
+{
+  "catalog_version": "1.0.0",
+  "snapshot_kind": "full",
+  "stellaris_version": "v4.3.7",
+  "source_url": "https://stellaris.paradoxwikis.com/Achievements",
+  "source_hash": "synthetic-fixture",
+  "updated_at": "2026-06-01T00:00:00Z",
+  "achievements": [
+    {
+      "id": "rock_beats_paper",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_rock_beats_paper",
+      "local_key": "achievement_rock_beats_paper",
+      "deprecated": false,
+      "source": {
+        "name": "Rock Beats Paper",
+        "description": "As a Lithoid empire, show the Galactic Community exactly what you think of that strongly worded letter.",
+        "requirement": "As a Lithoid empire, execute or eat the envoys of the Galactic Community.",
+        "hint": "The strongly worded letter event will happen at the start of the next decade if in breach of galactic law.",
+        "group": "Lithoids",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": ["lithoid", "galactic-community"],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "species_class",
+            "operator": "equals",
+            "value": "Lithoid",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Primary species class must be Lithoid."
+          }
+        ],
+        "warnings": [],
+        "planner_notes": "Best considered during a Lithoid run.",
+        "known_limitations": [],
+        "rule_confidence": "medium"
+      }
+    },
+    {
+      "id": "humble_pie",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_humble_pie",
+      "local_key": "achievement_humble_pie",
+      "deprecated": false,
+      "source": {
+        "name": "Humble Pie",
+        "description": "Humiliate an empire that is in the Supremacy diplomatic stance.",
+        "requirement": "Humiliate an empire that is in the Supremacy diplomatic stance.",
+        "hint": "Use a Humiliation war goal against an eligible target.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": ["war", "diplomacy"],
+        "conditions": [],
+        "warnings": ["Target behavior may change before war declaration."],
+        "planner_notes": "Track potential rival stances.",
+        "known_limitations": [],
+        "rule_confidence": "low"
+      }
+    }
+  ]
+}

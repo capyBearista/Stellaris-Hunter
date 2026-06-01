@@ -1,3 +1,4 @@
+pub mod catalog;
 pub mod commands;
 pub mod documents;
 pub mod eligibility;
