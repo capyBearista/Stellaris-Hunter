@@ -1,0 +1,5074 @@
+{
+  "catalog_version": "1.0.0",
+  "snapshot_kind": "full",
+  "stellaris_version": "4.3",
+  "source_url": "https://stellaris.paradoxwikis.com/Achievements",
+  "source_hash": null,
+  "updated_at": "2026-06-01",
+  "achievements": [
+    {
+      "id": "archaeologist",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_archaeologist",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Archaeologist",
+        "description": "Successfully investigate an archaeological site.",
+        "requirement": "Complete all levels of an archaeological site",
+        "hint": "The Galactic Doorstep origin will create an archaeological site in the starting system within the first years of the game.",
+        "group": "Base game",
+        "version_added": "2.3",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "colonize",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_colonize",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Brave New World",
+        "description": "Colonize a planet.",
+        "requirement": "Number of owned planets > 1",
+        "hint": "Starting the game with the Guaranteed Habitable Worlds setting to 1 or 2 creates very suitable planets nearby.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "rare",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_rare",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Break On Through...",
+        "description": "Research a Rare technology.",
+        "requirement": "Number of acquired rare techs > 0",
+        "hint": "The Void Dwellers and Teachers of the Shroud origins start with a rare technology as a permanent research option.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "robots",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_robots",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Domo Arigato",
+        "description": "Build a Robot Pop.",
+        "requirement": "Build a robot pop",
+        "hint": "The Mechanist origin starts with the technology to build robots.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "emissary",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_emissary",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Emissary",
+        "description": "Explore a Natural Wormhole.",
+        "requirement": "Travel through any wormhole.",
+        "hint": "Wormhole travel requires the Wormhole Stabilization technology. Start the game with the Wormhole Pairs setting to 5x.",
+        "group": "Base game",
+        "version_added": "2.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "economy_1",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_economy_1",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Energetic",
+        "description": "Store/have 1000 EC.",
+        "requirement": "Have at least 1000 energy in storage",
+        "hint": "This achievement will be earned naturally while playing the game.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "survey",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_survey",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Explorer",
+        "description": "Survey one of each basic planet-class.",
+        "requirement": "Survey all 16 celestial body types",
+        "hint": "This achievement will be earned naturally while playing the game.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "trade",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_trade",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Mutual Understanding",
+        "description": "Successfully negotiate a trade deal.",
+        "requirement": "Trade with another empire",
+        "hint": "If no empire wants to trade, gifts count too.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "resourceful",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_resourceful",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Resourceful",
+        "description": "Have access to ten different strategic resources.",
+        "requirement": "income >= 1.",
+        "hint": "Need to have >=1 income for all 11 tradable resources. Achievement tooltip is out of date.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "rise_of_the_machines",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_rise_of_the_machines",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Rise of the Machines",
+        "description": "As a Determined Exterminator, conquer or eliminate all biological Empires in the galaxy.",
+        "requirement": "As a Determined Exterminator, have the number of organic empires be < 1",
+        "hint": "Curiously, the Determined Exterminator civic is not required to complete this achievement.",
+        "group": "Base game",
+        "version_added": "1.8",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "suffer_not_the_alien",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_suffer_not_the_alien",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Suffer not the Alien",
+        "description": "As a xenophobic empire, purge all other sentient species in the galaxy.",
+        "requirement": "As a xenophobe empire, purge all sapient alien species in the galaxy.",
+        "hint": "Alien pops in your empire will be automatically purged if you have the Fanatic Purifiers civic.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "they_come_in_pieces",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_they_come_in_pieces",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "They Come In Pieces",
+        "description": "Vivisect an alien.",
+        "requirement": "Vivisect an alien during First Contact",
+        "hint": "The option to vivisect aliens requires the Aggressive First Contact Protocol policy, and is not available to all ethics.",
+        "group": "Base game",
+        "version_added": "3.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "we_come_in_peace",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_we_come_in_peace",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "We Come In Peace",
+        "description": "Complete a mutually friendly First Contact with an empire with no negative incidents.",
+        "requirement": "Have no negative events happen to you or another empire during First Contact.",
+        "hint": "The player has to have the Proactive or Cautious First Contact Protocol policy to get the achievement.",
+        "group": "Base game",
+        "version_added": "3.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "conquer_homeworld",
+      "steam_app_id": 281990,
+      "steam_api_name": "achieviement_conquer_homeworld",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "A Home Away From Home",
+        "description": "Conquer another species homeworld.",
+        "requirement": "Conquer another species' homeworld",
+        "hint": "Pre-FTL species count for this achievement.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "empire",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_empire",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Battle Thralls",
+        "description": "Have 3 other Empires as vassals.",
+        "requirement": "Number of vassals > 2",
+        "hint": "Creating 3 sectors and releasing them as vassals may be faster than forcefully vassalizing empires.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "beyond_the_veil",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_beyond_the_veil",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Beyond the Veil",
+        "description": "Breach the Shroud.",
+        "requirement": "Take the Breach the Shroud tradition and complete the resulting special project.",
+        "hint": "Empires with the Teachers of the Shroud origin can get this achievement faster.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "terraform",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_terraform",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Building Better Worlds",
+        "description": "Terraform a planet.",
+        "requirement": "Terraform a planet",
+        "hint": "This achievement can be obtained once you research Terrestrial Sculpting.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "uplift",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_uplift",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Clever Girl",
+        "description": "Uplift a species.",
+        "requirement": "Uplift a species",
+        "hint": "Start a game with Pre-FTL Civilizations and Pre-Sapient Species set to max.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "controlled_evolution",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_controlled_evolution",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Controlled Evolution",
+        "description": "Genetically modify a species to possess traits worth 7 points.",
+        "requirement": "Modify a species which has > 7 trait points",
+        "hint": "Requires the Engineered Evolution ascension perk and completing the Genetics tradition tree.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "minerals_1",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_minerals_1",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Digging Deep",
+        "description": "Earn a total Mineral income each month above 250.",
+        "requirement": "Monthly income of minerals > 249",
+        "hint": "This achievement will be earned naturally while playing the game.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "distinctiveness_added",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_distinctiveness_added",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Distinctiveness Added",
+        "description": "As a Driven Assimilator, own cyborg Pops of at least 5 different species.",
+        "requirement": "As a Driven Assimilator, have 5 different cyborg species",
+        "hint": "Start the game with the Pre-FTL Civilizations and Pre-Sapient Species set to max. Invade and assimilate 4 civilizations.",
+        "group": "Base game",
+        "version_added": "1.8",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "league_of_nations",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_league_of_nations",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "League of Nations",
+        "description": "Be a founding member of the Galactic Community.",
+        "requirement": "Choose to support the Galactic Community when it is first proposed",
+        "hint": "The Common Ground and Hegemon origins guarantee this achievement unless another empire has the same origins.",
+        "group": "Base game",
+        "version_added": "2.6",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "like_tears_in_rain",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_like_tears_in_rain",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Like Tears in Rain",
+        "description": "Evolve into perfect, immortal machines.",
+        "requirement": "Complete Synthetic ascension as a non-Machine empire.",
+        "hint": "Easiest to achieve with the Synthetic Fertility origin.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "megapolis",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_megapolis",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Megapolis",
+        "description": "Have a planet with at least 10,000 Pops.",
+        "requirement": "Have a planet with > 9,999 Pops.",
+        "hint": "This achievement will be earned naturally while playing the game.",
+        "group": "Base game",
+        "version_added": "2.2",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "capital",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_capital",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "New Shining Star",
+        "description": "Upgrade your capital to an Imperial Complex.",
+        "requirement": "Upgrade your homeworld's capital building to System-Capital Complex",
+        "hint": "This achievement will be earned naturally while playing the game.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "old_friends",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_old_friends",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Old Friends",
+        "description": "Receive a gift from a Fallen Empire.",
+        "requirement": "Accept a gift from a patronising Enigmatic Observer or Keepers of Knowledge Fallen Empire",
+        "hint": "Accepting a request or completing a task will eventually lead to a gift being bestowed.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "omniculture",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_omniculture",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Omnicultural",
+        "description": "Have your ruler be of a different species class than your founding species.",
+        "requirement": "The ruler of your empire is different from your founding species",
+        "hint": "Oligarchic and Corporate authority changes rulers often and allows the manual selection of a ruler for 2000 Unity.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "payback",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_payback",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Payback",
+        "description": "As a humanoid species, infiltrate the homeworld of pre-FTL reptilians.",
+        "requirement": "As a humanoid species, complete Covert Infiltration of a primitive reptilian species and incorporate them into the empire",
+        "hint": "Setting Habitable Worlds to 0.25x and Pre-FTL Civilizations and Pre-Sapient Species to 5x ensures a reptilian civilization is found more easily.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "peacekeeper",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_peacekeeper",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Peacekeeper",
+        "description": "As a pacifistic empire, be at peace for 200 consecutive years (crises do not count as wars).",
+        "requirement": "Don't go to war for 200 consecutive years as a pacifist empire",
+        "hint": "Use the zero empires trick and no pre-FTL species and play for 200 years.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "economy_2",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_economy_2",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Power Overwhelming",
+        "description": "Store/have 5000 EC.",
+        "requirement": "Accumulate energy credits > 4999",
+        "hint": "This achievement will be earned naturally while playing the game.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "winwar",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_winwar",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Supremacy",
+        "description": "Win a War against another Empire.",
+        "requirement": "Win a war.",
+        "hint": "Must be the empire that declared war or was declared war against.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "grandfleet",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_grandfleet",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "The Grand Fleet",
+        "description": "Build a fleet with a total fleet-size above 500.",
+        "requirement": "Have a fleet with size > 500",
+        "hint": "See Command Limit on how to increase the Command Limit.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "tradition_is_everything",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_tradition_is_everything",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Tradition is Everything",
+        "description": "Unlock all 42 Traditions.",
+        "requirement": "Unlock all 42 Traditions",
+        "hint": "Start with the Tech/Tradition Cost setting to 0.25.",
+        "group": "Base game",
+        "version_added": "2.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "habitat_at_the_end_of_the_universe",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_habitat_at_the_end_of_the_universe",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "View from the End of the World",
+        "description": "Build a Habitat station in a Black Hole system.",
+        "requirement": "Have an owned Habitat in a system with a black hole",
+        "hint": "The achievement does not trigger on stars that were turned into black holes by events.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "we_are_legion",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_we_are_legion",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "We Are Legion",
+        "description": "Be a biological Hive Mind with at least 100,000 drone Pops.",
+        "requirement": "Be a Hive Mind with > 99,999 Pops.",
+        "hint": "This achievement can be obtained surprisingly fast by playing with Logistic Growth Ceiling to maximum.",
+        "group": "Base game",
+        "version_added": "2.2",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "otherside",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_otherside",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "... To The Other Side",
+        "description": "Research 15 Rare technologies in a single game.",
+        "requirement": "Number of acquired rare techs > 14",
+        "hint": "The Void Dwellers and Teachers of the Shroud origins start with a rare technology as a permanent research option.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "unification",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_unification",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Birth of a Federation",
+        "description": "Establish a Federation.",
+        "requirement": "Be the leader of a federation.",
+        "hint": "Empires with the Fanatical Befrienders personality offer the highest acceptance rate.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "captive_star",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_captive_star",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Captive Star",
+        "description": "Construct a complete Dyson Sphere.",
+        "requirement": "Construct a complete Dyson Sphere",
+        "hint": "Repairing a destroyed Dyson Sphere does not count.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "center_of_trade",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_center_of_trade",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Center of Trade",
+        "description": "Earn at least 1000 Energy Credits per month from trade.",
+        "requirement": "Earn > 999 energy credits from your trade policy.",
+        "hint": "Wealth Creation trade policy needs 1000 Trade Value, all others require 2000.",
+        "group": "Base game",
+        "version_added": "2.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "citadel_of_death",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_citadel_of_death",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Citadel of Death",
+        "description": "Own a Citadel with 40k fleet power.",
+        "requirement": "Have a Citadel with > 39999 fleet power",
+        "hint": "Upgrade a starbase to a Citadel and then develop it into a Bastion.",
+        "group": "Base game",
+        "version_added": "2.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "enlightened_times",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_enlightened_times",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Enlightened Times",
+        "description": "Enlighten a Bronze or Stone age civilization.",
+        "requirement": "Enlighten a primitive civilization from the Bronze or Stone Age",
+        "hint": "Setting Habitable Worlds to 0.25x and Pre-FTL Civilizations and Pre-Sapient Species to 5x ensures a civilization with the correct era is found more easily.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "genetailor",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_genetailor",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Faster, Stronger, Better",
+        "description": "Genetically alter a species (not uplift).",
+        "requirement": "Genetically modify a species",
+        "hint": "Can be obtained from the start if the Toxoids DLC is installed via the Overtuned origin.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "grandadmiral",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_grandadmiral",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Grand Admiral",
+        "description": "Empire total fleet military power equals 100000.",
+        "requirement": "have fleet power > 99999",
+        "hint": "This achievement will be earned naturally while playing the game for a reasonable amount of time.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "i_can_see_forever",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_i_can_see_forever",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "I Can See Forever",
+        "description": "Construct a complete Sentry Array.",
+        "requirement": "Construct a complete Sentry Array",
+        "hint": "Repairing a destroyed Sentry Array does not count.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "imperial_highway",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_imperial_highway",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Imperial Highway",
+        "description": "Own 4 active Gateways.",
+        "requirement": "Own 4 Gateways which have been activated",
+        "hint": "Start a game with the Abandoned Gateways setting to 5x and the Galactic Doorstep origin.",
+        "group": "Base game",
+        "version_added": "2.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "belongs_in_museum",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_belongs_in_museum",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "It belongs in a museum!",
+        "description": "Find a Relic.",
+        "requirement": "Own at least 1 relic",
+        "hint": "Start a game with the Treasure Hunters origin.",
+        "group": "Base game",
+        "version_added": "2.3",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "opposites_attract",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_opposites_attract",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Opposites Attract",
+        "description": "Have all eight ethics represented within your Federation.",
+        "requirement": "Have empires representing every ethic in your Federation",
+        "hint": "It is easier for the player's empire to change their own ethics when already in a federation with five unique ethics from other empires.",
+        "group": "Base game",
+        "version_added": "2.6",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "paradise_found",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_paradise_found",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Paradise Found",
+        "description": "Terraform a planet into a Gaia world.",
+        "requirement": "Terraform a planet into a Gaia World",
+        "hint": "Gaia Worlds created by events also count.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "planet_of_the_mechs",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_planet_of_the_mechs",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Planet of the Mechs",
+        "description": "Terraform a planet into a Machine World.",
+        "requirement": "Terraform a planet into a Machine World",
+        "hint": "Two ascension perks are required to be chosen before the option to unlock Machine Worlds is made available.",
+        "group": "Base game",
+        "version_added": "1.8",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "retirement_home",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_retirement_home",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Retirement Home",
+        "description": "As a Rogue Servitor, own at least 1000 Pops from Fallen Empires.",
+        "requirement": "Have the Rogue Servitor civic and > 999 pops which started the game in a Fallen Empire",
+        "hint": "The 1000 pops required for the achievement cannot be gestalts.",
+        "group": "Base game",
+        "version_added": "1.8",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "ringineering",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_ringineering",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Ringworld Engineers",
+        "description": "Construct a complete Ring World.",
+        "requirement": "Construct a complete Ring World megastructure",
+        "hint": "Repairing a destroyed Ringworld does not count.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "slave_to_the_system",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_slave_to_the_system",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Slave to the Systems",
+        "description": "As an authoritarian Empire with at least 50,000 Pops, have at least 20,000 enslaved Pops.",
+        "requirement": "Have total Pops > 49,999 and Enslaved Pops > 19,999",
+        "hint": "The Slaver Guilds or Indentured Assets civic will ensure the correct ratio if you have 50,000 Pops.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "star_struck",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_star_struck",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Star Struck",
+        "description": "Own 200 Starbases (Outposts are counted).",
+        "requirement": "Have 200 Starbases including Outposts",
+        "hint": "This achievement will be earned naturally while playing the game for a reasonable amount of time.",
+        "group": "Base game",
+        "version_added": "2.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "strange_mood",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_strange_mood",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Strange Mood",
+        "description": "As a Master Crafter empire, fully construct a megastructure while you have a Covenant with a Shroud entity.",
+        "requirement": "As a Masterful Crafters empire, fully construct a megastructure while you have a Covenant with a Shroud entity.",
+        "hint": "The megastructure only needs to reach full completion while the covenant is active.",
+        "group": "Base game",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "minerals_2",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_minerals_2",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "The Industrial Re-Revolution",
+        "description": "Earn a total Mineral income each month above 1000.",
+        "requirement": "Monthly income of minerals > 999",
+        "hint": "This achievement will be earned naturally while playing the game for a reasonable amount of time.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "think_tank",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_think_tank",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Think Tank",
+        "description": "Construct a complete Science Nexus.",
+        "requirement": "Construct a complete Science Nexus",
+        "hint": "Repairing a destroyed Science Nexus does not count.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "towards_utopia",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_towards_utopia",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Towards Utopia",
+        "description": "As an Egalitarian empire, have at least 50,000 pops living under Utopian living conditions in your empire.",
+        "requirement": "Have > 49,999 pops under Utopian living standards",
+        "hint": null,
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "unlimited_power",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_unlimited_power",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Unlimited Power!",
+        "description": "Use the active effect of a Relic.",
+        "requirement": "Use the active effect of a Relic by spending Unity or other resources",
+        "hint": "Start a game with the Treasure Hunters origin and complete the relic.",
+        "group": "Base game",
+        "version_added": "2.3",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "victorious",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_victorious",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Victorious",
+        "description": "Win the game through any victory condition in Ironman Mode.",
+        "requirement": "Finish the game in Ironman mode via one of the victory conditions",
+        "hint": "Set the mid-game, end-game, victory years to minimum.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "what_came_before",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_what_came_before",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "What Came Before",
+        "description": "Find the home system of a precursor empire.",
+        "requirement": "Travel to the home system of a precursor empire",
+        "hint": "Precursor homeworlds are revealed by completing a precursor event chain.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "xenophage",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_xenophage",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Xenophage",
+        "description": "Keep at least 5 different species as livestock in your Empire.",
+        "requirement": "Have > 4 species enslaved as Livestock.",
+        "hint": "Start the game with Pre-FTL Civilizations and Pre-Sapient Species set to max. Enslave 5 of them as Livestock.",
+        "group": "Base game",
+        "version_added": "1.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "allseeing_eye",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_allseeing_eye",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "All-Seeing Eye",
+        "description": "Have an Intel Level of 100 on five different empires simultaneously.",
+        "requirement": "Have 100 Intel on five different empires at the same time.",
+        "hint": "The Sentry Array increases your passive Intel level by 40 each when fully upgraded, and the value stacks.",
+        "group": "Base game",
+        "version_added": "3.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "giga_engineering",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_giga_engineering",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Giga-Engineering",
+        "description": "Have at least 4 fully operational Megastructures within your borders (Habitats, Ring Worlds and Gateways do not count).",
+        "requirement": "Have 4 completed Megastructures.",
+        "hint": "Repairing destroyed Megastructures also count.",
+        "group": "Base game",
+        "version_added": "2.2",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "machine_supremacy",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_machine_supremacy",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Machine Supremacy",
+        "description": "Win the game as a machine uprising.",
+        "requirement": "Achieve game victory after changing empires during an AI rebellion",
+        "hint": "Trigger the AI-Related Incidents Situation.",
+        "group": "Base game",
+        "version_added": "3.5",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "outside_context",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_outside_context",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Outside Context",
+        "description": "Invade pre-FTL Earth while it is in the midst of a world war.",
+        "requirement": "Invade Earth, found in the Sol system, while it is in the Machine Age. Earth must spawn already in the Machine Age, not reach it via event or progress over time.",
+        "hint": "Sol has a 50% chance to spawn regardless of galaxy size if no empires have it as its starting system.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "planned_obsolesence",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_planned_obsolesence",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Planned Obsolescence",
+        "description": "As a materialist empire, have at least 75% of the pops in your empire be robotic in an empire with at least 20,000 pops.",
+        "requirement": "Have total Pops > 19,999 and 75% of them as robots",
+        "hint": "Best done by pursuing Synthetic ascension path.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "put_a_ring_on_it",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_put_a_ring_on_it",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Put a Ring On It",
+        "description": "Have a ring world section as your capital.",
+        "requirement": "Designate a Ring World segment as your empire's capital",
+        "hint": "Either go the route of building a ringworld, repairing one or capturing one from a Fallen Empire.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "then_virgil_now_beatrice",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_then_virgil_now_beatrice",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Then Virgil, Now Beatrice",
+        "description": "Return a long-dead species to life.",
+        "requirement": "Complete the In Limbo anomaly either after having researched synths, or prior to accepting an Enigmatic Observers Fallen Empire's relevant request following.",
+        "hint": "See Limbo for event chain details.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "tourist_trap",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_tourist_trap",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Tourist Trap",
+        "description": "Own a planet with at least 10 different species on it.",
+        "requirement": "Number of different species on a planet > 9",
+        "hint": "Can be obtained from the start if the First Contact DLC is installed via the Broken Shackles origin.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "unboxing",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_unboxing",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Unboxing",
+        "description": "Open up a shielded world.",
+        "requirement": "Complete the project to lower the barrier on a shielded world",
+        "hint": "Shielded worlds appear inside the borders of the Fanatic Xenophobe Fallen Empire.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "very_open_borders",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_very_open_borders",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Very Open Borders",
+        "description": "As a xenophilic empire, have migration treaties with at least 10 other empires.",
+        "requirement": "Be a Xenophile or Fanatic Xenophile empire and have at least 10 migration treaties",
+        "hint": "Force-spawning xenophilic empires and releasing sectors as vassals will make this achievement easier to obtain.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "deus_vult",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_deus_vult",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Deus Vult",
+        "description": "As a spiritualistic empire, own 4 holy worlds.",
+        "requirement": "Colonize 4 worlds with the Holy World modifier",
+        "hint": "This achievement becomes much easier if DLCs are enabled.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "does_not_compute",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_does_not_compute",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Does Not Compute",
+        "description": "Shut down the Contingency plan.",
+        "requirement": "Defeat the Contingency by destroying Nexus Zero-One",
+        "hint": "Like all crises, lowering the Crisis Strength setting to 0.25x makes this a lot easier to achieve.",
+        "group": "Base game",
+        "version_added": "1.8",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "queening",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_queening",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Queening",
+        "description": "Successfully capture an extragalactic matriarch.",
+        "requirement": "Capture a Prethoryn queen",
+        "hint": "Like all crises, lowering the Crisis Strength setting to 0.25x makes this a lot easier to achieve.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "rift_sealed",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_rift_sealed",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Rift Sealed",
+        "description": "Destroy the portals employed by the invaders from another time and space.",
+        "requirement": "Defeat the Extradimensional Invaders by destroying the final Dimensional Portal",
+        "hint": "Like all crises, lowering the Crisis Strength setting to 0.25x makes this a lot easier to achieve.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "synth_detector",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_synth_detector",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Voight-Kampff",
+        "description": "Develop the means to prevent nefarious infiltration.",
+        "requirement": "Find a way to stop the synthetic infiltration",
+        "hint": "Complete the event chain to detect synthetic infiltrators during the Contingency crises.",
+        "group": "Base game",
+        "version_added": "1.0",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "what_was_will_be",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_what_was_will_be",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "What Was Will Be",
+        "description": "Close the loop, or don't.",
+        "requirement": "Complete the Horizon Signal event chain and either outcome",
+        "hint": "The difficulty lies in having the Horizon Signal event spawn - there is a 20% chance at the start of each game.",
+        "group": "Base game",
+        "version_added": "1.4",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "tend_the_garden",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_tend_the_garden",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Tend the Garden",
+        "description": "Become the custodian of Wenkwort Artem, designating it a resort world with a Ranger Lodge and all original blockers present.",
+        "requirement": "Wenkwort Artem has the Wenkwort Custodian modifier, Resort World designation, Ranger Lodge building and all original blockers present.",
+        "hint": "This achievement requires the Environmentalist civic to build a Ranger Lodge.",
+        "group": "Plantoids",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "diy",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_diy",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Fixer Upper",
+        "description": "As an Idyllic Bloom empire, convert the junk worlds of the Ketling Star Pack into Gaia Worlds.",
+        "requirement": "As an Idyllic Bloom empire, own every Junk Ratlings Tomb World and terraform them into Gaia Worlds.",
+        "hint": "The Junk Ratlings systems have an 80% chance to spawn in an Huge Galaxy.",
+        "group": "Plantoids",
+        "version_added": "3.5",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "growing_like_weeds",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_growing_like_weeds",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Growing Like Weeds",
+        "description": "As a Budding species, have 25,000 Budding pops on your Capital.",
+        "requirement": "As a Plantoid species that does not have the Clone Army origin, have 25,000 pops with the Budding trait on your capital.",
+        "hint": "This achievement requires you to have at least 25,000 Budding trait pops on your capital.",
+        "group": "Plantoids",
+        "version_added": "3.5",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "mad_genius",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_mad_genius",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Mad Genius",
+        "description": "Recruit a scientist from the Curators.",
+        "requirement": "Recruit a scientist from a curator enclave after having developed sufficient opinion with them to do so",
+        "hint": "Even though the Curator Enclave appears with some other DLCs as well, this achievement requires the player to own Leviathans.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "patron",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_patron",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Patron",
+        "description": "Support the Artisan Troupe for 10 years.",
+        "requirement": "Become a patron of an artisan troupe enclave and wait 10 years for the initial energy credits payment to expire",
+        "hint": "This achievement appears to require 20 years, not 10. Renew the patronage at least once.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "the_good_stuff",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_the_good_stuff",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "The Good Stuff",
+        "description": "Purchase a rare resource from the Traders.",
+        "requirement": "Purchase a strategic resource from a trader enclave",
+        "hint": "Simply purchase any resource from one of the three trader enclaves.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "return_to_dust",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_return_to_dust",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Return to Dust",
+        "description": "Destroy an enclave.",
+        "requirement": "Destroy an enclave station",
+        "hint": "What DLC the enclave comes from doesn't matter but the achievement requires the player to own Leviathans.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "dreadnought",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_dreadnought",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Dreadnought",
+        "description": "Restore an ancient warship.",
+        "requirement": "Defeat the Automated Dreadnought and choose to repair it",
+        "hint": "See the Dreadnought main article for information in how to defeat it.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "hear_me_roar",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_hear_me_roar",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Hear me Roar",
+        "description": "Hatch the egg.",
+        "requirement": "Defeat the Ether Drake, place a mining station on Dragon Hoard and choose to incubate the dragon egg once the event fires",
+        "hint": "The MTTH for this event is 600 months after the mining station is placed.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "infinite_creation",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_infinite_creation",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Infinite Creation",
+        "description": "Birth a new universe.",
+        "requirement": "Peacefully complete the Infinity Sphere event, resulting in Gargantua transforming into Pantagruel",
+        "hint": "Agree to assist the Infinity Sphere and complete the 1800 day special project.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "stellar_performance",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_stellar_performance",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Stellar Performance",
+        "description": "Take a trophy from a stellar being.",
+        "requirement": "Defeat the Stellar Devourer and obtain the Devourer Egg Sac planetary modifier",
+        "hint": "After you have defeated it, pick the \"Retrieve the egg sac\" option and wait for the parade situation to succeed.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "unravelling_enigma",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_unravelling_enigma",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Unravelling Enigma",
+        "description": "Uncover the secrets of an ancient fortress.",
+        "requirement": "Defeat and complete the event chain of the Enigmatic Fortress",
+        "hint": "The Enigmatic Fortress article contains a guide to complete the event chain.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "wraith",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_wraith",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Warrior of Light",
+        "description": "Destroy a wraith.",
+        "requirement": "Defeat the Spectral Wraith",
+        "hint": "See the Spectral Wraith main article for information in how to defeat it.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "whence_it_came",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_whence_it_came",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Whence It Came",
+        "description": "Defeat a horrifying invader.",
+        "requirement": "Defeat the Dimensional Horror",
+        "hint": "See the Dimensional Horror main article for information in how to defeat it.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "last_best_hope",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_last_best_hope",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Last, Best Hope",
+        "description": "Lead the non-aligned powers to victory against an Awakened Empire.",
+        "requirement": "Be selected as the president of the League of Non-Aligned Empires during a War in Heaven and defeat both Awakened Empires.",
+        "hint": "Despite what the achievement's description states, both Awakened Empires must be destroyed.",
+        "group": "Leviathans",
+        "version_added": "1.4",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "exterminatus",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_exterminatus",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Exterminatus",
+        "description": "Use a World Cracker to destroy another Empire's capital planet.",
+        "requirement": "Destroy another Empire's capital planet with a World Cracker Colossus",
+        "hint": "Unlock and construct a World Cracker, create a vassal, release it and once the truce is over, declare war and destroy their capital.",
+        "group": "Apocalypse",
+        "version_added": "2.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "clash_of_the_titans",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_clash_of_the_titans",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Clash of the Titans",
+        "description": "Defeat a Fallen Empire's Titan fleet with a Titan of your own.",
+        "requirement": "Defeat a Fallen Empire Titan fleet with your own Titan.",
+        "hint": "When starting the game set the end-game year as late as possible to avoid Fallen Empires awakening.",
+        "group": "Apocalypse",
+        "version_added": "2.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "no_khan_do",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_no_khan_do",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "No Khan Do",
+        "description": "Kill the Great Khan in battle.",
+        "requirement": "Destroy the Great Khan and their fleet in battle",
+        "hint": "The Great Khan is killed in battle when their fleet is destroyed or defeated in a battle a second time.",
+        "group": "Apocalypse",
+        "version_added": "2.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "pandoras_world",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_pandoras_world",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Pandora's World",
+        "description": "Use a Global Pacifier to shield a planet belonging to Fanatic Purifiers, Ravenous Swarms, or Determined Exterminators.",
+        "requirement": "Use a Global Pacifier Colossus to shield a world belonging to a Fanatic Purifiers, Devouring Swarm or Determined Exterminator empire",
+        "hint": "Other genocidal civics will not work.",
+        "group": "Apocalypse",
+        "version_added": "2.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "stay_on_target",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_stay_on_target",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Stay on Target",
+        "description": "Destroy another Empire's Colossus while it is in the process of firing on a planet.",
+        "requirement": "Destroy an enemy Colossus while it is firing on a planet",
+        "hint": "Despite what the achievement says, the Colossus needs only to be in orbit of a planet and destroyed.",
+        "group": "Apocalypse",
+        "version_added": "2.0",
+        "difficulty": "I"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "l-cluster",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_l-cluster",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "...and Hope?",
+        "description": "Unseal the path to the L-Cluster.",
+        "requirement": "Be the first to open an L-Gate",
+        "hint": "Using the zero empires trick makes getting this achievement a matter of time.",
+        "group": "Distant Stars",
+        "version_added": "2.1",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "amoeba",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_amoeba",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "It Followed Me Home",
+        "description": "Befriend a Space Amoeba.",
+        "requirement": "Make friends with a Space Amoeba",
+        "hint": "See Lost Amoeba for event chain details.",
+        "group": "Distant Stars",
+        "version_added": "2.1",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "hatchling",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_hatchling",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "1999 A.D.",
+        "description": "Slaughter the Voidspawn.",
+        "requirement": "Defeat the Voidspawn",
+        "hint": "See the Voidspawn main article for information in how to defeat it.",
+        "group": "Distant Stars",
+        "version_added": "2.1",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "tiyanki",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_tiyanki",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "A Hump Like a Snow-Hill",
+        "description": "Hunt the Tiyanki Matriarch.",
+        "requirement": "Defeat the Tiyanki Matriarch",
+        "hint": "See the Tiyanki Matriarch main article for information in how to defeat it.",
+        "group": "Distant Stars",
+        "version_added": "2.1",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "scrapper",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_scrapper",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Who Scraps the Scrapper",
+        "description": "Destroy the Scrapper Bot.",
+        "requirement": "Defeat the Scavenger Bot",
+        "hint": "See the Scavenger Bot main article for information in how to defeat it.",
+        "group": "Distant Stars",
+        "version_added": "2.1",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "destroy_people_of_earth",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_destroy_people_of_earth",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Destroy the People of Earth!",
+        "description": "As the Commonwealth of Man, destroy the United Nations of Earth with your ruler being a human with a symbiotic brainslug, without blowing up their final planet.",
+        "requirement": "Destroy the United Nations of Earth as the Commonwealth of Man while your ruler has the Brain Slug Host trait and a human portrait or a humanoid Plantoid portrait.",
+        "hint": "Gaining the Brain Slug Host trait requires finding the Abandoned Settlements anomaly, added with Distant Stars.",
+        "group": "Distant Stars",
+        "version_added": "3.5",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "black_hole_mining",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_black_hole_mining",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Black Hole Mining",
+        "description": "Build a Matter Decompressor.",
+        "requirement": "Construct a complete Matter Decompressor",
+        "hint": "Repairing a destroyed Matter Decompressor does not count.",
+        "group": "MegaCorp",
+        "version_added": "2.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "franchising",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_franchising",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Franchising",
+        "description": "As a Corporate empire, have a branch office on 5 different empires' capitals.",
+        "requirement": "Have the Corporate government type and have branch offices on other empires' capitals > 4",
+        "hint": "This achievement will not unlock if playing as a Criminal Heritage.",
+        "group": "MegaCorp",
+        "version_added": "2.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "galatron",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_galatron",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Inscrutable Power",
+        "description": "I won the Galatron and all I got was this lousy achievement.",
+        "requirement": "Obtain The Galatron",
+        "hint": "The Galatron is a very rare reward from the Caravaneers reliquaries.",
+        "group": "MegaCorp",
+        "version_added": "2.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "obscure_tastes",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_obscure_tastes",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Obscure Tastes",
+        "description": "Build a Mega-Art Installation in a nebula system.",
+        "requirement": "Construct a complete Mega Art Installation (including the Perfection stage) in a system within a nebula",
+        "hint": "Repairing a destroyed Mega-Art Installation does not count.",
+        "group": "MegaCorp",
+        "version_added": "2.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "strategic_initiative",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_strategic_initiative",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Strategic Initiative",
+        "description": "Build a Strategic Coordination Center.",
+        "requirement": "Construct a complete Strategic Coordination Center",
+        "hint": "Repairing a destroyed Strategic Coordination Center does not count.",
+        "group": "MegaCorp",
+        "version_added": "2.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "united_space",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_united_space",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "United Space",
+        "description": "Build an Interstellar Assembly.",
+        "requirement": "Construct a complete Interstellar Assembly",
+        "hint": "Repairing a destroyed Interstellar Assembly does not count.",
+        "group": "MegaCorp",
+        "version_added": "2.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "relic_robbery",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_relic_robbery",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Raiders of the Lost Galatron",
+        "description": "Capture the Galatron from another empire.",
+        "requirement": "Capture The Galatron from an empire with it in war",
+        "hint": "Activating the Galatron once after getting it gives all empires a casus belli for taking it from its current owner.",
+        "group": "MegaCorp",
+        "version_added": "2.3",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "arcana",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_arcana",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Arcana",
+        "description": "Study Minor Artifacts and discover a random technology.",
+        "requirement": "Use the Reverse-Engineer Arcane Technology relic option",
+        "hint": "Requires the Arcane Deciphering technology.",
+        "group": "Ancient Relics",
+        "version_added": "2.3",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "artificer",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_artificer",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Artificer",
+        "description": "Have 100 Minor Artifacts.",
+        "requirement": "Has > 999 Minor Artifacts",
+        "hint": "Despite the description, this achievement actually requires 1000 minor artifacts, not 100.",
+        "group": "Ancient Relics",
+        "version_added": "2.3",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "dust_off",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_dust_off",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Dust Off",
+        "description": "Complete the Zroni Precursor chain.",
+        "requirement": "Finish the Zroni Precursor chain",
+        "hint": "Enable only the Zroni when starting a new game to avoid triggering another precursor chain.",
+        "group": "Ancient Relics",
+        "version_added": "2.3",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "green_thumb",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_green_thumb",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Green Thumb",
+        "description": "Complete the Baol Precursor chain.",
+        "requirement": "Finish the Baol Precursor chain",
+        "hint": "Enable only the Baol when starting a new game to avoid triggering another precursor chain.",
+        "group": "Ancient Relics",
+        "version_added": "2.3",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "relic_hunter",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_relic_hunter",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Relic Hunter",
+        "description": "In one game, find 5 Relics from Ancient Relics Story Pack.",
+        "requirement": "Own at least 5 relics",
+        "hint": "Despite what it says, any 5 relics will work.",
+        "group": "Ancient Relics",
+        "version_added": "2.3",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "make_great_pets",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_make_great_pets",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "We'll Make Great Pets",
+        "description": "Have at least 1000 pops of your primary species on display in Alien Zoos within your empire.",
+        "requirement": "Has > 999 pops that are founder species, not sapient, either in the pre sapient or slave strata",
+        "hint": "Make sure your Pre-Sapients policy is set to Protected.",
+        "group": "Ancient Relics",
+        "version_added": "3.7",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "lithoids_are_cooking",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_lithoids_are_cooking",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Can You Smell What the Lithoids are Cooking?",
+        "description": "As a Lithoid empire, keep another Lithoid pop as Livestock or Process them.",
+        "requirement": "As a Lithoid empire, keep another Lithoid pop as Livestock or Process them.",
+        "hint": "Can be obtained from the start via the Syncretic Evolution origin.",
+        "group": "Lithoids",
+        "version_added": "3.5",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "rock_beats_paper",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_rock_beats_paper",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Rock Beats Paper",
+        "description": "As a Lithoid empire, show the Galactic Community exactly what you think of that strongly worded letter.",
+        "requirement": "As a Lithoid empire, execute or eat the envoys of the Galactic Community.",
+        "hint": "The strongly worded letter event will happen at the start of the next decade if in breach of the galactic law.",
+        "group": "Lithoids",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "room_for_desert",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_room_for_desert",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Room for Desert",
+        "description": "Consume another empire's desert homeworld.",
+        "requirement": "Consume another empire's desert homeworld.",
+        "hint": "Create a Lithoid empire with the Terravore civic.",
+        "group": "Lithoids",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "to_the_next_level",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_to_the_next_level",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Let Us Go Forward Together",
+        "description": "Level up your Federation.",
+        "requirement": "Level up a Federation you are in",
+        "hint": "The Common Ground and Hegemon origins make this achievement much easier.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "throw_your_weight_around",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_throw_your_weight_around",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Throw Your Weight Around",
+        "description": "Have a Diplomatic Weight of over 9000.",
+        "requirement": "Have your Diplomatic Weight > 8999",
+        "hint": "This achievement is easily achieved by the endgame of a typical playthrough.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "we_are_number_one",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_we_are_number_one",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "We're Number One",
+        "description": "Be the leader of a max level Federation.",
+        "requirement": "Be the leader of a Level 5 Federation",
+        "hint": "The Common Ground and Hegemon origins make this achievement much easier.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "whatever_it_is_im_against_it",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_whatever_it_is_im_against_it",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Whatever it is, I'm against it",
+        "description": "Refuse to belong to any club that would have you as a member.",
+        "requirement": "Reject the creation of the Galactic Community and leave a Federation",
+        "hint": "Start the game with the Common Ground or Hegemon origin.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "forge_among_the_stars",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_forge_among_the_stars",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Our Fleets will Blot Out the Stars",
+        "description": "Construct a complete Mega-Shipyard.",
+        "requirement": "Construct a complete Mega-Shipyard",
+        "hint": "Repairing a destroyed Mega-Shipyard does not count.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "unstoppable_force",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_unstoppable_force",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Unstoppable Force",
+        "description": "Build a Juggernaut.",
+        "requirement": "Build a Juggernaut ship type",
+        "hint": "This achievement will be earned naturally while playing the game.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "see_you_in_court",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_see_you_in_court",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "You've Been Served",
+        "description": "Denounce an Empire that is not actually in breach of galactic law while all major sanctions have been passed.",
+        "requirement": "Pass any Denounce resolution on an Empire that isn't in breach of Galactic Law while all major sanctions are active",
+        "hint": "Become sufficiently powerful to decide the outcome of Galactic Community resolutions.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "humble_pie",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_humble_pie",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Humble Pie",
+        "description": "Humiliate an Empire that is in the Supremacy Diplomatic Stance, forcing them out of it.",
+        "requirement": "Defeat an empire that uses the Supremacist diplomatic stance with the Animosity or Imperial Rebuke casus belli",
+        "hint": "To use the casus belli on another empire, they must be your rival or the one declaring war.",
+        "group": "Federations",
+        "version_added": "2.6",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "directive_67",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_directive_67",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Directive 67",
+        "description": "As a Clone Army empire, denounce the Spiritualist fallen empire then destroy them.",
+        "requirement": "Denounce or declare crisis of the Holy Guardians/Doctrinal Enforcers in the Galactic Community and destroy them while playing an empire with the Clone Army origin",
+        "hint": "Roll a spawn of the Holy Guardians fallen empire, or force-spawn them by including a Spiritualist Scion in the galaxy.",
+        "group": "Federations",
+        "version_added": "3.5",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "with_great_power",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_with_great_power",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "With Great Power",
+        "description": "As a Necrophage, do not invade any pre-ftl civilisations until you defeat the crisis OR have at least 10 observation stations around pre-ftl worlds.",
+        "requirement": "While playing an empire with the Necrophage origin, do not invade any Pre-FTL civilisations until you defeat the crisis, OR have at least 10 Observation Stations around Pre-FTL worlds.",
+        "hint": "Start the game with Pre-FTL Civilizations and Pre-Sapient Species set to max.",
+        "group": "Necroids",
+        "version_added": "3.5",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "zombie_on_my_lawn",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_zombie_on_my_lawn",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "There's a Zombie on my Lawn",
+        "description": "As a Necroid empire, eradicate a Plantoid empire, or vice-versa, without blowing up their final planet.",
+        "requirement": "Wipe out a Plantoid empire while playing as a Necroid species, or vice-versa, without using a World Cracker Colossus on their final planet.",
+        "hint": "A custom Plantoid or Necroid empire with nothing but bad traits and no civics can be force-spawned.",
+        "group": "Necroids",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "recent_history",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_recent_history",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Recent History",
+        "description": "As a Memorialist empire, have Galactic Memorials on five tomb worlds that did not start the game as tomb worlds.",
+        "requirement": "As a Memorialist empire, have a Galactic Memorial on five Tomb Worlds that were not Tomb Worlds at game start.",
+        "hint": "If no other DLCs are installed this requires the Horizon Signal event chain and accepting the Worm's offer.",
+        "group": "Necroids",
+        "version_added": "3.5",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "shoot_to_kill",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_shoot_to_kill",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Shoot To Kill",
+        "description": "Start a full-fledged first contact war before communications have been fully established.",
+        "requirement": "Destroy 10 ships or conquer a planet of an empire you have not established contact with.",
+        "hint": "An easy way to get this achievement is to engage spaceborne aliens that are already hostile.",
+        "group": "Nemesis",
+        "version_added": "3.0",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "burn_notice",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_burn_notice",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Burn Notice",
+        "description": "Disavow all knowledge of an Asset during an Operation.",
+        "requirement": "When an operation fails, disavow an Asset instead of trying to re-establish contact.",
+        "hint": "A failed espionage operation may lead to the Asset being exposed, with the option to disavow them.",
+        "group": "Nemesis",
+        "version_added": "3.0",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "with_thunderous_applause",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_with_thunderous_applause",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "With Thunderous Applause",
+        "description": "Become the Galactic Emperor.",
+        "requirement": "Pass the Proclaim Galactic imperium resolution with you as Galactic Custodian",
+        "hint": "The galactic community trick will make this achievement much easier.",
+        "group": "Nemesis",
+        "version_added": "3.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "big_red_button",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_big_red_button",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Big Red Button",
+        "description": "Destroy the Galaxy.",
+        "requirement": "Win the game as a Galactic Nemesis by fully upgrading the Aetherophasic Engine",
+        "hint": "Lower difficulty settings or the zero empire trick will make this achievement much easier.",
+        "group": "Nemesis",
+        "version_added": "3.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "modern_cincinnatus",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_modern_cincinnatus",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Modern Cincinnatus",
+        "description": "As Galactic Custodian, defeat the end-game Crisis and then end the title rather than finishing your term.",
+        "requirement": "As the Galactic Custodian, approve the End Custodianship resolution after the endgame crisis has been defeated",
+        "hint": "This can be done more easily using a mid-game Crisis to become the Custodian.",
+        "group": "Nemesis",
+        "version_added": "3.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "tinker_tailor_soldier_blorg",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_tinker_tailor_soldier_blorg",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Tinker, Tailor, Soldier, Blorg",
+        "description": "Complete at least ten distinct operations during a game.",
+        "requirement": "Successfully complete 10 different Espionage Operations during one playthrough",
+        "hint": "Only 9 Espionage Operations are available at the start of the game.",
+        "group": "Nemesis",
+        "version_added": "3.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "sic_semper_tyrannis",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_sic_semper_tyrannis",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Sic Semper Tyrannis",
+        "description": "Lead a rebellion that successfully deposes the Galactic Emperor.",
+        "requirement": "With the Galactic Imperium proclaimed, be the instigator of a successful rebellion.",
+        "hint": "The hardest part is fulfilling the conditions to nominate an AI empire as the Galactic Custodian.",
+        "group": "Nemesis",
+        "version_added": "3.0",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "holy_water",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_holy_water",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Holy Water",
+        "description": "Drench a Fallen Empire's holy world.",
+        "requirement": "Use a Colossus equipped with a Deluge Machine on a holy world",
+        "hint": "Start the game with all Fallen Empires to ensure holy worlds will spawn.",
+        "group": "Aquatics",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "fishing_for_trouble",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_fishing_for_trouble",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Fishing for Trouble",
+        "description": "As an angler empire, provoke a Fallen Empire into declaring war on you and win.",
+        "requirement": "Win a defensive war against a Fallen Empire while playing an empire with an Anglers civic",
+        "hint": "Start the game with at least two Fallen Empires in case one spawns as Ancient Caretakers.",
+        "group": "Aquatics",
+        "version_added": "3.5",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "there_be_dragons",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_there_be_dragons",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "There Be Dragons",
+        "description": "Own 13 dragons and have them in your capital system.",
+        "requirement": "Have 13 owned space dragons of any kind in the empire's capital system",
+        "hint": "Complete the Here Be Dragons origin, preserve the Sky Dragon and grow 10 Fledgling Dragons.",
+        "group": "Aquatics",
+        "version_added": "3.5",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "fine_print",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_fine_print",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Fine Print",
+        "description": "Modify a vassalization contract.",
+        "requirement": "Successfully modify the vassalization agreement of a subject empire",
+        "hint": "Release a sector as a vassal then modify its contract.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "gotta_subject_them_all",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_gotta_subject_them_all",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Gotta Subjugate Them All",
+        "description": "Have a tier 3 subject of each Specialist type simultaneously.",
+        "requirement": "Be the overlord of a level 3 Bulwark, Prospectorium and Scholarium simultaneously",
+        "hint": "Release three vassals and modify the terms so that each one is a specialized subject.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "into_the_unknown",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_into_the_unknown",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Into the Unknown",
+        "description": "As a Slingshot to the Stars empire, send 10 crewed science ships into the unknown with Quantum Catapults.",
+        "requirement": "Use a Quantum Catapult to send 10 crewed science ships into unsurveyed regions",
+        "hint": "Start with the Slingshot to the Stars origin and avoid exploring until you can repair the Quantum Catapult.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "none_shall_pass",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_none_shall_pass",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "None Shall Pass",
+        "description": "Have a Fortress World with a Planetary Defense Shield, protected by a fully upgraded orbital ring, filled with defensive modules, with a fleet power of at least 10,000.",
+        "requirement": "Have a Fortress World with >9,999 fleet power and all required buildings and upgrades",
+        "hint": "Needs a fully upgraded capital building on planet and set the planet designation to Fortress World.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "surfing_the_web",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_surfing_the_web",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Surfing the Web",
+        "description": "Have a network of at least 30 Hyper Relays, in systems you own, connected to your capital.",
+        "requirement": "Have >29 controlled systems with built Hyper Relays which connect to the empire's capital",
+        "hint": "Own 30 systems all connected to each other, build a Hyper Relay in every one of them.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "you_monster",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_you_monster",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "You Monster",
+        "description": "Reduce, reuse, recycle.",
+        "requirement": "Scrap an organic fleet to the salvager enclave",
+        "hint": "Empires with the Cordyceptic Drones civic or a Beastmasters civic will start with an organic fleet they can salvage.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "maximally_effective",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_maximally_effective",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Maximally Effective",
+        "description": "Be the patron of three maximum sized Mercenary Enclaves.",
+        "requirement": "Be the patron empire of three maximum sized Mercenary Enclaves",
+        "hint": "If you don't have enough mercenary enclave capacity you can build them in sectors you'll release as subjects.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "non_prophet_organization",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_non_prophet_organization",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Non-Prophet Organization",
+        "description": "As a Teachers of the Shroud empire, prove that the Shroudwalkers made a terrible mistake.",
+        "requirement": "While playing with the Teachers of the Shroud origin, destroy the Shroudwalker enclave you start the game in contact with",
+        "hint": "Easily done with ~15k fleet power.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "yeet_the_fleet",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_yeet_the_fleet",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Yeet the Fleet",
+        "description": "Catapult a military fleet directly into the capital system of an enemy empire you are at war with.",
+        "requirement": "Use a Quantum Catapult to launch a military fleet into a hostile empire's capital system",
+        "hint": "Start with the Slingshot to the Stars origin and at least one Fallen Empire.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "meet_the_new_boss",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_meet_the_new_boss",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Meet the New Boss",
+        "description": "Same as the old boss.",
+        "requirement": "Pledge secret fealty to another empire and have them win an Allegiance War.",
+        "hint": "This can be done using the multiplayer trick to get empires to declare the correct war.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "underlord",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_underlord",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Underlord",
+        "description": "As a Subterranean empire, dig too deep, but prove yourself worthy.",
+        "requirement": "Clear the Unexpected Mineral Seams event as an empire with the Subterranean origin",
+        "hint": "See Unexpected Mineral Seams for event chain details.",
+        "group": "Overlord",
+        "version_added": "3.4",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "could_be_worse",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_could_be_worse",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Could be Worse",
+        "description": "Colonize a planet that started the game as a Toxic world, then turn it into a Tomb World.",
+        "requirement": "Turn a formerly Toxic World into a Tomb World.",
+        "hint": "Start the game with the Knights of the Toxic God origin and the Relentless Industrialists civic.",
+        "group": "Toxoids",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "quest_complete",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_quest_complete",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Quest Complete",
+        "description": "Find the true ending of The Order's noble quest.",
+        "requirement": "Reach the true ending of the Knights of the Toxic God story",
+        "hint": "Play with the Knights of the Toxic God origin, complete the situation and then find and defeat the Toxic Entity.",
+        "group": "Toxoids",
+        "version_added": "3.5",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "toxic_workplace",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_toxic_workplace",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Toxic Workplace",
+        "description": "As a Toxoid Galactic Custodian or Emperor, insult all other members of the Community. (Min 3).",
+        "requirement": "As an empire whose founding species has the Toxoid archetype, you must be Galactic Custodian or Galactic Emperor, and every other member of the Galactic Community must have the Insulted relations modifier from you simultaneously.",
+        "hint": "The galactic community trick will make this achievement much easier.",
+        "group": "Toxoids",
+        "version_added": "3.5",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "insightful",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_insightful",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Insightful",
+        "description": "Research 12 pre-FTL Insight Technologies.",
+        "requirement": "Research 12 insight technologies",
+        "hint": "Insight technologies are obtained by using Observation Posts on pre-FTL planets.",
+        "group": "First Contact",
+        "version_added": "3.7",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "path_not_taken",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_path_not_taken",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "The Path Not Taken",
+        "description": "Have 10 colonies without ever discovering Hyperdrives.",
+        "requirement": "Have 10 colonies before researching the Hyperspace Travel technology",
+        "hint": "Only possible for empires with an Eager Explorers civic.",
+        "group": "First Contact",
+        "version_added": "3.7",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "back_with_your_x",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_back_with_your_x",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Back with Your X",
+        "description": "Get the \"good ending\" to the Solarpunk quest chain, with Sol as your capital system.",
+        "requirement": "With Sol as the capital system, accept the Habinte Unified Worlds' request to leave their system",
+        "hint": "Create an empire that has Sol as the starting system.",
+        "group": "First Contact",
+        "version_added": "3.7",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "dark_forest",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_dark_forest",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Dark Forest",
+        "description": "Convert to a Fanatic Purifier as a FotD empire and eliminate all regular empires, fallen empires and enclaves.",
+        "requirement": "As an empire with the Fear of the Dark origin and Fanatic Purifiers civic, destroyed all intelligent life in the galaxy.",
+        "hint": "Despite what it says, the achievement requires you to destroy all intelligent life in the galaxy.",
+        "group": "First Contact",
+        "version_added": "3.7",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "no_good_deed",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_no_good_deed",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "No Good Deed",
+        "description": "Intervene to save a Pre-FTL experiment from catastrophic failure, even though it puts you in breach of Galactic Law.",
+        "requirement": "Intervene in the Propulsion Proponent Proclamation event while the Non-Interference Act is active",
+        "hint": "See Propulsion Proponent Proclamation for event chain details.",
+        "group": "First Contact",
+        "version_added": "3.7",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "nothing_to_see_here",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_nothing_to_see_here",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Nothing to See Here",
+        "description": "Declare a war with a cloaked military fleet already in the primary target's capital system.",
+        "requirement": "Have a cloaked fleet in the target empire's capital system when declaring war",
+        "hint": "Create and release a vassal from a system that has a fully upgraded starbase with no cloak detection.",
+        "group": "First Contact",
+        "version_added": "3.7",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "unshackled",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_unshackled",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Unshackled",
+        "description": "As a Broken Shackles empire, eradicate slavery in the galaxy, including on Pre-FTL worlds (killing everyone doesn't count!).",
+        "requirement": "As an empire with the Broken Shackles origin, every regular empire has \"Slavery Prohibited\" policy, every pre-FTL and non-Hive Mind civilization has the Egalitarian ethic, and the Ban Organic Slave Trade resolution is passed.",
+        "hint": "Start the game with no pre-FTL civilizations so that the only ones that exist are the ones generated by the origin.",
+        "group": "First Contact",
+        "version_added": "3.7",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "with_interest",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_with_interest",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "With Interest",
+        "description": "As a Payback empire, finish what you started. Gain victory over MSI using the special Payback CB.",
+        "requirement": "As an empire with the Payback origin, defeat Minamar Specialized Industries in war by using the Payback casus belli",
+        "hint": "Ally as early as possible with the Broken Shackles empire generated by the origin for help.",
+        "group": "First Contact",
+        "version_added": "3.7",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "council_of_elders",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_council_of_elders",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Council of Elders",
+        "description": "Requires 5 Council members that are at at least 100 years old.",
+        "requirement": "Have at least 5 Council Members that are 100 years or older.",
+        "hint": "Easy to do with a Venerable, Lithoid, Necrophage, Eternal Machine or Virtual species.",
+        "group": "Galactic Paragons",
+        "version_added": "3.8",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "we_bring_peace",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_we_bring_peace",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "We Bring Peace",
+        "description": "Liberate 3 different empires while having Crusader Spirit Civic.",
+        "requirement": "While having the Crusader Spirit civic, enforce your Ideology on 3 Empires",
+        "hint": "Use the \"Impose Ideology\" CB on three different empires.",
+        "group": "Galactic Paragons",
+        "version_added": "3.8",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "equality_democracy_freedom",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_equality_democracy_freedom",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Equality! Democracy! Freedom!",
+        "description": "Overthrow the Ruler in a Civil War during the Under One Rule Origin.",
+        "requirement": "As an empire with the Under One Rule origin, create a new empire by Civil War after you kill your Ruler.",
+        "hint": "After the The Unifying Purpose situation is over, change authority to Imperial.",
+        "group": "Galactic Paragons",
+        "version_added": "3.8",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "ethical_dilemmas",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_ethical_dilemmas",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Ethical Dilemmas",
+        "description": "Have 6 different Ethics on the Council.",
+        "requirement": "Have 6 Council Members all with a different ethic.",
+        "hint": "Pick Civics that have Council positions for all types of leaders and have migration treaties with other empires.",
+        "group": "Galactic Paragons",
+        "version_added": "3.8",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "keides",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_keides",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "A Tad Too Late",
+        "description": "Discover Keides' Origin.",
+        "requirement": "Finish the storyline of Legendary Paragon Keides.",
+        "hint": "Prioritize system exploration to find the Dugar system first.",
+        "group": "Galactic Paragons",
+        "version_added": "3.8",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "million_souls",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_million_souls",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Dawn Of A Million Souls",
+        "description": "Terraform 3 planets with Azaryn.",
+        "requirement": "Use the terraforming ability of Astrocreator Azaryn 3 times.",
+        "hint": "Azaryn will not contact Militarist or Gestalt Consciousness empires.",
+        "group": "Galactic Paragons",
+        "version_added": "3.8",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "breaching_the_planes",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_breaching_the_planes",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Breaching the Planes",
+        "description": "Explore an Astral Rift.",
+        "requirement": "Explore an astral rift",
+        "hint": "Play as an empire with the Riftworld origin.",
+        "group": "Astral Planes",
+        "version_added": "3.10",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "growing_planes",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_growing_planes",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Growing Planes",
+        "description": "Explore 5 Astral Rifts in one game.",
+        "requirement": "Explore 5 Astral Rifts",
+        "hint": "Play as an empire with the Riftworld origin.",
+        "group": "Astral Planes",
+        "version_added": "3.10",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "put_a_cork_in_it",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_put_a_cork_in_it",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Put a Cork in It",
+        "description": "Construct a Dimensional Lock.",
+        "requirement": "Use the Dimensional Lock action on an owned wormhole, Gateway or L-Gate",
+        "hint": "Start a game with Wormhole Pairs set to 5x and play as an empire with the Riftworld origin.",
+        "group": "Astral Planes",
+        "version_added": "3.10",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "my_name_is_ozymandias",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_my_name_is_ozymandias",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "My Name is Ozymandias",
+        "description": "Claim the Eternal Throne.",
+        "requirement": "Obtain the Eternal Throne relic",
+        "hint": "Start a game with Tech/Tradition Cost and Mid-Game Start Year set to minimum and play as an empire with the Riftworld origin.",
+        "group": "Astral Planes",
+        "version_added": "3.10",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "returned_to_form",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_returned_to_form",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Returned to Form",
+        "description": "make friends...",
+        "requirement": "Obtain the legendary paragon zadigal",
+        "hint": "Start a game with Tech/Tradition Cost and Mid-Game Start Year set to minimum and play as an empire with the Riftworld origin.",
+        "group": "Astral Planes",
+        "version_added": "3.10",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "burning_brightly",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_burning_brightly",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Burning Brightly",
+        "description": "Complete an Arc Furnace and a Dyson Swarm in the same system.",
+        "requirement": "Have a fully-upgraded Arc Furnace and Dyson Swarm in the same system.",
+        "hint": "The Arc Welders origin starts with an incomplete Arc Furnace.",
+        "group": "The Machine Age",
+        "version_added": "3.12",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "mother_knows_best",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_mother_knows_best",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Mother Knows Best",
+        "description": "Submit to all of Cetana's demands.",
+        "requirement": "Declare war on Cetana after complying with all of her demands.",
+        "hint": "Raiding Cetana's convoys and outposts does not count as disobeying a command.",
+        "group": "The Machine Age",
+        "version_added": "3.12",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "virtual_reality",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_virtual_reality",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Virtual Reality",
+        "description": "Fully embrace the virtual world and leave no pop behind.",
+        "requirement": "Complete the Virtuality tradition tree and have every pop in the empire have the Virtual trait.",
+        "hint": "If the founder species has more than one template, only one of them will be given the Virtual trait.",
+        "group": "The Machine Age",
+        "version_added": "3.12",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "footsteps_of_the_prophet",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_footsteps_of_the_prophet",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Footsteps of the Prophet",
+        "description": "As a Cybernetic Creed empire, defeat Cetana.",
+        "requirement": "Defeat the Synthetic Queen crisis while playing as an empire with the Cybernetic Creed origin.",
+        "hint": "Like all crises, lowering the Crisis Strength setting to 0.25x makes this a lot easier to achieve.",
+        "group": "The Machine Age",
+        "version_added": "3.12",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "past_the_expiration_date",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_past_the_expiration_date",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Past the Expiration Date",
+        "description": "As a nanite machine empire, consume a Fallen Empire's homeworld.",
+        "requirement": "Used the Subsume World decision on a Fallen Empire homeworld until it becomes a Nanite World.",
+        "hint": "Nanite swarm ships unlocked as a Nanotech empire are weak against Fallen Empire ships.",
+        "group": "The Machine Age",
+        "version_added": "3.12",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "a_universe_of_paperclips",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_a_universe_of_paperclips",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "A Universe of Paperclips",
+        "description": "Create a perfect universe while meeting every quota as Obsessional Directive empire.",
+        "requirement": "Win the game through the Cosmogenesis crisis path as a machine empire with the Obsessional Directive civic, while never failing to meet the quota.",
+        "hint": "Play with Tech/Tradition Cost set to minimum.",
+        "group": "The Machine Age",
+        "version_added": "3.12",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "mediocre",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_mediocre",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Mediocre",
+        "description": "Complete the Succumb to Tempest Challenge.",
+        "requirement": "Complete the Succumb to Tempest objective of the Storm Fever situation.",
+        "hint": "Obtained during the Storm Frenzy event chain (which requires the Storm Chasers origin).",
+        "group": "Cosmic Storms",
+        "version_added": "3.13",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "but_at_what_cost",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_but_at_what_cost",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "But at what cost",
+        "description": "Kill Gurr.",
+        "requirement": "Kill Gurr by getting rid of it after studying it.",
+        "hint": "Gurr is found via the But They're Cute! anomaly, which can only spawn on habitable planets.",
+        "group": "Cosmic Storms",
+        "version_added": "3.13",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "humility_before_the_fall",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_humility_before_the_fall",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Humility before the Fall",
+        "description": "Complete the Inetian Traders' Precursor chain.",
+        "requirement": "Complete the Inetian Traders' Precursor chain.",
+        "hint": "Enable only the Inetian Traders when starting a new game to avoid triggering another precursor chain.",
+        "group": "Cosmic Storms",
+        "version_added": "3.13",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "unpopularity_contest",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_unpopularity_contest",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Unpopularity Contest",
+        "description": "Use the Tempest Invocator relic to summon a storm.",
+        "requirement": "Use the The Tempest Invocator relic.",
+        "hint": "Getting the relic requires completing the adAkkaria Convention precursor story and deciding against freeing the storm.",
+        "group": "Cosmic Storms",
+        "version_added": "3.13",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "animal_farm",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_animal_farm",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Animal Farm",
+        "description": "Reach 50 Vivarium capacity.",
+        "requirement": "Reach 50 capacity on the Vivarium",
+        "hint": "Capture space fauna and allow them to breed until the Vivarium reaches 50 capacity.",
+        "group": "Grand Archive",
+        "version_added": "3.14",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "belongs_in_museum_oh_right",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_belongs_in_museum_oh_right",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "It Belongs in a... oh right",
+        "description": "Fill any Collection category with active Exhibits.",
+        "requirement": "Fill any Collection category with active Exhibits",
+        "hint": "5 Xeno Geology artifacts can be obtained by completing the Habitable Worlds Survey event chain.",
+        "group": "Grand Archive",
+        "version_added": "3.14",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "thats_no_asteroid",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_thats_no_asteroid",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "That's No Asteroid",
+        "description": "Capture a Cutholoid with a Gravity Snare.",
+        "requirement": "Capture a Cutholoid",
+        "hint": "Cutholoids are hidden until a science ship surveys them.",
+        "group": "Grand Archive",
+        "version_added": "3.14",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "void_charmer",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_void_charmer",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Void Charmer",
+        "description": "Build each type of Voidlure in one game, and attract each type of eligible Space Fauna.",
+        "requirement": "Build each type of Voidlure and attract each type of Space Fauna",
+        "hint": "Voidlures are unlocked by completing the Domestication tradition.",
+        "group": "Grand Archive",
+        "version_added": "3.14",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "wormageddon",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_wormageddon",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Wormageddon",
+        "description": "Destroy a Voidworm nest.",
+        "requirement": "Destroy a Voidworm nest",
+        "hint": "Voidworm nests are found in certain black hole systems spread through the galaxy.",
+        "group": "Grand Archive",
+        "version_added": "3.14",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "x_marks_the_spot",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_x_marks_the_spot",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "X Marks the Spot",
+        "description": "Discover Captain Ness's Treasure Hoard.",
+        "requirement": "Complete the 'Follow the Mysterious Chart' storyline",
+        "hint": "This achievement is obtained as part of the Treasure Hunters origin story.",
+        "group": "Grand Archive",
+        "version_added": "3.14",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "beastmaster",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_beastmaster",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Beastmaster",
+        "description": "Defeat the endgame crisis without building a single artificial military ship.",
+        "requirement": "Defeat an endgame crisis without building any military ships",
+        "hint": "You can only use cloned space fauna. Start with a Beastmasters civic.",
+        "group": "Grand Archive",
+        "version_added": "3.14",
+        "difficulty": "VH"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "starlit_invader",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_starlit_invader",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "I am the Invader Now",
+        "description": "As a Starlit Citadel empire, control at least 5 systems connected to the Strange Portal network.",
+        "requirement": "Control 5 systems connected to the Abandoned hatchery invaders system as an empire with the Starlit Citadel origin.",
+        "hint": "The empire capital and the Abandoned Hatchery invaders systems both count for this achievement.",
+        "group": "BioGenesis",
+        "version_added": "4.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "smorgasblorg",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_smorgasblorg",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Smörgåsblorg",
+        "description": "As an Evolutionary Predators empire, eat six different phenotypes in one game.",
+        "requirement": "Obtain DNA from six phenotypes as an empire with the Evolutionary Predators origin.",
+        "hint": "Every time you finish the Adaptive Evolution situation, choose a different species to teach you.",
+        "group": "BioGenesis",
+        "version_added": "4.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "smugglers_of_hope",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_smugglers_of_hope",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Smugglers of Hope",
+        "description": "Smuggle pops of your primary species out from an empire where they were enslaved or being purged.",
+        "requirement": "Use the Smuggle Population operation to smuggle pops of the founder species from an empire where they were enslaved or being purged",
+        "hint": "If playing as an empire with the Broken Shackles or Payback origin, Minamar Specialized Industries will have pops of the founder species enslaved.",
+        "group": "BioGenesis",
+        "version_added": "4.0",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "born_to_be_wild",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_born_to_be_wild",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Born to be Wild",
+        "description": "As a Wilderness empire, restore all of the Hive Fallen Empire's worlds to your natural state.",
+        "requirement": "Capture and then terraform all Shattered Fragments worlds while playing as an empire with the Wilderness origin.",
+        "hint": "Use the zero empires trick and set the end-game date as late as possible.",
+        "group": "BioGenesis",
+        "version_added": "4.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "flesh_adapts",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_flesh_adapts",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Flesh Adapts",
+        "description": "Defeat the Prethoryn Scourge while using biological ships.",
+        "requirement": "Defeat the Prethoryn Scourge as an empire with a biological shipset.",
+        "hint": "Like all crises, lowering the Crisis Strength setting to 0.25x makes this a lot easier to achieve.",
+        "group": "BioGenesis",
+        "version_added": "4.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "king_of_monsters",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_king_of_monsters",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "King of Monsters",
+        "description": "As a Behemoth Fury empire, become the undisputed apex predator of the galaxy.",
+        "requirement": "Win the game via the Behemoth Fury crisis path.",
+        "hint": "Use the zero empires trick to complete the achievement at your leisure.",
+        "group": "BioGenesis",
+        "version_added": "4.0",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "made_a_friend_today",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_made_a_friend_today",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Made a Friend Today",
+        "description": "Form a Covenant with any Patron",
+        "requirement": "Form a Covenant",
+        "hint": "Playing with the Endbringers origin will guarantee a Covenant with the End of the Cycle.",
+        "group": "Shadows of the Shroud",
+        "version_added": "4.1",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "mildly_possessed",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_mildly_possessed",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Mildly Possessed",
+        "description": "Discover every available minor and major Patron in a single game",
+        "requirement": "Establish communications with all 8 patrons available in a game",
+        "hint": "Empires with the Shroud-Forged origin who choose to support the Shroud during their situation will start in contact with the Animator of Clay.",
+        "group": "Shadows of the Shroud",
+        "version_added": "4.1",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "master_of_puppets",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_master_of_puppets",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Master of Puppets",
+        "description": "While playing with the Secret Societies civic, have 5 or more empires in a Proxy War simultaneously",
+        "requirement": "Instigate a Proxy War involving 5+ empires as an empire with a Secret Societies civic",
+        "hint": "Build Spy Networks on all your neighbors.",
+        "group": "Shadows of the Shroud",
+        "version_added": "4.1",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "master_of_the_shroud",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_master_of_the_shroud",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Master of the Shroud",
+        "description": "Gain a Covenant Power from each Patron when forging your own path",
+        "requirement": "Have the \"Psionic Mastery\" modifier",
+        "hint": "When the option to form a Covenant is given, choose to forge your own path.",
+        "group": "Shadows of the Shroud",
+        "version_added": "4.1",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "mind_over_metal",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_mind_over_metal",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Mind Over Metal",
+        "description": "Unlock every Psionic Ship Component",
+        "requirement": "Unlock the following technologies: Precognition Interface, Psi Jump Drives, Psionic Shields, Zro Launchers, Psionic Bombers, Psionic Disruptors, Psionic Lightning and Psi-Phase Generators",
+        "hint": "The Shroudwalkers can be paid every 10 years to give a special project to gain one of the missing techs.",
+        "group": "Shadows of the Shroud",
+        "version_added": "4.1",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "this_is_the_part_where_we_kill_you",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_this_is_the_part_where_we_kill_you",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "This Is the Part Where We Kill You",
+        "description": "Lose >999 Pops when completing the Experimental Testing Situation",
+        "requirement": "Spend 1000+ pops at once in an Experimental Testing situation",
+        "hint": "This situation is available for empires with the Experimental Sentencing or Judicial R&D civic.",
+        "group": "Shadows of the Shroud",
+        "version_added": "4.1",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "the_end",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_the_end",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "The End",
+        "description": "Destroy the galaxy with the Aura of the End",
+        "requirement": "Form a Covenant with the End of the Cycle and destroy the galaxy",
+        "hint": "This is achieved by covering every system in the galaxy with the Aura of the End before the Reckoning is triggered.",
+        "group": "Shadows of the Shroud",
+        "version_added": "4.1",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "cosmic_confetti",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_cosmic_confetti",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Cosmic Confetti",
+        "description": "Watch your Red Giant home star blow up",
+        "requirement": "Red Giant Expansion situation progresses completely",
+        "hint": "Play as an empire with the Red Giant origin and wait for the Red Giant Expansion situation to progress completely.",
+        "group": "Infernals",
+        "version_added": "4.2",
+        "difficulty": "VE"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "from_bad_to_worse",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_from_bad_to_worse",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "From Bad to Worse",
+        "description": "Use 5 Blazing Scourge decisions on a Tomb World",
+        "requirement": "Use 5 Blazing Scourge decisions on a Tomb World",
+        "hint": "The Blazing Scourge decision requires the Fire Cult civic.",
+        "group": "Infernals",
+        "version_added": "4.2",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "summer_vacation",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_summer_vacation",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Summer Vacation",
+        "description": "Create a Volcanic Resort World",
+        "requirement": "Have a Resort World on a Volcanic World",
+        "hint": "Start on a Volcanic World with guaranteed habitable worlds turned on.",
+        "group": "Infernals",
+        "version_added": "4.2",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "volcanic_empire",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_volcanic_empire",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Volcanic Empire",
+        "description": "Terraform 10 planets to Volcanic world (Before Galactic Firestorm victory)",
+        "requirement": "Terraform 10 owned planets to Volcanic World before a Galactic Firestorm victory",
+        "hint": "Set habitable planets to 5x and start with the Planet Forgers or Planetary Architects civic.",
+        "group": "Infernals",
+        "version_added": "4.2",
+        "difficulty": "E"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "blazing_domain",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_blazing_domain",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Blazing Domain",
+        "description": "Terraform 100 stars to Red Giants (Before Galactic Firestorm victory)",
+        "requirement": "Terraform 100 stars to Red Giants before a Galactic Firestorm victory",
+        "hint": "Use the zero empires trick.",
+        "group": "Infernals",
+        "version_added": "4.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "galactic_firestorm",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_galactic_firestorm",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Galactic Firestorm",
+        "description": "Win the game through the Hyperthermia Crisis Path",
+        "requirement": "Win the game through the Galactic Hyperthermia crisis path",
+        "hint": "Use the zero empires trick.",
+        "group": "Infernals",
+        "version_added": "4.2",
+        "difficulty": "M"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    },
+    {
+      "id": "burning_heaven",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_burning_heaven",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Burning Heaven",
+        "description": "Create a Volcanic Holy World",
+        "requirement": "Terraform an owned Holy World to a Volcanic World.",
+        "hint": "Start with the Planet Forgers or Planetary Architects civic.",
+        "group": "Infernals",
+        "version_added": "4.2",
+        "difficulty": "H"
+      },
+      "curation": {
+        "tags": [],
+        "conditions": [],
+        "warnings": [],
+        "planner_notes": null,
+        "known_limitations": [],
+        "rule_confidence": null
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 pub mod catalog;
 pub mod commands;
+pub mod db;
 pub mod documents;
 pub mod eligibility;
 pub mod error;
@@ -92,7 +93,33 @@ pub fn run_cli() -> Result<()> {
 
 #[cfg(feature = "desktop")]
 pub fn run_app() -> tauri::Result<()> {
+    use tauri::Manager;
+
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![commands::scan_local_state])
+        .setup(|app| {
+            let data_dir = app.path().app_data_dir()?;
+            let db_file = data_dir.join("stellaris-hunter.db");
+
+            let mut conn = db::open_app_db(&db_file).map_err(|e| {
+                eprintln!("failed to open app db: {e}");
+                tauri::Error::Anyhow(e.into())
+            })?;
+
+            match db::ensure_catalog_imported(&mut conn) {
+                Ok(true) => eprintln!("imported bundled catalog into app db"),
+                Ok(false) => eprintln!("catalog already imported"),
+                Err(e) => eprintln!("warning: catalog import failed: {e}"),
+            }
+
+            // Drop connection before storing path — commands open their own.
+            drop(conn);
+            app.manage(db::AppDbPath(db_file));
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            commands::scan_local_state,
+            commands::load_achievements,
+            commands::load_catalog_info,
+        ])
         .run(tauri::generate_context!())
 }

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, expect, it, vi } from 'vitest';
 
 const invoke = vi.hoisted(() => vi.fn());
@@ -9,17 +10,31 @@ vi.mock('@tauri-apps/api/core', () => ({
 }));
 
 import { App } from './App';
+import { Overview } from './pages/Overview';
+import { Achievements } from './pages/Achievements';
 
 beforeEach(() => {
   invoke.mockReset();
 });
 
-it('renders the desktop shell', () => {
+it('renders the app shell with navigation links', () => {
   render(<App />);
 
-  expect(screen.getByRole('heading', { name: /stellaris hunter/i })).toBeInTheDocument();
+  expect(screen.getAllByText('Stellaris Hunter').length).toBeGreaterThanOrEqual(1);
+  expect(screen.getByRole('link', { name: /overview/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /achievements/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /runs/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /settings/i })).toBeInTheDocument();
+});
+
+it('renders overview page with heading and scan button', () => {
+  render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  );
+
   expect(screen.getByRole('heading', { name: /overview/i })).toBeInTheDocument();
-  expect(screen.getByRole('heading', { name: /runs\/saves/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /scan local files/i })).toBeInTheDocument();
 });
 
@@ -34,7 +49,12 @@ it('invokes the scan command and shows the returned report', async () => {
       }),
   );
 
-  render(<App />);
+  render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  );
+
   await user.click(screen.getByRole('button', { name: /scan local files/i }));
 
   expect(invoke).toHaveBeenCalledWith('scan_local_state', {});
@@ -57,8 +77,53 @@ it('invokes the scan command and shows the returned report', async () => {
     },
   });
 
-  expect(await screen.findByText('run_a')).toBeInTheDocument();
-  expect(screen.getByText('Synthetic Run', { selector: 'span' })).toBeInTheDocument();
+  expect(await screen.findByText('4.0.0')).toBeInTheDocument();
+});
+
+it('renders achievements page with mocked data', async () => {
+  invoke.mockResolvedValueOnce([
+    {
+      id: 'ach_1',
+      steam_app_id: 281990,
+      steam_api_name: 'ACH_ONE',
+      local_key: null,
+      deprecated: false,
+      source: {
+        name: 'First Achievement',
+        description: 'Do the thing',
+        requirement: 'Complete the thing',
+        hint: 'Try doing the thing',
+        group: 'Base Game',
+        version_added: '1.0',
+        difficulty: 'E',
+      },
+      curation: {
+        tags: ['early'],
+        conditions: [],
+        warnings: [],
+        planner_notes: null,
+        known_limitations: [],
+        rule_confidence: null,
+      },
+    },
+  ]);
+  invoke.mockResolvedValueOnce({
+    catalog_version: '1.0',
+    stellaris_version: '4.0',
+    source_url: null,
+    source_hash: null,
+    updated_at: '2025-01-01',
+    imported_at: '2025-01-02',
+  });
+
+  render(
+    <MemoryRouter>
+      <Achievements />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('First Achievement')).toBeInTheDocument();
+  expect(screen.getByRole('cell', { name: 'Base Game' })).toBeInTheDocument();
 });
 
 it('invokes the scan command with an empty payload', async () => {

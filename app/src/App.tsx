@@ -1,86 +1,24 @@
-import { useState } from 'react';
-
-import { scanLocalState, type ScanReport } from './tauri';
-
-type LoadState = 'idle' | 'loading' | 'ready' | 'error';
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import { Nav } from './components/Nav';
+import { Overview } from './pages/Overview';
+import { Achievements } from './pages/Achievements';
+import { Runs } from './pages/Runs';
+import { Settings } from './pages/Settings';
 
 export function App() {
-  const [report, setReport] = useState<ScanReport | null>(null);
-  const [status, setStatus] = useState<LoadState>('idle');
-  const [error, setError] = useState<string | null>(null);
-
-  const handleScan = async () => {
-    setStatus('loading');
-    setError(null);
-
-    try {
-      setReport(await scanLocalState());
-      setStatus('ready');
-    } catch (unknownError) {
-      setError(unknownError instanceof Error ? unknownError.message : String(unknownError));
-      setStatus('error');
-    }
-  };
-
-  const saveRuns = report?.documents?.save_runs ?? [];
-
   return (
-    <main className="app-shell">
-      <header className="hero">
-        <p className="eyebrow">Stellaris Hunter</p>
-        <h1>Stellaris Hunter</h1>
-        <p className="subtitle">Read-only local scan shell for install, documents, and save state.</p>
-      </header>
-
-      <section aria-labelledby="overview-heading" className="panel">
-        <div className="panel-header">
-          <h2 id="overview-heading">Overview</h2>
-          <span className={`status status-${status}`}>{status}</span>
-        </div>
-        <dl className="summary-grid">
-          <div>
-            <dt>Install version</dt>
-            <dd>{report?.install?.version ?? 'Not scanned yet'}</dd>
-          </div>
-          <div>
-            <dt>Documents root</dt>
-            <dd>{report?.documents?.root ?? 'Not scanned yet'}</dd>
-          </div>
-          <div>
-            <dt>Errors</dt>
-            <dd>{report?.errors?.length ?? 0}</dd>
-          </div>
-        </dl>
-      </section>
-
-      <section aria-labelledby="runs-heading" className="panel">
-        <div className="panel-header">
-          <h2 id="runs-heading">Runs/Saves</h2>
-          <button type="button" onClick={handleScan} disabled={status === 'loading'}>
-            {status === 'loading' ? 'Scanning…' : 'Scan Local Files'}
-          </button>
-        </div>
-
-        {error ? <p role="alert" className="error">{error}</p> : null}
-
-        {saveRuns.length > 0 ? (
-          <ul className="run-list">
-            {saveRuns.map((run) => (
-              <li key={run.run_folder}>
-                <strong>{run.run_folder}</strong>
-                <span>{run.latest_save?.name ?? 'No latest save'}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="muted">No runs loaded.</p>
-        )}
-      </section>
-
-      <section aria-labelledby="raw-heading" className="panel">
-        <h2 id="raw-heading">Raw JSON</h2>
-        <pre className="json-view">{report ? JSON.stringify(report, null, 2) : 'No scan yet.'}</pre>
-      </section>
-    </main>
+    <HashRouter>
+      <div className="app-layout">
+        <Nav />
+        <main className="app-shell">
+          <Routes>
+            <Route path="/" element={<Overview />} />
+            <Route path="/achievements" element={<Achievements />} />
+            <Route path="/runs" element={<Runs />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </div>
+    </HashRouter>
   );
 }
