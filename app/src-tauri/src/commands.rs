@@ -13,9 +13,14 @@ mod catalog_commands {
     use tauri::State;
 
     use crate::{
-        catalog::{load_catalog_entries_with_issues, load_catalog_metadata},
+        catalog::{
+            clear_completion_override as clear_completion_override_in_db,
+            load_catalog_entries_with_issues, load_catalog_metadata,
+            load_completion_overrides as load_completion_overrides_from_db,
+            set_completion_override as set_completion_override_in_db,
+        },
         db::AppDbPath,
-        model::{AchievementCatalogEntry, CatalogVersionMetadata},
+        model::{AchievementCatalogEntry, AchievementOverride, CatalogVersionMetadata},
     };
 
     #[tauri::command]
@@ -48,7 +53,55 @@ mod catalog_commands {
         .await
         .map_err(|e| format!("worker failed: {e}"))?
     }
+
+    #[tauri::command]
+    pub async fn load_completion_overrides(
+        db_path: State<'_, AppDbPath>,
+    ) -> Result<Vec<AchievementOverride>, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<Vec<AchievementOverride>, String> {
+            let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+            load_completion_overrides_from_db(&conn)
+                .map_err(|e| format!("load completion overrides: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn set_completion_override(
+        db_path: State<'_, AppDbPath>,
+        achievement_id: String,
+        completed: bool,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+            set_completion_override_in_db(&conn, &achievement_id, completed)
+                .map_err(|e| format!("set completion override: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn clear_completion_override(
+        db_path: State<'_, AppDbPath>,
+        achievement_id: String,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+            clear_completion_override_in_db(&conn, &achievement_id)
+                .map_err(|e| format!("clear completion override: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
 }
 
 #[cfg(feature = "desktop")]
-pub use catalog_commands::{load_achievements, load_catalog_info};
+pub use catalog_commands::{
+    clear_completion_override, load_achievements, load_catalog_info, load_completion_overrides,
+    set_completion_override,
+};

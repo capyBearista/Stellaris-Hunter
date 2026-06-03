@@ -31,6 +31,12 @@ pub struct CatalogEntriesLoad {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AchievementOverride {
+    pub achievement_id: String,
+    pub completed: bool,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AchievementCatalogEntry {
     pub id: String,

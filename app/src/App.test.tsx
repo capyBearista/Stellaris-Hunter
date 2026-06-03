@@ -115,6 +115,7 @@ it('renders achievements page with mocked data', async () => {
     updated_at: '2025-01-01',
     imported_at: '2025-01-02',
   });
+  invoke.mockResolvedValueOnce([]); // loadCompletionOverrides
 
   render(
     <MemoryRouter>

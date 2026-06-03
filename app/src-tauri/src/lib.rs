@@ -120,6 +120,9 @@ pub fn run_app() -> tauri::Result<()> {
             commands::scan_local_state,
             commands::load_achievements,
             commands::load_catalog_info,
+            commands::load_completion_overrides,
+            commands::set_completion_override,
+            commands::clear_completion_override,
         ])
         .run(tauri::generate_context!())
 }

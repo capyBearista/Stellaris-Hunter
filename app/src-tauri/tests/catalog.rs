@@ -1,7 +1,8 @@
 use rusqlite::Connection;
 use stellaris_hunter_scan::catalog::{
-    import_catalog, initialize_catalog_schema, load_catalog_entries,
-    load_catalog_entries_with_issues, load_catalog_metadata, parse_catalog_json,
+    clear_completion_override, import_catalog, initialize_catalog_schema, load_catalog_entries,
+    load_catalog_entries_with_issues, load_catalog_metadata, load_completion_overrides,
+    parse_catalog_json, set_completion_override,
 };
 
 const CATALOG_FIXTURE: &str = include_str!("fixtures/catalog/catalog.json");
@@ -144,13 +145,13 @@ fn initializes_catalog_schema_idempotently() {
 
     let table_count: i64 = conn
         .query_row(
-            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN ('catalog_versions', 'achievements', 'achievement_tags', 'achievement_conditions')",
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN ('catalog_versions', 'achievements', 'achievement_tags', 'achievement_conditions', 'player_achievements')",
             [],
             |row| row.get(0),
         )
         .expect("table count query should pass");
 
-    assert_eq!(table_count, 4);
+    assert_eq!(table_count, 5);
 }
 
 #[test]
@@ -430,4 +431,86 @@ fn full_snapshot_import_marks_missing_existing_achievements_deprecated() {
 
     assert!(humble_deprecated);
     assert!(!rock_deprecated);
+}
+
+#[test]
+fn completion_overrides_round_trip_manual_completed_state() {
+    let catalog = parse_catalog_json(CATALOG_FIXTURE).expect("fixture should parse");
+    let mut conn = Connection::open_in_memory().expect("in-memory sqlite should open");
+
+    import_catalog(&mut conn, &catalog).expect("import should pass");
+    set_completion_override(&conn, "rock_beats_paper", true).expect("override should save");
+
+    let overrides = load_completion_overrides(&conn).expect("overrides should load");
+
+    assert_eq!(overrides.len(), 1);
+    assert_eq!(overrides[0].achievement_id, "rock_beats_paper");
+    assert!(overrides[0].completed);
+}
+
+#[test]
+fn completion_overrides_can_be_cleared() {
+    let catalog = parse_catalog_json(CATALOG_FIXTURE).expect("fixture should parse");
+    let mut conn = Connection::open_in_memory().expect("in-memory sqlite should open");
+
+    import_catalog(&mut conn, &catalog).expect("import should pass");
+    set_completion_override(&conn, "rock_beats_paper", true).expect("override should save");
+    clear_completion_override(&conn, "rock_beats_paper").expect("override should clear");
+
+    let overrides = load_completion_overrides(&conn).expect("overrides should load");
+
+    assert!(overrides.is_empty());
+}
+
+#[test]
+fn completion_overrides_can_force_incomplete() {
+    let catalog = parse_catalog_json(CATALOG_FIXTURE).expect("fixture should parse");
+    let mut conn = Connection::open_in_memory().expect("in-memory sqlite should open");
+
+    import_catalog(&mut conn, &catalog).expect("import should pass");
+    set_completion_override(&conn, "rock_beats_paper", false).expect("override should save");
+
+    let overrides = load_completion_overrides(&conn).expect("overrides should load");
+    let displayed_unlocked: bool = conn
+        .query_row(
+            "SELECT displayed_unlocked FROM player_achievements WHERE achievement_id = 'rock_beats_paper'",
+            [],
+            |row| row.get(0),
+        )
+        .expect("displayed status should load");
+
+    assert_eq!(overrides.len(), 1);
+    assert_eq!(overrides[0].achievement_id, "rock_beats_paper");
+    assert!(!overrides[0].completed);
+    assert!(!displayed_unlocked);
+}
+
+#[test]
+fn completion_overrides_reject_unknown_achievement_ids() {
+    let catalog = parse_catalog_json(CATALOG_FIXTURE).expect("fixture should parse");
+    let mut conn = Connection::open_in_memory().expect("in-memory sqlite should open");
+
+    import_catalog(&mut conn, &catalog).expect("import should pass");
+    let error = set_completion_override(&conn, "missing", true)
+        .expect_err("unknown achievement id should fail");
+
+    assert!(
+        error.to_string().contains("unknown achievement id"),
+        "unexpected error: {error}"
+    );
+}
+
+#[test]
+fn clearing_completion_overrides_rejects_unknown_achievement_ids() {
+    let catalog = parse_catalog_json(CATALOG_FIXTURE).expect("fixture should parse");
+    let mut conn = Connection::open_in_memory().expect("in-memory sqlite should open");
+
+    import_catalog(&mut conn, &catalog).expect("import should pass");
+    let error = clear_completion_override(&conn, "missing")
+        .expect_err("unknown achievement id should fail");
+
+    assert!(
+        error.to_string().contains("unknown achievement id"),
+        "unexpected error: {error}"
+    );
 }

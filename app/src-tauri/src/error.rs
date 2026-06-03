@@ -16,6 +16,8 @@ pub enum Error {
     Utf8(#[from] std::string::FromUtf8Error),
     #[error("parse error: {0}")]
     Parse(String),
+    #[error("validation error: {0}")]
+    Validation(String),
     #[error("not implemented: {0}")]
     NotImplemented(String),
 }

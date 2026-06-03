@@ -3,7 +3,11 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   loadAchievements,
   loadCatalogInfo,
+  loadCompletionOverrides,
+  setCompletionOverride,
+  clearCompletionOverride,
   type AchievementEntry,
+  type AchievementOverride,
   type CatalogInfo,
 } from '../tauri';
 
@@ -16,6 +20,8 @@ export function Achievements() {
   const [catalogInfo, setCatalogInfo] = useState<CatalogInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+  const [overrideError, setOverrideError] = useState<string | null>(null);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -36,10 +42,15 @@ export function Achievements() {
       setLoading(true);
       setError(null);
       try {
-        const [ach, cat] = await Promise.all([loadAchievements(), loadCatalogInfo()]);
+        const [ach, cat, ovr] = await Promise.all([
+          loadAchievements(),
+          loadCatalogInfo(),
+          loadCompletionOverrides(),
+        ]);
         if (!cancelled) {
           setAchievements(ach);
           setCatalogInfo(cat);
+          setOverrides(toOverrideRecord(ovr));
         }
       } catch (unknownError) {
         if (!cancelled) {
@@ -72,6 +83,27 @@ export function Achievements() {
       else next.add(id);
       return next;
     });
+  };
+
+  const handleCompletionToggle = async (id: string, currentlyCompleted: boolean) => {
+    setOverrideError(null);
+    try {
+      if (currentlyCompleted) {
+        await clearCompletionOverride(id);
+        setOverrides((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      } else {
+        await setCompletionOverride(id, true);
+        setOverrides((prev) => ({ ...prev, [id]: true }));
+      }
+    } catch (unknownError) {
+      setOverrideError(
+        unknownError instanceof Error ? unknownError.message : String(unknownError),
+      );
+    }
   };
 
   const handleSort = (key: SortKey) => {
@@ -188,6 +220,12 @@ export function Achievements() {
         </select>
       </div>
 
+      {overrideError ? (
+        <p role="alert" className="error" style={{ marginBottom: '0.75rem' }}>
+          Override error: {overrideError}
+        </p>
+      ) : null}
+
       {filtered.length === 0 ? (
         <p className="muted">No achievements match the current filters.</p>
       ) : (
@@ -206,6 +244,7 @@ export function Achievements() {
               <th onClick={() => handleSort('version')} className="sortable">
                 Version Added{sortArrow('version')}
               </th>
+              <th>Completion</th>
             </tr>
           </thead>
           <tbody>
@@ -216,6 +255,8 @@ export function Achievements() {
                 expanded={expanded.has(ach.id)}
                 onToggle={() => toggleExpanded(ach.id)}
                 diffClass={diffClass}
+                completed={overrides[ach.id] ?? false}
+                onCompletionToggle={() => handleCompletionToggle(ach.id, overrides[ach.id] ?? false)}
               />
             ))}
           </tbody>
@@ -234,12 +275,42 @@ interface AchievementRowProps {
   expanded: boolean;
   onToggle: () => void;
   diffClass: (d: string | null) => string;
+  completed: boolean;
+  onCompletionToggle: () => void;
 }
 
-function AchievementRow({ ach, expanded, onToggle, diffClass }: AchievementRowProps) {
+function toOverrideRecord(overrides: AchievementOverride[]): Record<string, boolean> {
+  const record: Record<string, boolean> = {};
+  for (const o of overrides) {
+    // Checkbox MVP only exposes force-completed vs no manual override.
+    // A future three-state UI should preserve completed=false as force-incomplete.
+    if (o.completed) record[o.achievement_id] = true;
+  }
+  return record;
+}
+
+function AchievementRow({
+  ach,
+  expanded,
+  onToggle,
+  diffClass,
+  completed,
+  onCompletionToggle,
+}: AchievementRowProps) {
   return (
     <>
-      <tr className="achievement-row" onClick={onToggle} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}>
+      <tr
+        className="achievement-row"
+        onClick={onToggle}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onToggle();
+          }
+        }}
+      >
         <td>{ach.source.name}</td>
         <td>{ach.source.group ?? '—'}</td>
         <td>
@@ -248,10 +319,20 @@ function AchievementRow({ ach, expanded, onToggle, diffClass }: AchievementRowPr
           </span>
         </td>
         <td>{ach.source.version_added ?? '—'}</td>
+        <td>
+          <input
+            type="checkbox"
+            checked={completed}
+            onChange={onCompletionToggle}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            title={completed ? 'Clear manual completion' : 'Mark as completed'}
+          />
+        </td>
       </tr>
       {expanded ? (
         <tr className="achievement-detail-row">
-          <td colSpan={4}>
+          <td colSpan={5}>
             <div className="achievement-detail">
               {ach.source.description ? (
                 <p>

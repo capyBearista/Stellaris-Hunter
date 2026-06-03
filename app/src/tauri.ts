@@ -90,3 +90,22 @@ export function loadAchievements(): Promise<AchievementEntry[]> {
 export function loadCatalogInfo(): Promise<CatalogInfo | null> {
   return invoke<CatalogInfo | null>('load_catalog_info', {});
 }
+
+// --- Achievement override types & wrappers ---
+
+export interface AchievementOverride {
+  achievement_id: string;
+  completed: boolean;
+}
+
+export function loadCompletionOverrides(): Promise<AchievementOverride[]> {
+  return invoke<AchievementOverride[]>('load_completion_overrides', {});
+}
+
+export function setCompletionOverride(achievementId: string, completed: boolean): Promise<void> {
+  return invoke<void>('set_completion_override', { achievementId, completed });
+}
+
+export function clearCompletionOverride(achievementId: string): Promise<void> {
+  return invoke<void>('clear_completion_override', { achievementId });
+}

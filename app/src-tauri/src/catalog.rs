@@ -6,8 +6,8 @@ use crate::{
     error::{Error, Result},
     model::{
         AchievementCatalog, AchievementCatalogEntry, AchievementCondition,
-        AchievementCurationFields, AchievementSourceFields, CatalogEntriesLoad,
-        CatalogVersionMetadata,
+        AchievementCurationFields, AchievementOverride, AchievementSourceFields,
+        CatalogEntriesLoad, CatalogVersionMetadata,
     },
 };
 
@@ -70,6 +70,19 @@ pub fn initialize_catalog_schema(conn: &Connection) -> Result<()> {
           severity TEXT NOT NULL,
           source TEXT,
           notes TEXT,
+          FOREIGN KEY (achievement_id) REFERENCES achievements(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS player_achievements (
+          achievement_id TEXT PRIMARY KEY,
+          steam_unlocked INTEGER,
+          steam_unlocked_at TEXT,
+          steam_last_synced_at TEXT,
+          manual_override TEXT CHECK (
+            manual_override IN ('force_completed', 'force_incomplete') OR manual_override IS NULL
+          ),
+          manual_override_updated_at TEXT,
+          displayed_unlocked INTEGER NOT NULL DEFAULT 0,
           FOREIGN KEY (achievement_id) REFERENCES achievements(id)
         );
         "#,
@@ -404,6 +417,94 @@ fn deprecate_missing_achievements(conn: &Connection, active_ids: &HashSet<&str>)
                 params![existing_id],
             )?;
         }
+    }
+
+    Ok(())
+}
+
+pub fn load_completion_overrides(conn: &Connection) -> Result<Vec<AchievementOverride>> {
+    initialize_catalog_schema(conn)?;
+
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT achievement_id, manual_override
+        FROM player_achievements
+        WHERE manual_override IS NOT NULL
+        ORDER BY achievement_id COLLATE NOCASE ASC
+        "#,
+    )?;
+
+    let rows = stmt.query_map([], |row| {
+        let manual_override: String = row.get(1)?;
+        Ok(AchievementOverride {
+            achievement_id: row.get(0)?,
+            completed: manual_override == "force_completed",
+        })
+    })?;
+
+    Ok(rows.collect::<std::result::Result<Vec<_>, _>>()?)
+}
+
+pub fn set_completion_override(
+    conn: &Connection,
+    achievement_id: &str,
+    completed: bool,
+) -> Result<()> {
+    initialize_catalog_schema(conn)?;
+    ensure_achievement_exists(conn, achievement_id)?;
+
+    let manual_override = if completed {
+        "force_completed"
+    } else {
+        "force_incomplete"
+    };
+    let displayed_unlocked = i64::from(completed);
+
+    conn.execute(
+        r#"
+        INSERT INTO player_achievements (
+          achievement_id, manual_override, manual_override_updated_at, displayed_unlocked
+        ) VALUES (?1, ?2, datetime('now'), ?3)
+        ON CONFLICT(achievement_id) DO UPDATE SET
+          manual_override = excluded.manual_override,
+          manual_override_updated_at = excluded.manual_override_updated_at,
+          displayed_unlocked = excluded.displayed_unlocked
+        "#,
+        params![achievement_id, manual_override, displayed_unlocked],
+    )?;
+
+    Ok(())
+}
+
+pub fn clear_completion_override(conn: &Connection, achievement_id: &str) -> Result<()> {
+    initialize_catalog_schema(conn)?;
+    ensure_achievement_exists(conn, achievement_id)?;
+
+    conn.execute(
+        r#"
+        UPDATE player_achievements
+        SET manual_override = NULL,
+            manual_override_updated_at = NULL,
+            displayed_unlocked = COALESCE(steam_unlocked, 0)
+        WHERE achievement_id = ?1
+        "#,
+        params![achievement_id],
+    )?;
+
+    Ok(())
+}
+
+fn ensure_achievement_exists(conn: &Connection, achievement_id: &str) -> Result<()> {
+    let exists: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM achievements WHERE id = ?1)",
+        params![achievement_id],
+        |row| row.get(0),
+    )?;
+
+    if !exists {
+        return Err(Error::Validation(format!(
+            "unknown achievement id for completion override: {achievement_id}"
+        )));
     }
 
     Ok(())

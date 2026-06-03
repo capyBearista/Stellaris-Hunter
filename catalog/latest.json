@@ -1,10 +1,10 @@
 {
-  "catalog_version": "1.0.0",
+  "catalog_version": "1.0.1",
   "snapshot_kind": "full",
   "stellaris_version": "4.3",
   "source_url": "https://stellaris.paradoxwikis.com/Achievements",
   "source_hash": null,
-  "updated_at": "2026-06-01",
+  "updated_at": "2026-06-02",
   "achievements": [
     {
       "id": "archaeologist",
@@ -22,12 +22,30 @@
         "difficulty": "VE"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
+        "tags": [
+          "archaeology",
+          "exploration",
+          "early-game"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "archaeological_site_completed",
+            "operator": "at_least",
+            "value": 1,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires completing any archaeological site; starting conditions usually do not hard-block it."
+          }
+        ],
         "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "planner_notes": "Good baseline exploration goal; Galactic Doorstep can make a site appear early.",
+        "known_limitations": [
+          "The current save parser does not yet count completed archaeology sites."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -46,12 +64,30 @@
         "difficulty": "VE"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
+        "tags": [
+          "colony",
+          "expansion",
+          "early-game"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "owned_planets",
+            "operator": "greater_than",
+            "value": 1,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires colonizing beyond the capital."
+          }
+        ],
         "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "planner_notes": "Usually natural in any non-challenge run; guaranteed habitable worlds speed it up.",
+        "known_limitations": [
+          "The current save parser does not yet count owned planets."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -70,12 +106,30 @@
         "difficulty": "VE"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
+        "tags": [
+          "technology",
+          "research",
+          "rare-tech"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "rare_technologies_acquired",
+            "operator": "at_least",
+            "value": 1,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires acquiring at least one rare technology."
+          }
+        ],
         "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "planner_notes": "Teachers of the Shroud and Void Dwellers can make rare tech access easier.",
+        "known_limitations": [
+          "The current save parser does not yet count acquired rare technologies."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -94,12 +148,32 @@
         "difficulty": "VE"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "robots",
+          "pop-assembly",
+          "technology"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "robot_pop_built",
+            "operator": "equals",
+            "value": true,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires building a robot pop."
+          }
+        ],
+        "warnings": [
+          "Empire policies, technologies, or ethics can delay robot access."
+        ],
+        "planner_notes": "Mechanist starts with robot-building support.",
+        "known_limitations": [
+          "The current save parser does not yet identify built robot pops."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -118,12 +192,32 @@
         "difficulty": "VE"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "exploration",
+          "wormhole",
+          "technology"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "wormhole_travel_completed",
+            "operator": "equals",
+            "value": true,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires traveling through a wormhole after stabilizing wormhole travel."
+          }
+        ],
+        "warnings": [
+          "Low wormhole density can make this slower."
+        ],
+        "planner_notes": "Higher Wormhole Pairs galaxy setting makes this easier.",
+        "known_limitations": [
+          "The current save parser does not yet detect wormhole traversal history."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -166,12 +260,30 @@
         "difficulty": "VE"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
+        "tags": [
+          "exploration",
+          "survey",
+          "early-game"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "surveyed_planets",
+            "operator": "at_least",
+            "value": 1,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires surveying at least one planet."
+          }
+        ],
         "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "planner_notes": "Natural in the opening exploration loop.",
+        "known_limitations": [
+          "The current save parser does not yet count surveyed planets."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -670,12 +782,55 @@
         "difficulty": "E"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "humanoid",
+          "pre-ftl",
+          "covert-infiltration",
+          "reptilian"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "species_class",
+            "operator": "equals",
+            "value": "Humanoid",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Player founding species must be Humanoid."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "target_species_class",
+            "operator": "equals",
+            "value": "Reptilian",
+            "timing": "discovery",
+            "mutability": "rng_locked",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires finding a pre-FTL reptilian homeworld to infiltrate."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "pre_ftl_infiltration_completed",
+            "operator": "equals",
+            "value": true,
+            "timing": "eventual",
+            "mutability": "event_limited",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires completing covert infiltration and incorporation."
+          }
+        ],
+        "warnings": [
+          "Depends on galaxy generation or manually high Pre-FTL settings."
+        ],
+        "planner_notes": "Start as Humanoid and raise Pre-FTL density to improve odds.",
+        "known_limitations": [
+          "The current save parser can read species class but does not yet identify pre-FTL target species."
+        ],
+        "rule_confidence": "high"
       }
     },
     {
@@ -694,12 +849,43 @@
         "difficulty": "E"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "pacifist",
+          "long-duration",
+          "war-avoidance"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "ethic",
+            "operator": "contains",
+            "value": "ethic_pacifist",
+            "timing": "setup",
+            "mutability": "slow_change",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires a pacifist empire."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "years_at_peace",
+            "operator": "at_least",
+            "value": 200,
+            "timing": "terminal",
+            "mutability": "normal_change",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires 200 consecutive peaceful years; wars reset progress."
+          }
+        ],
+        "warnings": [
+          "Unexpected wars can reset the timer; crises do not count as wars for this achievement."
+        ],
+        "planner_notes": "Zero-empires setup reduces interruption risk.",
+        "known_limitations": [
+          "The current save parser reads ethics but does not yet track continuous peace duration."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -1366,12 +1552,30 @@
         "difficulty": "M"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
+        "tags": [
+          "ascension-perks",
+          "utopia",
+          "traditions"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "ascension_perks_unlocked",
+            "operator": "at_least",
+            "value": 1,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires unlocking any ascension perk."
+          }
+        ],
         "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "planner_notes": "Natural after completing a tradition tree.",
+        "known_limitations": [
+          "The current save parser does not yet count ascension perks."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -1462,12 +1666,44 @@
         "difficulty": "M"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "slavery",
+          "livestock",
+          "xenophobe",
+          "species-management"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "livestock_species_count",
+            "operator": "greater_than",
+            "value": 4,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires more than four different species enslaved as Livestock."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "slavery_type",
+            "operator": "equals",
+            "value": "livestock",
+            "timing": "current",
+            "mutability": "normal_change",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Empire must be able to set species rights to Livestock."
+          }
+        ],
+        "warnings": [
+          "Requires species-rights support for Livestock; empire ethics/civics may block this."
+        ],
+        "planner_notes": "High Pre-FTL and pre-sapient settings help source enough species.",
+        "known_limitations": [
+          "The current save parser does not yet count species rights or livestock species."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -1558,12 +1794,43 @@
         "difficulty": "H"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "primitive-earth",
+          "rng-locked",
+          "sol-system"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "sol_system_era",
+            "operator": "equals",
+            "value": "world_war_ii",
+            "timing": "discovery",
+            "mutability": "rng_locked",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires finding Earth in the correct primitive era."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "invaded_primitive_earth",
+            "operator": "equals",
+            "value": true,
+            "timing": "event_limited",
+            "mutability": "event_limited",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires invading that primitive Earth."
+          }
+        ],
+        "warnings": [
+          "Highly dependent on Sol system generation and era."
+        ],
+        "planner_notes": "Treat as opportunistic unless galaxy setup can bias Sol spawning.",
+        "known_limitations": [
+          "The current save parser does not yet classify primitive Sol era."
+        ],
+        "rule_confidence": "low"
       }
     },
     {
@@ -1774,12 +2041,44 @@
         "difficulty": "VH"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "prethoryn",
+          "crisis",
+          "rng-locked",
+          "relic"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "endgame_crisis",
+            "operator": "equals",
+            "value": "prethoryn",
+            "timing": "discovery",
+            "mutability": "rng_locked",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires the Prethoryn Scourge crisis."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "captured_prethoryn_scourge_queen",
+            "operator": "equals",
+            "value": true,
+            "timing": "event_limited",
+            "mutability": "event_limited",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires capturing the Prethoryn queen event outcome."
+          }
+        ],
+        "warnings": [
+          "Blocked if a different crisis is selected or appears, unless crisis settings force Prethoryn."
+        ],
+        "planner_notes": "Force Prethoryn in galaxy settings if available for a targeted run.",
+        "known_limitations": [
+          "The current save parser does not yet parse crisis state or queen capture flags."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -1966,12 +2265,32 @@
         "difficulty": "E"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "artisan-enclave",
+          "enclave",
+          "mid-game"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "artisan_enclave_patron",
+            "operator": "equals",
+            "value": true,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires becoming patron of the Artisan Troupe."
+          }
+        ],
+        "warnings": [
+          "Requires Artisan Troupe enclave availability."
+        ],
+        "planner_notes": "Scout enclaves early and keep enough resources for patronage.",
+        "known_limitations": [
+          "The current save parser does not yet identify enclave patronage."
+        ],
+        "rule_confidence": "low"
       }
     },
     {
@@ -2830,12 +3149,44 @@
         "difficulty": "M"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "lithoid",
+          "galactic-community",
+          "breach-of-law",
+          "timing-window"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "species_class",
+            "operator": "equals",
+            "value": "Lithoid",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Player founding species must be Lithoid."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "galactic_community_exists",
+            "operator": "equals",
+            "value": true,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "The Galactic Community must exist for the strongly worded letter event path."
+          }
+        ],
+        "warnings": [
+          "Event timing depends on being in breach of galactic law around the decade tick."
+        ],
+        "planner_notes": "Plan during a Lithoid run that can intentionally breach galactic law.",
+        "known_limitations": [
+          "The current save parser reads species class but not Galactic Community law-breach state."
+        ],
+        "rule_confidence": "high"
       }
     },
     {
@@ -2854,12 +3205,55 @@
         "difficulty": "M"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "lithoid",
+          "terravore",
+          "planet-consumption",
+          "war"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "species_class",
+            "operator": "equals",
+            "value": "Lithoid",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Terravore empires are Lithoid."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "civic",
+            "operator": "contains",
+            "value": "civic_hive_devouring_swarm_lithoid",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires Terravore-style planet consumption access."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "target_homeworld_class",
+            "operator": "equals",
+            "value": "pc_desert",
+            "timing": "discovery",
+            "mutability": "rng_locked",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires consuming another empire's desert homeworld."
+          }
+        ],
+        "warnings": [
+          "Needs a suitable desert homeworld target."
+        ],
+        "planner_notes": "Create a Lithoid Terravore and scout for desert homeworld targets.",
+        "known_limitations": [
+          "The current save parser reads civics but does not yet classify target homeworlds."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
@@ -3526,12 +3920,44 @@
         "difficulty": "E"
       },
       "curation": {
-        "tags": [],
-        "conditions": [],
-        "warnings": [],
-        "planner_notes": null,
-        "known_limitations": [],
-        "rule_confidence": null
+        "tags": [
+          "leviathans",
+          "bubbles",
+          "event-limited",
+          "story"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "amoeba_companion_found",
+            "operator": "equals",
+            "value": true,
+            "timing": "discovery",
+            "mutability": "rng_locked",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires finding and adopting the space amoeba companion event outcome."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "amoeba_companion_killed",
+            "operator": "equals",
+            "value": true,
+            "timing": "event_limited",
+            "mutability": "event_limited",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires killing the adopted amoeba companion."
+          }
+        ],
+        "warnings": [
+          "Event availability and the companion outcome are run-specific."
+        ],
+        "planner_notes": "Opportunistic achievement: only plan once the amoeba companion event occurs.",
+        "known_limitations": [
+          "The current save parser does not yet parse Bubbles/amoeba companion flags."
+        ],
+        "rule_confidence": "medium"
       }
     },
     {
