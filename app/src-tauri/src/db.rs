@@ -7,6 +7,7 @@ use crate::{
         import_catalog, initialize_catalog_schema, load_catalog_metadata, parse_catalog_json,
     },
     error::Result,
+    run_state::initialize_run_state_schema,
 };
 
 /// Path to the bundled catalog JSON, embedded at compile time.
@@ -23,7 +24,7 @@ pub fn parse_bundled_catalog() -> Result<crate::model::AchievementCatalog> {
 
 /// Open (or create) the app SQLite database at the given path.
 ///
-/// Initializes the catalog schema on first open.
+/// Initializes app-owned schemas on first open.
 pub fn open_app_db(path: &Path) -> Result<Connection> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -31,6 +32,8 @@ pub fn open_app_db(path: &Path) -> Result<Connection> {
     let conn = Connection::open(path)?;
     conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")?;
     initialize_catalog_schema(&conn)?;
+    initialize_run_state_schema(&conn)?;
+    conn.execute_batch("PRAGMA user_version = 2;")?;
     Ok(conn)
 }
 

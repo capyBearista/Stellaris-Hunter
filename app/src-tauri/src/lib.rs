@@ -7,6 +7,7 @@ pub mod error;
 pub mod install;
 pub mod model;
 pub mod paths;
+pub mod run_state;
 pub mod save;
 pub mod steam;
 
@@ -118,11 +119,14 @@ pub fn run_app() -> tauri::Result<()> {
         })
         .invoke_handler(tauri::generate_handler![
             commands::scan_local_state,
-            commands::load_achievements,
-            commands::load_catalog_info,
-            commands::load_completion_overrides,
-            commands::set_completion_override,
-            commands::clear_completion_override,
+            commands::catalog_commands::load_achievements,
+            commands::catalog_commands::load_catalog_info,
+            commands::catalog_commands::load_completion_overrides,
+            commands::catalog_commands::set_completion_override,
+            commands::catalog_commands::clear_completion_override,
+            commands::catalog_commands::load_runs,
+            commands::catalog_commands::load_run_facts,
+            commands::catalog_commands::rescan_saves,
         ])
         .run(tauri::generate_context!())
 }

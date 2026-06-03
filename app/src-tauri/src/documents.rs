@@ -119,12 +119,7 @@ fn discover_save_runs(root: &Path) -> Result<Vec<SaveRunSummary>> {
 
     let mut runs = Vec::new();
     for (run_folder, mut files) in grouped {
-        files.sort_by_key(|path| {
-            std::fs::metadata(path)
-                .and_then(|meta| meta.modified())
-                .ok()
-        });
-        files.reverse();
+        order_saves_by_preference(&mut files);
         let mut issues = Vec::new();
         let latest_save = files.first().and_then(|path| match save::parse_save(path) {
             Ok(summary) => Some(summary),
@@ -143,6 +138,22 @@ fn discover_save_runs(root: &Path) -> Result<Vec<SaveRunSummary>> {
     }
 
     Ok(runs)
+}
+
+pub(crate) fn order_saves_by_preference(files: &mut Vec<PathBuf>) {
+    files.sort_by_key(|path| {
+        std::fs::metadata(path)
+            .and_then(|meta| meta.modified())
+            .ok()
+    });
+    files.reverse();
+    if let Some(ironman_index) = files
+        .iter()
+        .position(|path| path.file_name().and_then(|name| name.to_str()) == Some("ironman.sav"))
+    {
+        let ironman = files.remove(ironman_index);
+        files.insert(0, ironman);
+    }
 }
 
 fn read_launcher_state(root: &Path) -> Result<Option<LauncherStateSummary>> {

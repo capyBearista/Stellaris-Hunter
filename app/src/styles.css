@@ -212,6 +212,114 @@ button:disabled {
   font-size: 0.85rem;
 }
 
+.panel-subtitle {
+  margin: 0.35rem 0 0;
+}
+
+.runs-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.8fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.run-select-button {
+  width: 100%;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  text-align: left;
+  background: transparent;
+  color: inherit;
+}
+
+.run-select-button[aria-pressed='true'] {
+  outline: 2px solid rgba(124, 92, 255, 0.8);
+  outline-offset: 0.45rem;
+}
+
+.run-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+}
+
+.run-fact-panel {
+  padding: 0.9rem;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  min-width: 0;
+}
+
+.run-fact-panel h3,
+.run-fact-panel h4 {
+  margin: 0 0 0.75rem;
+}
+
+.run-detail-list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+}
+
+.run-detail-list dt {
+  color: #9aa7bd;
+  font-size: 0.85rem;
+}
+
+.run-detail-list dd {
+  margin: 0;
+  word-break: break-word;
+}
+
+.fact-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+}
+
+.fact-list li {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.45rem;
+  list-style: none;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0.45rem;
+}
+
+.fact-key {
+  color: #b4a3ff;
+  font-size: 0.85rem;
+}
+
+.fact-value {
+  word-break: break-word;
+}
+
+.link-button {
+  margin-top: 0.75rem;
+  padding: 0;
+  color: #9db8ff;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: #c7d5ff;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 860px) {
+  .runs-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ----- Catalog info ----- */
 
 .catalog-info {

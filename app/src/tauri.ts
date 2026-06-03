@@ -75,10 +75,49 @@ export interface ScanReport {
   errors?: string[];
 }
 
+// --- Persisted runs/facts ---
+
+export interface PersistedRunSummary {
+  folder_path: string;
+  run_folder: string;
+  display_name: string | null;
+  latest_save_path: string | null;
+  latest_save_file_name: string | null;
+  latest_ingame_date: string | null;
+  game_version: string | null;
+  parse_status: string | null;
+  parse_error: string | null;
+  fact_count: number;
+  updated_at: string;
+}
+
+export interface RunFactSummary {
+  run_folder_path: string;
+  dimension: string;
+  key: string;
+  value: unknown;
+  source: string;
+  confidence: string;
+  updated_from_save_path: string | null;
+  updated_at: string;
+}
+
 // --- IPC wrappers (existing) ---
 
 export function scanLocalState() {
   return invoke<ScanReport>('scan_local_state', {});
+}
+
+export function loadRuns(): Promise<PersistedRunSummary[]> {
+  return invoke<PersistedRunSummary[]>('load_runs', {});
+}
+
+export function loadRunFacts(runFolderPath: string): Promise<RunFactSummary[]> {
+  return invoke<RunFactSummary[]>('load_run_facts', { runFolderPath });
+}
+
+export function rescanSaves(): Promise<PersistedRunSummary[]> {
+  return invoke<PersistedRunSummary[]>('rescan_saves', {});
 }
 
 // --- IPC wrappers (new) ---

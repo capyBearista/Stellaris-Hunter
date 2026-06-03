@@ -8,8 +8,7 @@ pub async fn scan_local_state() -> Result<ScanReport, String> {
 }
 
 #[cfg(feature = "desktop")]
-mod catalog_commands {
-    use rusqlite::Connection;
+pub(crate) mod catalog_commands {
     use tauri::State;
 
     use crate::{
@@ -19,8 +18,15 @@ mod catalog_commands {
             load_completion_overrides as load_completion_overrides_from_db,
             set_completion_override as set_completion_override_in_db,
         },
-        db::AppDbPath,
-        model::{AchievementCatalogEntry, AchievementOverride, CatalogVersionMetadata},
+        db::{open_app_db, AppDbPath},
+        model::{
+            AchievementCatalogEntry, AchievementOverride, CatalogVersionMetadata,
+            PersistedRunSummary, RunFactSummary,
+        },
+        run_state::{
+            load_persisted_runs, load_run_facts as load_run_facts_from_db, persist_scan_report,
+        },
+        scan_all,
     };
 
     #[tauri::command]
@@ -29,7 +35,7 @@ mod catalog_commands {
     ) -> Result<Vec<AchievementCatalogEntry>, String> {
         let path = db_path.0.clone();
         tokio::task::spawn_blocking(move || -> Result<Vec<AchievementCatalogEntry>, String> {
-            let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
             let load = load_catalog_entries_with_issues(&conn)
                 .map_err(|e| format!("load achievements: {e}"))?;
             if !load.issues.is_empty() {
@@ -47,7 +53,7 @@ mod catalog_commands {
     ) -> Result<Option<CatalogVersionMetadata>, String> {
         let path = db_path.0.clone();
         tokio::task::spawn_blocking(move || -> Result<Option<CatalogVersionMetadata>, String> {
-            let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
             load_catalog_metadata(&conn).map_err(|e| format!("load catalog info: {e}"))
         })
         .await
@@ -60,7 +66,7 @@ mod catalog_commands {
     ) -> Result<Vec<AchievementOverride>, String> {
         let path = db_path.0.clone();
         tokio::task::spawn_blocking(move || -> Result<Vec<AchievementOverride>, String> {
-            let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
             load_completion_overrides_from_db(&conn)
                 .map_err(|e| format!("load completion overrides: {e}"))
         })
@@ -76,7 +82,7 @@ mod catalog_commands {
     ) -> Result<(), String> {
         let path = db_path.0.clone();
         tokio::task::spawn_blocking(move || -> Result<(), String> {
-            let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
             set_completion_override_in_db(&conn, &achievement_id, completed)
                 .map_err(|e| format!("set completion override: {e}"))
         })
@@ -91,17 +97,57 @@ mod catalog_commands {
     ) -> Result<(), String> {
         let path = db_path.0.clone();
         tokio::task::spawn_blocking(move || -> Result<(), String> {
-            let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
             clear_completion_override_in_db(&conn, &achievement_id)
                 .map_err(|e| format!("clear completion override: {e}"))
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?
     }
-}
 
-#[cfg(feature = "desktop")]
-pub use catalog_commands::{
-    clear_completion_override, load_achievements, load_catalog_info, load_completion_overrides,
-    set_completion_override,
-};
+    #[tauri::command]
+    pub async fn load_runs(
+        db_path: State<'_, AppDbPath>,
+    ) -> Result<Vec<PersistedRunSummary>, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<Vec<PersistedRunSummary>, String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            load_persisted_runs(&conn).map_err(|e| format!("load runs: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn load_run_facts(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+    ) -> Result<Vec<RunFactSummary>, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<Vec<RunFactSummary>, String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            load_run_facts_from_db(&conn, &run_folder_path)
+                .map_err(|e| format!("load run facts: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn rescan_saves(
+        db_path: State<'_, AppDbPath>,
+    ) -> Result<Vec<PersistedRunSummary>, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<Vec<PersistedRunSummary>, String> {
+            let mut conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            let report = scan_all(None, None);
+            if !report.errors.is_empty() {
+                eprintln!("scan errors before persistence: {:?}", report.errors);
+            }
+            persist_scan_report(&mut conn, &report).map_err(|e| format!("persist scan: {e}"))?;
+            load_persisted_runs(&conn).map_err(|e| format!("load runs: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+}

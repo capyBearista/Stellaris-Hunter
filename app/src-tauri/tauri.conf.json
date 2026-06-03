@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "identifier": "com.stellaris-hunter.scan",
   "build": {
-    "beforeDevCommand": "npm --prefix .. run dev",
-    "beforeBuildCommand": "npm --prefix .. run build",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
   },

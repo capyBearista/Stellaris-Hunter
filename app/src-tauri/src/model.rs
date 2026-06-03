@@ -185,6 +185,33 @@ pub struct SaveRunSummary {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct PersistedRunSummary {
+    pub folder_path: String,
+    pub run_folder: String,
+    pub display_name: Option<String>,
+    pub latest_save_path: Option<String>,
+    pub latest_save_file_name: Option<String>,
+    pub latest_ingame_date: Option<String>,
+    pub game_version: Option<String>,
+    pub parse_status: Option<String>,
+    pub parse_error: Option<String>,
+    pub fact_count: usize,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct RunFactSummary {
+    pub run_folder_path: String,
+    pub dimension: String,
+    pub key: String,
+    pub value: Value,
+    pub source: String,
+    pub confidence: String,
+    pub updated_from_save_path: Option<String>,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct SaveEligibility {
     pub conclusion: EligibilityConclusion,
     pub cheated_on_save: Option<bool>,
