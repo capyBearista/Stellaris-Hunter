@@ -71,7 +71,7 @@ mod tests {
         let catalog = parse_bundled_catalog().expect("bundled catalog should parse");
         assert_eq!(catalog.achievements.len(), 211);
         assert_eq!(catalog.snapshot_kind, "full");
-        assert_eq!(catalog.catalog_version, "1.0.1");
+        assert_eq!(catalog.catalog_version, "1.1.0");
     }
 
     #[test]
