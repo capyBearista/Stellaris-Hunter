@@ -11,13 +11,13 @@ const MAX_META_BYTES: u64 = 1_048_576;
 const MAX_GAMESTATE_BYTES: u64 = 128 * 1_048_576;
 
 #[derive(Debug, Clone)]
-enum ClausewitzValue {
+pub(crate) enum ClausewitzValue {
     Atom(String),
     Block(Vec<ClausewitzNode>),
 }
 
 #[derive(Debug, Clone)]
-enum ClausewitzNode {
+pub(crate) enum ClausewitzNode {
     Pair(String, ClausewitzValue),
     Value(ClausewitzValue),
 }
@@ -83,6 +83,21 @@ pub fn parse_save(path: impl AsRef<Path>) -> Result<SaveSummary> {
                         .or_else(|| direct_value_by_key(country_value, "founder_species"))
                         .or_else(|| direct_value_by_key(country_value, "species"))
                         .and_then(atom_string);
+
+                // Extract discovery, progression, and action facts
+                summary.discovery = Some(crate::extract_discovery::extract_discovery_facts(
+                    &game_root,
+                    country_value,
+                ));
+                summary.progression = Some(crate::extract_progression::extract_progression_facts(
+                    &game_root,
+                    country_value,
+                ));
+                summary.actions = Some(crate::extract_action::extract_action_facts(
+                    &game_root,
+                    country_value,
+                    country_id,
+                ));
             }
         }
     }
@@ -357,4 +372,151 @@ fn dedupe_preserve_order(values: Vec<String>) -> Vec<String> {
         }
     }
     out
+}
+
+// ── Query helpers ──────────────────────────────────────────
+
+/// Navigate a path through the Clausewitz AST using direct child lookups.
+/// Returns None if any segment is missing.
+#[allow(dead_code)]
+pub(crate) fn query_path<'a>(
+    value: &'a ClausewitzValue,
+    path: &[&str],
+) -> Option<&'a ClausewitzValue> {
+    let mut current = value;
+    for segment in path {
+        current = direct_entry(current, segment)?;
+    }
+    Some(current)
+}
+
+/// Count the number of direct entries (Pair or Value nodes) in a block.
+/// Returns 0 if the value is not a Block.
+#[allow(dead_code)]
+pub(crate) fn count_entries(value: &ClausewitzValue) -> usize {
+    match value {
+        ClausewitzValue::Block(nodes) => nodes.len(),
+        ClausewitzValue::Atom(_) => 0,
+    }
+}
+
+/// Parse a numeric value from a Clausewitz atom string.
+/// Handles integers and floats. Returns None if not a valid number.
+#[allow(dead_code)]
+pub(crate) fn parse_f64(value: &ClausewitzValue) -> Option<f64> {
+    match value {
+        ClausewitzValue::Atom(s) => s.parse::<f64>().ok(),
+        _ => None,
+    }
+}
+
+/// Navigate a path and parse the final value as f64.
+#[allow(dead_code)]
+pub(crate) fn query_f64(value: &ClausewitzValue, path: &[&str]) -> Option<f64> {
+    query_path(value, path).and_then(parse_f64)
+}
+
+/// Navigate a path and extract the final value as a string atom.
+#[allow(dead_code)]
+pub(crate) fn query_atom(value: &ClausewitzValue, path: &[&str]) -> Option<String> {
+    query_path(value, path).and_then(atom_string)
+}
+
+/// Navigate a path and extract the final value as a bool.
+#[allow(dead_code)]
+pub(crate) fn query_bool(value: &ClausewitzValue, path: &[&str]) -> Option<bool> {
+    query_path(value, path).and_then(bool_from_value)
+}
+
+/// Count entries at a given path.
+#[allow(dead_code)]
+pub(crate) fn query_count(value: &ClausewitzValue, path: &[&str]) -> Option<usize> {
+    query_path(value, path).map(count_entries)
+}
+
+/// Collect all atoms at a given path.
+#[allow(dead_code)]
+pub(crate) fn query_atoms(value: &ClausewitzValue, path: &[&str]) -> Vec<String> {
+    query_path(value, path)
+        .map(collect_atoms)
+        .unwrap_or_default()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_query_path_simple() {
+        let ast = parse_clausewitz("a = { b = { c = hello } }").unwrap();
+        assert_eq!(
+            query_atom(&ast, &["a", "b", "c"]),
+            Some("hello".to_string())
+        );
+    }
+
+    #[test]
+    fn test_query_path_missing() {
+        let ast = parse_clausewitz("a = { b = hello }").unwrap();
+        assert!(query_path(&ast, &["a", "x"]).is_none());
+    }
+
+    #[test]
+    fn test_count_entries() {
+        let ast = parse_clausewitz("items = { a b c }").unwrap();
+        let items = direct_entry(&ast, "items").unwrap();
+        assert_eq!(count_entries(items), 3);
+    }
+
+    #[test]
+    fn test_parse_f64() {
+        let ast = parse_clausewitz("value = 42.5").unwrap();
+        let v = direct_entry(&ast, "value").unwrap();
+        assert_eq!(parse_f64(v), Some(42.5));
+    }
+
+    #[test]
+    fn test_parse_f64_int() {
+        let ast = parse_clausewitz("value = 42").unwrap();
+        let v = direct_entry(&ast, "value").unwrap();
+        assert_eq!(parse_f64(v), Some(42.0));
+    }
+
+    #[test]
+    fn test_parse_f64_not_a_number() {
+        let ast = parse_clausewitz("value = hello").unwrap();
+        let v = direct_entry(&ast, "value").unwrap();
+        assert_eq!(parse_f64(v), None);
+    }
+
+    #[test]
+    fn test_query_count() {
+        let ast = parse_clausewitz("planets = { 0 = {} 1 = {} 2 = {} }").unwrap();
+        assert_eq!(query_count(&ast, &["planets"]), Some(3));
+    }
+
+    #[test]
+    fn test_query_bool() {
+        let ast = parse_clausewitz("flag = yes").unwrap();
+        assert_eq!(query_bool(&ast, &["flag"]), Some(true));
+    }
+
+    #[test]
+    fn test_query_atoms() {
+        let ast = parse_clausewitz("list = { a b c }").unwrap();
+        assert_eq!(query_atoms(&ast, &["list"]), vec!["a", "b", "c"]);
+    }
+
+    #[test]
+    fn test_query_f64() {
+        let ast = parse_clausewitz("a = { b = 123.45 }").unwrap();
+        assert_eq!(query_f64(&ast, &["a", "b"]), Some(123.45));
+    }
+
+    #[test]
+    fn test_count_entries_on_atom() {
+        let ast = parse_clausewitz("value = hello").unwrap();
+        let v = direct_entry(&ast, "value").unwrap();
+        assert_eq!(count_entries(v), 0);
+    }
 }

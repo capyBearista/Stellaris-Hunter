@@ -201,6 +201,159 @@ pub struct LauncherStateSummary {
     pub issues: Vec<String>,
 }
 
+/// Discovery facts extracted from save (galaxy-gen dependent)
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct DiscoveryFacts {
+    pub endgame_crisis: Option<String>,
+    pub sol_system_era: Option<String>,
+    pub primitive_earth_present: Option<bool>,
+    pub pre_ftl_era_target: Option<String>,
+    pub target_species_class: Option<String>,
+    pub target_homeworld_class: Option<String>,
+    pub precursor_type: Option<String>,
+    pub precursor_chain_completed: Option<String>,
+    pub l_cluster_unlocked: Option<bool>,
+    pub shielded_world_unlocked: Option<bool>,
+    pub ancient_leviathan: Option<String>,
+    pub enclave_type_present: Option<String>,
+    pub great_khan_spawned: Option<bool>,
+}
+
+/// Progression facts extracted from save (numeric thresholds)
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ProgressionFacts {
+    pub owned_planets: Option<usize>,
+    pub colonized_planets: Option<usize>,
+    pub surveyed_planets: Option<usize>,
+    pub total_pops: Option<usize>,
+    pub enslaved_pops_count: Option<usize>,
+    pub robot_pop_ratio: Option<f64>,
+    pub energy_stored: Option<f64>,
+    pub energy_monthly: Option<f64>,
+    pub minerals_monthly: Option<f64>,
+    pub alloys_monthly: Option<f64>,
+    pub trade_value_monthly: Option<f64>,
+    pub strategic_resources_types: Option<usize>,
+    pub organic_empires_remaining: Option<usize>,
+    pub fleet_power: Option<f64>,
+    pub fleet_count: Option<usize>,
+    pub starbase_count: Option<usize>,
+    pub gateway_count: Option<usize>,
+    pub hyper_relay_count: Option<usize>,
+    pub rare_technologies_acquired: Option<usize>,
+    pub traditions_adopted: Option<usize>,
+    pub ascension_perks_unlocked: Option<usize>,
+    pub ascension_path: Option<String>,
+    pub years_played: Option<f64>,
+    pub years_at_peace: Option<f64>,
+    pub diplomatic_weight: Option<f64>,
+    pub intel_level_count: Option<usize>,
+    pub observation_station_count: Option<usize>,
+    pub capital_building_level: Option<usize>,
+    pub living_standard: Option<String>,
+    pub mercenary_enclaves_patroned: Option<usize>,
+    pub vivarium_capacity: Option<usize>,
+    pub megastructure_types: Vec<String>,
+}
+
+/// Action and event facts extracted from save (milestones, one-offs)
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ActionFacts {
+    // War/diplomacy
+    pub active_wars: Option<usize>,
+    pub war_type: Option<String>,
+    pub subjects_acquired: Option<usize>,
+    pub vassal_count: Option<usize>,
+    pub subject_type: Option<String>,
+    pub subject_contract_modified: Option<bool>,
+    pub secret_fealty_pledged: Option<bool>,
+    pub proxy_war_count: Option<usize>,
+
+    // Federation
+    pub federation_formed: Option<bool>,
+    pub federation_type: Option<String>,
+    pub federation_level: Option<usize>,
+    pub federation_member_ethics: Vec<String>,
+
+    // Galactic Community
+    pub galactic_community_exists: Option<bool>,
+    pub galactic_community_founding_member: Option<bool>,
+    pub galactic_custodian: Option<bool>,
+    pub galactic_custodian_action: Option<String>,
+    pub galactic_emperor: Option<bool>,
+    pub galactic_emperor_rebellion: Option<bool>,
+
+    // Megastructures/Colossus
+    pub colossus_built: Option<bool>,
+    pub colossus_weapon_type: Option<String>,
+    pub colossus_destroyed_while_firing: Option<bool>,
+
+    // Species actions
+    pub species_genetically_modified: Option<bool>,
+    pub species_uplifted: Option<bool>,
+    pub species_on_planet_count: Option<usize>,
+    pub species_dna_phenotypes_collected: Option<usize>,
+    pub slavery_type: Option<String>,
+    pub livestock_species_count: Option<usize>,
+    pub purged_pops: Option<usize>,
+    pub species_enslaved: Option<bool>,
+
+    // Relics
+    pub relic_owned: Option<String>,
+    pub relic_active_effect_used: Option<String>,
+    pub galatron_acquired: Option<bool>,
+    pub galatron_captured: Option<bool>,
+
+    // Archaeology/exploration
+    pub archaeological_site_completed: Option<String>,
+    pub wormhole_travel_completed: Option<bool>,
+    pub pre_ftl_infiltration_completed: Option<bool>,
+    pub first_contact_result: Option<String>,
+    pub espionage_operations_completed: Option<usize>,
+    pub astral_rifts_explored: Option<usize>,
+
+    // Crisis/Nemesis
+    pub crisis_defeated: Option<bool>,
+    pub captured_prethoryn_scourge_queen: Option<bool>,
+    pub crisis_path_nemesis: Option<bool>,
+    pub crisis_path_cosmogenesis: Option<bool>,
+    pub crisis_path_hyperthermia: Option<bool>,
+    pub crisis_path_behemoth_fury: Option<bool>,
+    pub machine_uprising_victory: Option<bool>,
+
+    // Enclaves/interactions
+    pub amoeba_companion_found: Option<bool>,
+    pub amoeba_companion_killed: Option<bool>,
+    pub artisan_enclave_patron: Option<bool>,
+    pub enclave_interaction_type: Option<String>,
+    pub migration_treaty_count: Option<usize>,
+    pub legendary_paragon_recruited: Option<bool>,
+
+    // Misc events
+    pub robot_pop_built: Option<bool>,
+    pub horizon_signal_completed: Option<bool>,
+    pub civil_war_completed: Option<bool>,
+    pub special_project_completed_type: Option<String>,
+    pub covenant_type: Option<String>,
+    pub psionic_techs_unlocked: Option<bool>,
+    pub quantum_catapult_used: Option<bool>,
+
+    // Terraforming/decisions
+    pub blazing_scourge_decisions: Option<usize>,
+    pub stars_terraform_to_red_giant: Option<usize>,
+    pub planets_terraform_to_volcanic: Option<usize>,
+    pub volcanic_holy_world_created: Option<bool>,
+    pub galactic_memorials_on_tomb_worlds: Option<usize>,
+    pub space_fauna_type_captured: Option<String>,
+    pub colony_count_with_hyperspace_not_researched: Option<usize>,
+
+    // Legacy
+    pub invaded_primitive_earth: Option<bool>,
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct SaveSummary {
     pub path: PathBuf,
@@ -220,6 +373,9 @@ pub struct SaveSummary {
     pub founder_species_class: Option<String>,
     pub founder_species_portrait: Option<String>,
     pub founder_species_traits: Vec<String>,
+    pub discovery: Option<DiscoveryFacts>,
+    pub progression: Option<ProgressionFacts>,
+    pub actions: Option<ActionFacts>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -302,6 +458,43 @@ pub enum ModChecksumRisk {
     /// does not emit this until enabled mod contents are mapped to checksum
     /// manifest scopes.
     ChecksumScoped,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CatalogSyncResult {
+    pub updated: bool,
+    pub old_version: Option<String>,
+    pub new_version: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SteamSyncResult {
+    pub synced: u32,
+    pub skipped: u32,
+    pub unmatched: u32,
+    pub total_steam_achievements: u32,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppConfig {
+    pub install_path_override: Option<String>,
+    pub documents_path_override: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppInfo {
+    pub app_version: String,
+    pub catalog_version: Option<String>,
+    pub stellaris_version: Option<String>,
+    pub last_catalog_sync: Option<String>,
+    pub last_steam_sync: Option<String>,
+    pub last_save_scan: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

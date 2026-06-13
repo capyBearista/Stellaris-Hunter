@@ -720,6 +720,556 @@ fn facts_from_save(save: &SaveSummary) -> Vec<RunFactInput> {
         "cheated_on_save",
         save.cheated_on_save,
     );
+
+    // Discovery facts (galaxy-gen dependent)
+    if let Some(ref d) = save.discovery {
+        push_option(&mut facts, "discovery", "endgame_crisis", &d.endgame_crisis);
+        push_option(&mut facts, "discovery", "sol_system_era", &d.sol_system_era);
+        push_bool(
+            &mut facts,
+            "discovery",
+            "primitive_earth_present",
+            d.primitive_earth_present,
+        );
+        push_option(
+            &mut facts,
+            "discovery",
+            "pre_ftl_era_target",
+            &d.pre_ftl_era_target,
+        );
+        push_option(
+            &mut facts,
+            "discovery",
+            "target_species_class",
+            &d.target_species_class,
+        );
+        push_option(
+            &mut facts,
+            "discovery",
+            "target_homeworld_class",
+            &d.target_homeworld_class,
+        );
+        push_option(&mut facts, "discovery", "precursor_type", &d.precursor_type);
+        push_option(
+            &mut facts,
+            "discovery",
+            "precursor_chain_completed",
+            &d.precursor_chain_completed,
+        );
+        push_bool(
+            &mut facts,
+            "discovery",
+            "l_cluster_unlocked",
+            d.l_cluster_unlocked,
+        );
+        push_bool(
+            &mut facts,
+            "discovery",
+            "shielded_world_unlocked",
+            d.shielded_world_unlocked,
+        );
+        push_option(
+            &mut facts,
+            "discovery",
+            "ancient_leviathan",
+            &d.ancient_leviathan,
+        );
+        push_option(
+            &mut facts,
+            "discovery",
+            "enclave_type_present",
+            &d.enclave_type_present,
+        );
+        push_bool(
+            &mut facts,
+            "discovery",
+            "great_khan_spawned",
+            d.great_khan_spawned,
+        );
+    }
+
+    // Progression facts (numeric thresholds)
+    if let Some(ref p) = save.progression {
+        push_usize(&mut facts, "progression", "owned_planets", p.owned_planets);
+        push_usize(
+            &mut facts,
+            "progression",
+            "colonized_planets",
+            p.colonized_planets,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "surveyed_planets",
+            p.surveyed_planets,
+        );
+        push_usize(&mut facts, "progression", "total_pops", p.total_pops);
+        push_usize(
+            &mut facts,
+            "progression",
+            "enslaved_pops_count",
+            p.enslaved_pops_count,
+        );
+        push_f64(
+            &mut facts,
+            "progression",
+            "robot_pop_ratio",
+            p.robot_pop_ratio,
+        );
+        push_f64(&mut facts, "progression", "energy_stored", p.energy_stored);
+        push_f64(
+            &mut facts,
+            "progression",
+            "energy_monthly",
+            p.energy_monthly,
+        );
+        push_f64(
+            &mut facts,
+            "progression",
+            "minerals_monthly",
+            p.minerals_monthly,
+        );
+        push_f64(
+            &mut facts,
+            "progression",
+            "alloys_monthly",
+            p.alloys_monthly,
+        );
+        push_f64(
+            &mut facts,
+            "progression",
+            "trade_value_monthly",
+            p.trade_value_monthly,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "strategic_resources_types",
+            p.strategic_resources_types,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "organic_empires_remaining",
+            p.organic_empires_remaining,
+        );
+        push_f64(&mut facts, "progression", "fleet_power", p.fleet_power);
+        push_usize(&mut facts, "progression", "fleet_count", p.fleet_count);
+        push_usize(
+            &mut facts,
+            "progression",
+            "starbase_count",
+            p.starbase_count,
+        );
+        push_usize(&mut facts, "progression", "gateway_count", p.gateway_count);
+        push_usize(
+            &mut facts,
+            "progression",
+            "hyper_relay_count",
+            p.hyper_relay_count,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "rare_technologies_acquired",
+            p.rare_technologies_acquired,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "traditions_adopted",
+            p.traditions_adopted,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "ascension_perks_unlocked",
+            p.ascension_perks_unlocked,
+        );
+        push_option(
+            &mut facts,
+            "progression",
+            "ascension_path",
+            &p.ascension_path,
+        );
+        push_f64(&mut facts, "progression", "years_played", p.years_played);
+        push_f64(
+            &mut facts,
+            "progression",
+            "years_at_peace",
+            p.years_at_peace,
+        );
+        push_f64(
+            &mut facts,
+            "progression",
+            "diplomatic_weight",
+            p.diplomatic_weight,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "intel_level_count",
+            p.intel_level_count,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "observation_station_count",
+            p.observation_station_count,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "capital_building_level",
+            p.capital_building_level,
+        );
+        push_option(
+            &mut facts,
+            "progression",
+            "living_standard",
+            &p.living_standard,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "mercenary_enclaves_patroned",
+            p.mercenary_enclaves_patroned,
+        );
+        push_usize(
+            &mut facts,
+            "progression",
+            "vivarium_capacity",
+            p.vivarium_capacity,
+        );
+        push_vec(
+            &mut facts,
+            "progression",
+            "megastructure_types",
+            &p.megastructure_types,
+        );
+    }
+
+    // Action and event facts
+    if let Some(ref a) = save.actions {
+        push_usize(&mut facts, "action", "active_wars", a.active_wars);
+        push_option(&mut facts, "action", "war_type", &a.war_type);
+        push_usize(
+            &mut facts,
+            "action",
+            "subjects_acquired",
+            a.subjects_acquired,
+        );
+        push_usize(&mut facts, "action", "vassal_count", a.vassal_count);
+        push_option(&mut facts, "action", "subject_type", &a.subject_type);
+        push_bool(
+            &mut facts,
+            "action",
+            "subject_contract_modified",
+            a.subject_contract_modified,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "secret_fealty_pledged",
+            a.secret_fealty_pledged,
+        );
+        push_usize(&mut facts, "action", "proxy_war_count", a.proxy_war_count);
+        push_bool(
+            &mut facts,
+            "action",
+            "federation_formed",
+            a.federation_formed,
+        );
+        push_option(&mut facts, "action", "federation_type", &a.federation_type);
+        push_usize(&mut facts, "action", "federation_level", a.federation_level);
+        push_vec(
+            &mut facts,
+            "action",
+            "federation_member_ethics",
+            &a.federation_member_ethics,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "galactic_community_exists",
+            a.galactic_community_exists,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "galactic_community_founding_member",
+            a.galactic_community_founding_member,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "galactic_custodian",
+            a.galactic_custodian,
+        );
+        push_option(
+            &mut facts,
+            "action",
+            "galactic_custodian_action",
+            &a.galactic_custodian_action,
+        );
+        push_bool(&mut facts, "action", "galactic_emperor", a.galactic_emperor);
+        push_bool(
+            &mut facts,
+            "action",
+            "galactic_emperor_rebellion",
+            a.galactic_emperor_rebellion,
+        );
+        push_bool(&mut facts, "action", "colossus_built", a.colossus_built);
+        push_option(
+            &mut facts,
+            "action",
+            "colossus_weapon_type",
+            &a.colossus_weapon_type,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "colossus_destroyed_while_firing",
+            a.colossus_destroyed_while_firing,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "species_genetically_modified",
+            a.species_genetically_modified,
+        );
+        push_bool(&mut facts, "action", "species_uplifted", a.species_uplifted);
+        push_usize(
+            &mut facts,
+            "action",
+            "species_on_planet_count",
+            a.species_on_planet_count,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "species_dna_phenotypes_collected",
+            a.species_dna_phenotypes_collected,
+        );
+        push_option(&mut facts, "action", "slavery_type", &a.slavery_type);
+        push_usize(
+            &mut facts,
+            "action",
+            "livestock_species_count",
+            a.livestock_species_count,
+        );
+        push_usize(&mut facts, "action", "purged_pops", a.purged_pops);
+        push_bool(&mut facts, "action", "species_enslaved", a.species_enslaved);
+        push_option(&mut facts, "action", "relic_owned", &a.relic_owned);
+        push_option(
+            &mut facts,
+            "action",
+            "relic_active_effect_used",
+            &a.relic_active_effect_used,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "galatron_acquired",
+            a.galatron_acquired,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "galatron_captured",
+            a.galatron_captured,
+        );
+        push_option(
+            &mut facts,
+            "action",
+            "archaeological_site_completed",
+            &a.archaeological_site_completed,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "wormhole_travel_completed",
+            a.wormhole_travel_completed,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "pre_ftl_infiltration_completed",
+            a.pre_ftl_infiltration_completed,
+        );
+        push_option(
+            &mut facts,
+            "action",
+            "first_contact_result",
+            &a.first_contact_result,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "espionage_operations_completed",
+            a.espionage_operations_completed,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "astral_rifts_explored",
+            a.astral_rifts_explored,
+        );
+        push_bool(&mut facts, "action", "crisis_defeated", a.crisis_defeated);
+        push_bool(
+            &mut facts,
+            "action",
+            "captured_prethoryn_scourge_queen",
+            a.captured_prethoryn_scourge_queen,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "crisis_path_nemesis",
+            a.crisis_path_nemesis,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "crisis_path_cosmogenesis",
+            a.crisis_path_cosmogenesis,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "crisis_path_hyperthermia",
+            a.crisis_path_hyperthermia,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "crisis_path_behemoth_fury",
+            a.crisis_path_behemoth_fury,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "machine_uprising_victory",
+            a.machine_uprising_victory,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "amoeba_companion_found",
+            a.amoeba_companion_found,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "amoeba_companion_killed",
+            a.amoeba_companion_killed,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "artisan_enclave_patron",
+            a.artisan_enclave_patron,
+        );
+        push_option(
+            &mut facts,
+            "action",
+            "enclave_interaction_type",
+            &a.enclave_interaction_type,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "migration_treaty_count",
+            a.migration_treaty_count,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "legendary_paragon_recruited",
+            a.legendary_paragon_recruited,
+        );
+        push_bool(&mut facts, "action", "robot_pop_built", a.robot_pop_built);
+        push_bool(
+            &mut facts,
+            "action",
+            "horizon_signal_completed",
+            a.horizon_signal_completed,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "civil_war_completed",
+            a.civil_war_completed,
+        );
+        push_option(
+            &mut facts,
+            "action",
+            "special_project_completed_type",
+            &a.special_project_completed_type,
+        );
+        push_option(&mut facts, "action", "covenant_type", &a.covenant_type);
+        push_bool(
+            &mut facts,
+            "action",
+            "psionic_techs_unlocked",
+            a.psionic_techs_unlocked,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "quantum_catapult_used",
+            a.quantum_catapult_used,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "blazing_scourge_decisions",
+            a.blazing_scourge_decisions,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "stars_terraform_to_red_giant",
+            a.stars_terraform_to_red_giant,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "planets_terraform_to_volcanic",
+            a.planets_terraform_to_volcanic,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "volcanic_holy_world_created",
+            a.volcanic_holy_world_created,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "galactic_memorials_on_tomb_worlds",
+            a.galactic_memorials_on_tomb_worlds,
+        );
+        push_option(
+            &mut facts,
+            "action",
+            "space_fauna_type_captured",
+            &a.space_fauna_type_captured,
+        );
+        push_usize(
+            &mut facts,
+            "action",
+            "colony_count_with_hyperspace_not_researched",
+            a.colony_count_with_hyperspace_not_researched,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "invaded_primitive_earth",
+            a.invaded_primitive_earth,
+        );
+    }
+
     facts
 }
 
@@ -750,6 +1300,28 @@ fn push_bool(facts: &mut Vec<RunFactInput>, dimension: &str, key: &str, value: O
             key: key.to_string(),
             value: Value::Bool(value),
         });
+    }
+}
+
+fn push_usize(facts: &mut Vec<RunFactInput>, dimension: &str, key: &str, value: Option<usize>) {
+    if let Some(value) = value {
+        facts.push(RunFactInput {
+            dimension: dimension.to_string(),
+            key: key.to_string(),
+            value: Value::Number(serde_json::Number::from(value)),
+        });
+    }
+}
+
+fn push_f64(facts: &mut Vec<RunFactInput>, dimension: &str, key: &str, value: Option<f64>) {
+    if let Some(value) = value {
+        if let Some(num) = serde_json::Number::from_f64(value) {
+            facts.push(RunFactInput {
+                dimension: dimension.to_string(),
+                key: key.to_string(),
+                value: Value::Number(num),
+            });
+        }
     }
 }
 

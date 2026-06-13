@@ -39,6 +39,21 @@ fn parses_synthetic_save_zip() {
         summary.founder_species_traits,
         vec!["trait_adaptive", "trait_nomadic"]
     );
+
+    // Verify extraction modules produce non-None results (fixture is minimal
+    // so individual fields will be mostly defaults, but the wiring is live)
+    assert!(
+        summary.discovery.is_some(),
+        "discovery facts should be extracted"
+    );
+    assert!(
+        summary.progression.is_some(),
+        "progression facts should be extracted"
+    );
+    assert!(
+        summary.actions.is_some(),
+        "action facts should be extracted"
+    );
 }
 
 fn write_save_fixture(path: &std::path::Path) {

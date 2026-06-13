@@ -1,4 +1,4 @@
-use crate::{scan_all, ScanReport};
+use crate::{model::SteamSyncResult, scan_all, ScanReport};
 
 #[cfg_attr(feature = "desktop", tauri::command)]
 pub async fn scan_local_state() -> Result<ScanReport, String> {
@@ -19,11 +19,15 @@ pub(crate) mod catalog_commands {
             load_displayed_completion_map,
             set_completion_override as set_completion_override_in_db,
         },
-        db::{open_app_db, AppDbPath},
+        catalog_sync::{self, CatalogSyncResult},
+        db::{
+            load_app_config as load_app_config_from_db, load_app_info as load_app_info_from_db,
+            open_app_db, save_app_config as save_app_config_in_db, AppDbPath,
+        },
         model::{
-            AchievementCatalogEntry, AchievementOverride, CatalogVersionMetadata,
-            PersistedRunSummary, PlannerAchievementEvaluation, RunAchievementNote, RunFactSummary,
-            RunNote,
+            AchievementCatalogEntry, AchievementOverride, AppConfig, AppInfo,
+            CatalogVersionMetadata, PersistedRunSummary, PlannerAchievementEvaluation,
+            RunAchievementNote, RunFactSummary, RunNote,
         },
         rules::evaluate_planner_achievements,
         run_state::{
@@ -38,6 +42,22 @@ pub(crate) mod catalog_commands {
         },
         scan_all,
     };
+
+    #[tauri::command]
+    pub async fn sync_catalog(db_path: State<'_, AppDbPath>) -> Result<CatalogSyncResult, String> {
+        let path = db_path.0.clone();
+        let json_text = catalog_sync::fetch_catalog(catalog_sync::CATALOG_URL)
+            .await
+            .map_err(|e| format!("fetch catalog: {e}"))?;
+
+        tokio::task::spawn_blocking(move || -> Result<CatalogSyncResult, String> {
+            let mut conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            catalog_sync::sync_catalog_from_json(&mut conn, &json_text)
+                .map_err(|e| format!("sync catalog: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
 
     #[tauri::command]
     pub async fn load_achievements(
@@ -378,4 +398,111 @@ pub(crate) mod catalog_commands {
         .await
         .map_err(|e| format!("worker failed: {e}"))?
     }
+
+    #[tauri::command]
+    pub async fn load_app_config(db_path: State<'_, AppDbPath>) -> Result<AppConfig, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<AppConfig, String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            load_app_config_from_db(&conn).map_err(|e| format!("load config: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn save_app_config(
+        db_path: State<'_, AppDbPath>,
+        config: AppConfig,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            save_app_config_in_db(&conn, &config).map_err(|e| format!("save config: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn load_app_info(db_path: State<'_, AppDbPath>) -> Result<AppInfo, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<AppInfo, String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            load_app_info_from_db(&conn).map_err(|e| format!("load app info: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn get_achievement_icon(
+        db_path: State<'_, AppDbPath>,
+        achievement_id: String,
+    ) -> Result<Option<Vec<u8>>, String> {
+        let app_data_dir = db_path.0.parent().ok_or("invalid db path")?.to_path_buf();
+        tokio::task::spawn_blocking(move || -> Result<Option<Vec<u8>>, String> {
+            let cache = crate::icons::IconCache::new(&app_data_dir);
+            cache
+                .read(&achievement_id)
+                .map_err(|e| format!("read icon: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn sync_icons(
+        db_path: State<'_, AppDbPath>,
+    ) -> Result<crate::icons::IconSyncResult, String> {
+        let app_data_dir = db_path.0.parent().ok_or("invalid db path")?.to_path_buf();
+        let db_file = db_path.0.clone();
+
+        tokio::task::spawn_blocking(move || -> Result<crate::icons::IconSyncResult, String> {
+            let cache = crate::icons::IconCache::new(&app_data_dir);
+            cache.ensure_dir().map_err(|e| format!("create cache dir: {e}"))?;
+
+            // Load achievement IDs and steam_api_names from DB
+            let conn = open_app_db(&db_file).map_err(|e| format!("open db: {e}"))?;
+            let mut stmt = conn
+                .prepare(
+                    "SELECT id, steam_api_name FROM achievements WHERE steam_api_name IS NOT NULL AND deprecated = 0",
+                )
+                .map_err(|e| format!("prepare: {e}"))?;
+            let names: Vec<(String, String)> = stmt
+                .query_map([], |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+                })
+                .map_err(|e| format!("query: {e}"))?
+                .filter_map(|r| r.ok())
+                .collect();
+
+            crate::icons::sync_icons_from_steam(&cache, &names)
+                .map_err(|e| format!("sync icons: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+}
+
+#[cfg(all(target_os = "windows", feature = "steam"))]
+#[cfg_attr(feature = "desktop", tauri::command)]
+pub async fn sync_steam_achievements(
+    db_path: tauri::State<'_, crate::db::AppDbPath>,
+) -> Result<SteamSyncResult, String> {
+    let path = db_path.0.clone();
+    tokio::task::spawn_blocking(move || -> Result<SteamSyncResult, String> {
+        let conn = crate::db::open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+        let achievements = crate::steam::sync::read_steam_achievements()
+            .map_err(|e| format!("steam read: {e}"))?;
+        crate::steam::sync::sync_to_db(&conn, &achievements).map_err(|e| format!("db sync: {e}"))
+    })
+    .await
+    .map_err(|e| format!("worker failed: {e}"))?
+}
+
+#[cfg(not(all(target_os = "windows", feature = "steam")))]
+#[cfg_attr(feature = "desktop", tauri::command)]
+pub async fn sync_steam_achievements() -> Result<SteamSyncResult, String> {
+    Err("Steam sync requires Windows with Steam client running".to_string())
 }

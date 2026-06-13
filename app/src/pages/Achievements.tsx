@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   loadAchievements,
@@ -6,10 +6,18 @@ import {
   loadCompletionOverrides,
   setCompletionOverride,
   clearCompletionOverride,
+  syncCatalog,
+  syncSteamAchievements,
+  getAchievementIcon,
+  syncIcons,
   type AchievementEntry,
   type AchievementOverride,
   type CatalogInfo,
+  type CatalogSyncResult,
+  type IconSyncResult,
+  type SteamSyncResult,
 } from '../tauri';
+import { IconPlaceholder } from '../components/IconPlaceholder';
 
 const DIFFICULTIES = ['All', 'VE', 'E', 'M', 'H', 'VH', 'I', 'UC'] as const;
 type SortKey = 'name' | 'group' | 'difficulty' | 'version';
@@ -22,6 +30,130 @@ export function Achievements() {
   const [error, setError] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [overrideError, setOverrideError] = useState<string | null>(null);
+
+  // Sync catalog
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
+  // Steam sync
+  const [steamSyncing, setSteamSyncing] = useState(false);
+  const [steamSyncMessage, setSteamSyncMessage] = useState<string | null>(null);
+  const [steamSyncError, setSteamSyncError] = useState<string | null>(null);
+
+  // Icon sync
+  const [iconSyncing, setIconSyncing] = useState(false);
+  const [iconSyncMessage, setIconSyncMessage] = useState<string | null>(null);
+  const [iconSyncError, setIconSyncError] = useState<string | null>(null);
+  const [iconVersion, setIconVersion] = useState(0);
+
+  // Track icon blob URLs per achievement ID for cleanup
+  const iconUrlsRef = useRef<Map<string, string>>(new Map());
+  const pendingIconsRef = useRef<Map<string, boolean>>(new Map());
+
+  // Load an achievement icon and return a blob URL.
+  // Uses iconVersion to refetch after sync.
+  const useIconUrl = (achievementId: string): string | null => {
+    const [url, setUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+      // Avoid re-fetching for in-flight or cached (via pending) requests
+      if (pendingIconsRef.current.get(achievementId)) {
+        return;
+      }
+      pendingIconsRef.current.set(achievementId, true);
+      let cancelled = false;
+
+      getAchievementIcon(achievementId).then((bytes) => {
+        pendingIconsRef.current.delete(achievementId);
+        if (cancelled || !bytes) return;
+        const blob = new Blob([new Uint8Array(bytes)], { type: 'image/png' });
+        const blobUrl = URL.createObjectURL(blob);
+        if (!cancelled) {
+          setUrl(blobUrl);
+        } else {
+          URL.revokeObjectURL(blobUrl);
+        }
+      });
+
+      return () => {
+        cancelled = true;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [achievementId, iconVersion]);
+
+    return url;
+  };
+
+  const handleSyncSteam = async () => {
+    setSteamSyncing(true);
+    setSteamSyncMessage(null);
+    setSteamSyncError(null);
+    try {
+      const result: SteamSyncResult = await syncSteamAchievements();
+      setSteamSyncMessage(result.message);
+      // Reload achievements after successful sync
+      const [ach, cat, ovr] = await Promise.all([
+        loadAchievements(),
+        loadCatalogInfo(),
+        loadCompletionOverrides(),
+      ]);
+      setAchievements(ach);
+      setCatalogInfo(cat);
+      setOverrides(toOverrideRecord(ovr));
+    } catch (unknownError) {
+      setSteamSyncError(
+        unknownError instanceof Error ? unknownError.message : String(unknownError),
+      );
+    } finally {
+      setSteamSyncing(false);
+    }
+  };
+
+  const handleSyncIcons = async () => {
+    setIconSyncing(true);
+    setIconSyncMessage(null);
+    setIconSyncError(null);
+    try {
+      const result: IconSyncResult = await syncIcons();
+      setIconSyncMessage(result.message);
+      // Force re-render of icon hooks by toggling a counter
+      setIconVersion((v) => v + 1);
+    } catch (unknownError) {
+      setIconSyncError(
+        unknownError instanceof Error ? unknownError.message : String(unknownError),
+      );
+    } finally {
+      setIconSyncing(false);
+    }
+  };
+
+  const handleSyncCatalog = async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+    setSyncError(null);
+    try {
+      const result: CatalogSyncResult = await syncCatalog();
+      setSyncMessage(result.message);
+      if (result.updated) {
+        // Reload achievements after successful sync
+        const [ach, cat, ovr] = await Promise.all([
+          loadAchievements(),
+          loadCatalogInfo(),
+          loadCompletionOverrides(),
+        ]);
+        setAchievements(ach);
+        setCatalogInfo(cat);
+        setOverrides(toOverrideRecord(ovr));
+      }
+    } catch (unknownError) {
+      setSyncError(
+        unknownError instanceof Error ? unknownError.message : String(unknownError),
+      );
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Filters
   const [search, setSearch] = useState('');
@@ -181,10 +313,41 @@ export function Achievements() {
       </div>
 
       {catalogInfo ? (
-        <p className="catalog-info muted">
-          Catalog v{catalogInfo.catalog_version}
-          {catalogInfo.stellaris_version ? ` · Stellaris ${catalogInfo.stellaris_version}` : ''}
-          {catalogInfo.updated_at ? ` · Updated ${catalogInfo.updated_at}` : ''}
+        <div className="catalog-info-row">
+          <p className="catalog-info muted">
+            Catalog v{catalogInfo.catalog_version}
+            {catalogInfo.stellaris_version ? ` · Stellaris ${catalogInfo.stellaris_version}` : ''}
+            {catalogInfo.updated_at ? ` · Updated ${catalogInfo.updated_at}` : ''}
+          </p>
+          <div className="sync-btn-group">
+            <button className="sync-btn" onClick={handleSyncCatalog} disabled={syncing}>
+              {syncing ? 'Syncing…' : 'Sync Catalog'}
+            </button>
+            <button className="sync-btn" onClick={handleSyncSteam} disabled={steamSyncing}>
+              {steamSyncing ? 'Syncing…' : 'Sync Steam'}
+            </button>
+            <button className="sync-btn" onClick={handleSyncIcons} disabled={iconSyncing}>
+              {iconSyncing ? 'Syncing…' : 'Sync Icons'}
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {syncMessage ? <p className="sync-message">{syncMessage}</p> : null}
+      {syncError ? (
+        <p role="alert" className="error" style={{ margin: '0.5rem 0' }}>
+          Sync error: {syncError}
+        </p>
+      ) : null}
+      {steamSyncMessage ? <p className="sync-message">{steamSyncMessage}</p> : null}
+      {steamSyncError ? (
+        <p role="alert" className="error" style={{ margin: '0.5rem 0' }}>
+          Steam sync error: {steamSyncError}
+        </p>
+      ) : null}
+      {iconSyncMessage ? <p className="sync-message">{iconSyncMessage}</p> : null}
+      {iconSyncError ? (
+        <p role="alert" className="error" style={{ margin: '0.5rem 0' }}>
+          Icon sync error: {iconSyncError}
         </p>
       ) : null}
 
@@ -232,6 +395,7 @@ export function Achievements() {
         <table className="achievement-table">
           <thead>
             <tr>
+              <th style={{ width: 40 }}>Icon</th>
               <th onClick={() => handleSort('name')} className="sortable">
                 Name{sortArrow('name')}
               </th>
@@ -257,6 +421,7 @@ export function Achievements() {
                 diffClass={diffClass}
                 completed={overrides[ach.id] ?? false}
                 onCompletionToggle={() => handleCompletionToggle(ach.id, overrides[ach.id] ?? false)}
+                iconUrl={useIconUrl(ach.id)}
               />
             ))}
           </tbody>
@@ -277,6 +442,7 @@ interface AchievementRowProps {
   diffClass: (d: string | null) => string;
   completed: boolean;
   onCompletionToggle: () => void;
+  iconUrl: string | null;
 }
 
 function toOverrideRecord(overrides: AchievementOverride[]): Record<string, boolean> {
@@ -296,6 +462,7 @@ function AchievementRow({
   diffClass,
   completed,
   onCompletionToggle,
+  iconUrl,
 }: AchievementRowProps) {
   return (
     <>
@@ -311,6 +478,13 @@ function AchievementRow({
           }
         }}
       >
+        <td style={{ width: 40 }}>
+          {iconUrl ? (
+            <img src={iconUrl} alt="" width={32} height={32} style={{ borderRadius: 4 }} />
+          ) : (
+            <IconPlaceholder />
+          )}
+        </td>
         <td>{ach.source.name}</td>
         <td>{ach.source.group ?? '—'}</td>
         <td>
@@ -332,7 +506,7 @@ function AchievementRow({
       </tr>
       {expanded ? (
         <tr className="achievement-detail-row">
-          <td colSpan={5}>
+          <td colSpan={6}>
             <div className="achievement-detail">
               {ach.source.description ? (
                 <p>

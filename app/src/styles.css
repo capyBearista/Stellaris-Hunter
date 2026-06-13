@@ -77,6 +77,9 @@ button:disabled {
 }
 
 .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.6rem 1.25rem;
   color: #9aa7bd;
   text-decoration: none;

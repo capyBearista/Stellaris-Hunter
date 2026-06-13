@@ -1,9 +1,14 @@
 pub mod catalog;
+pub mod catalog_sync;
 pub mod commands;
 pub mod db;
 pub mod documents;
 pub mod eligibility;
 pub mod error;
+pub mod extract_action;
+pub mod extract_discovery;
+pub mod extract_progression;
+pub mod icons;
 pub mod install;
 pub mod model;
 pub mod paths;
@@ -139,6 +144,13 @@ pub fn run_app() -> tauri::Result<()> {
             commands::catalog_commands::load_run_achievement_notes,
             commands::catalog_commands::set_run_achievement_note,
             commands::catalog_commands::clear_run_achievement_note,
+            commands::catalog_commands::sync_catalog,
+            commands::catalog_commands::get_achievement_icon,
+            commands::catalog_commands::sync_icons,
+            commands::catalog_commands::load_app_config,
+            commands::catalog_commands::save_app_config,
+            commands::catalog_commands::load_app_info,
+            commands::sync_steam_achievements,
         ])
         .run(tauri::generate_context!())
 }

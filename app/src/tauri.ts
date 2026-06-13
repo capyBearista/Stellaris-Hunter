@@ -266,6 +266,19 @@ export function clearRunAchievementNote(
   return invoke<void>('clear_run_achievement_note', { runFolderPath, achievementId });
 }
 
+// --- Catalog sync types & wrappers ---
+
+export interface CatalogSyncResult {
+  updated: boolean;
+  oldVersion: string | null;
+  newVersion: string;
+  message: string;
+}
+
+export function syncCatalog(): Promise<CatalogSyncResult> {
+  return invoke<CatalogSyncResult>('sync_catalog', {});
+}
+
 // --- IPC wrappers (new) ---
 
 export function loadAchievements(): Promise<AchievementEntry[]> {
@@ -293,4 +306,62 @@ export function setCompletionOverride(achievementId: string, completed: boolean)
 
 export function clearCompletionOverride(achievementId: string): Promise<void> {
   return invoke<void>('clear_completion_override', { achievementId });
+}
+
+// --- Steam sync types & wrappers ---
+
+export interface SteamSyncResult {
+  synced: number;
+  unmatched: number;
+  totalSteamAchievements: number;
+  message: string;
+}
+
+export function syncSteamAchievements(): Promise<SteamSyncResult> {
+  return invoke<SteamSyncResult>('sync_steam_achievements', {});
+}
+
+// --- Icon types & wrappers ---
+
+export interface IconSyncResult {
+  synced: number;
+  failed: number;
+  total: number;
+  message: string;
+}
+
+export async function getAchievementIcon(achievementId: string): Promise<number[] | null> {
+  return invoke<number[] | null>('get_achievement_icon', { achievementId });
+}
+
+export async function syncIcons(): Promise<IconSyncResult> {
+  return invoke<IconSyncResult>('sync_icons');
+}
+
+// --- App Config types & wrappers ---
+
+export interface AppConfig {
+  installPathOverride: string | null;
+  documentsPathOverride: string | null;
+}
+
+export interface AppInfo {
+  appVersion: string;
+  catalogVersion: string | null;
+  stellarisVersion: string | null;
+  lastCatalogSync: string | null;
+  lastSteamSync: string | null;
+  lastSaveScan: string | null;
+}
+
+export async function loadAppConfig(): Promise<AppConfig> {
+  return invoke<AppConfig>('load_app_config');
+}
+
+export async function saveAppConfig(config: AppConfig): Promise<void> {
+  return invoke<void>('save_app_config', { config });
+}
+
+export async function loadAppInfo(): Promise<AppInfo> {
+  return invoke<AppInfo>('load_app_info');
 }
