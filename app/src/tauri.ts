@@ -112,6 +112,35 @@ export interface RunFactSummary {
   confidence: string;
   updated_from_save_path: string | null;
   updated_at: string;
+  is_override: boolean;
+}
+
+// --- Fact override types ---
+
+export interface FactOverride {
+  run_folder_path: string;
+  dimension: string;
+  key: string;
+  value: unknown;
+  reason: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Notes types ---
+
+export interface RunNote {
+  run_folder_path: string;
+  note_text: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RunAchievementNote {
+  run_folder_path: string;
+  achievement_id: string;
+  notes: string;
+  updated_at: string;
 }
 
 // --- Planner/evaluation types ---
@@ -166,6 +195,30 @@ export function rescanSaves(): Promise<PersistedRunSummary[]> {
   return invoke<PersistedRunSummary[]>('rescan_saves', {});
 }
 
+// --- Fact override wrappers ---
+
+export function loadFactOverrides(runFolderPath: string): Promise<FactOverride[]> {
+  return invoke<FactOverride[]>('load_fact_overrides', { runFolderPath });
+}
+
+export function setFactOverride(
+  runFolderPath: string,
+  dimension: string,
+  key: string,
+  valueJson: string,
+  reason: string | null,
+): Promise<void> {
+  return invoke<void>('set_fact_override', { runFolderPath, dimension, key, valueJson, reason });
+}
+
+export function clearFactOverride(
+  runFolderPath: string,
+  dimension: string,
+  key: string,
+): Promise<void> {
+  return invoke<void>('clear_fact_override', { runFolderPath, dimension, key });
+}
+
 export function loadPlannerEvaluations(
   runFolderPath: string,
 ): Promise<PlannerAchievementEvaluation[]> {
@@ -178,6 +231,39 @@ export function setRunAchievementStatus(
   userStatus: 'planned' | 'ignored' | null,
 ): Promise<void> {
   return invoke<void>('set_run_achievement_status', { runFolderPath, achievementId, userStatus });
+}
+
+// --- Notes wrappers ---
+
+export function loadRunNotes(runFolderPath: string): Promise<RunNote | null> {
+  return invoke<RunNote | null>('load_run_notes', { runFolderPath });
+}
+
+export function setRunNote(runFolderPath: string, noteText: string): Promise<void> {
+  return invoke<void>('set_run_note', { runFolderPath, noteText });
+}
+
+export function clearRunNote(runFolderPath: string): Promise<void> {
+  return invoke<void>('clear_run_note', { runFolderPath });
+}
+
+export function loadRunAchievementNotes(runFolderPath: string): Promise<RunAchievementNote[]> {
+  return invoke<RunAchievementNote[]>('load_run_achievement_notes', { runFolderPath });
+}
+
+export function setRunAchievementNote(
+  runFolderPath: string,
+  achievementId: string,
+  notes: string,
+): Promise<void> {
+  return invoke<void>('set_run_achievement_note', { runFolderPath, achievementId, notes });
+}
+
+export function clearRunAchievementNote(
+  runFolderPath: string,
+  achievementId: string,
+): Promise<void> {
+  return invoke<void>('clear_run_achievement_note', { runFolderPath, achievementId });
 }
 
 // --- IPC wrappers (new) ---

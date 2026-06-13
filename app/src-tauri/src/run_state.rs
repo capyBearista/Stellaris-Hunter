@@ -11,7 +11,8 @@ use crate::{
     documents::order_saves_by_preference,
     error::Result,
     model::{
-        PersistedRunSummary, RunAchievementUserStatus, RunFactSummary, SaveRunSummary, SaveSummary,
+        FactOverride, PersistedRunSummary, RunAchievementNote, RunAchievementUserStatus,
+        RunFactSummary, RunNote, SaveRunSummary, SaveSummary,
     },
     ScanReport,
 };
@@ -74,6 +75,14 @@ pub fn initialize_run_state_schema(conn: &Connection) -> Result<()> {
           created_at TEXT NOT NULL DEFAULT (datetime('now')),
           updated_at TEXT NOT NULL DEFAULT (datetime('now')),
           PRIMARY KEY (run_folder_path, dimension, key),
+          FOREIGN KEY (run_folder_path) REFERENCES runs(folder_path)
+        );
+
+        CREATE TABLE IF NOT EXISTS run_notes (
+          run_folder_path TEXT PRIMARY KEY,
+          note_text TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
           FOREIGN KEY (run_folder_path) REFERENCES runs(folder_path)
         );
 
@@ -157,32 +166,100 @@ pub fn load_persisted_runs(conn: &Connection) -> Result<Vec<PersistedRunSummary>
 
 pub fn load_run_facts(conn: &Connection, run_folder_path: &str) -> Result<Vec<RunFactSummary>> {
     let normalized_run_path = normalize_path(Path::new(run_folder_path));
+
+    // Load parsed facts with override flag
     let mut stmt = conn.prepare(
         r#"
-        SELECT run_folder_path, dimension, key, value_json, source, confidence,
-               updated_from_save_path, updated_at
-        FROM run_facts
+        SELECT rf.run_folder_path, rf.dimension, rf.key, rf.value_json, rf.source, rf.confidence,
+               rf.updated_from_save_path, rf.updated_at,
+               CASE WHEN fo.run_folder_path IS NOT NULL THEN 1 ELSE 0 END AS is_override,
+               fo.value_json AS override_value_json
+        FROM run_facts rf
+        LEFT JOIN fact_overrides fo
+            ON fo.run_folder_path = rf.run_folder_path
+            AND fo.dimension = rf.dimension
+            AND fo.key = rf.key
+        WHERE rf.run_folder_path = ?1
+        ORDER BY rf.dimension COLLATE NOCASE ASC, rf.key COLLATE NOCASE ASC
+        "#,
+    )?;
+
+    let mut rows = stmt.query([normalized_run_path.clone()])?;
+    let mut facts = Vec::new();
+    let mut seen_keys = std::collections::HashSet::new();
+
+    while let Some(row) = rows.next()? {
+        let dimension: String = row.get(1)?;
+        let key: String = row.get(2)?;
+        let is_override: bool = row.get::<_, i32>(8)? != 0;
+
+        // Use override value if present, otherwise parsed value
+        let value_json: String = if is_override {
+            row.get::<_, String>(9)?
+        } else {
+            row.get(3)?
+        };
+        let value = serde_json::from_str(&value_json)?;
+
+        facts.push(RunFactSummary {
+            run_folder_path: row.get(0)?,
+            dimension: dimension.clone(),
+            key: key.clone(),
+            value,
+            source: if is_override {
+                "user_override".to_string()
+            } else {
+                row.get(4)?
+            },
+            confidence: if is_override {
+                "high".to_string()
+            } else {
+                row.get(5)?
+            },
+            updated_from_save_path: row.get(6)?,
+            updated_at: row.get(7)?,
+            is_override,
+        });
+        seen_keys.insert((dimension, key));
+    }
+    drop(rows);
+    drop(stmt);
+
+    // Synthesize rows for overrides that have no parsed fact
+    let mut override_stmt = conn.prepare(
+        r#"
+        SELECT run_folder_path, dimension, key, value_json, created_at, updated_at
+        FROM fact_overrides
         WHERE run_folder_path = ?1
         ORDER BY dimension COLLATE NOCASE ASC, key COLLATE NOCASE ASC
         "#,
     )?;
 
-    let mut rows = stmt.query([normalized_run_path])?;
-    let mut facts = Vec::new();
-    while let Some(row) = rows.next()? {
-        let value_json: String = row.get(3)?;
-        let value = serde_json::from_str(&value_json)?;
-        facts.push(RunFactSummary {
-            run_folder_path: row.get(0)?,
-            dimension: row.get(1)?,
-            key: row.get(2)?,
-            value,
-            source: row.get(4)?,
-            confidence: row.get(5)?,
-            updated_from_save_path: row.get(6)?,
-            updated_at: row.get(7)?,
-        });
+    let mut override_rows = override_stmt.query([normalized_run_path])?;
+    while let Some(row) = override_rows.next()? {
+        let dimension: String = row.get(1)?;
+        let key: String = row.get(2)?;
+
+        if !seen_keys.contains(&(dimension.clone(), key.clone())) {
+            let value_json: String = row.get(3)?;
+            let value = serde_json::from_str(&value_json)?;
+
+            facts.push(RunFactSummary {
+                run_folder_path: row.get(0)?,
+                dimension,
+                key,
+                value,
+                source: "user_override".to_string(),
+                confidence: "high".to_string(),
+                updated_from_save_path: None,
+                updated_at: row.get(5)?,
+                is_override: true,
+            });
+        }
     }
+
+    // Re-sort after adding synthesized rows
+    facts.sort_by(|a, b| a.dimension.cmp(&b.dimension).then(a.key.cmp(&b.key)));
 
     Ok(facts)
 }
@@ -194,7 +271,7 @@ pub fn load_run_achievement_statuses(
     let normalized_run_path = normalize_path(Path::new(run_folder_path));
     let mut stmt = conn.prepare(
         r#"
-        SELECT run_folder_path, achievement_id, user_status, updated_at
+        SELECT run_folder_path, achievement_id, user_status, notes, updated_at
         FROM run_achievement_status
         WHERE run_folder_path = ?1
         ORDER BY achievement_id COLLATE NOCASE ASC
@@ -206,7 +283,8 @@ pub fn load_run_achievement_statuses(
             run_folder_path: row.get(0)?,
             achievement_id: row.get(1)?,
             user_status: row.get(2)?,
-            updated_at: row.get(3)?,
+            notes: row.get(3)?,
+            updated_at: row.get(4)?,
         })
     })?;
 
@@ -239,6 +317,199 @@ pub fn set_run_achievement_status(
             params![normalized_run_path, achievement_id],
         )?;
     }
+    Ok(())
+}
+
+pub fn load_run_notes(conn: &Connection, run_folder_path: &str) -> Result<Option<RunNote>> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT run_folder_path, note_text, created_at, updated_at
+        FROM run_notes
+        WHERE run_folder_path = ?1
+        "#,
+    )?;
+
+    let mut rows = stmt.query([normalized_run_path])?;
+    match rows.next()? {
+        Some(row) => Ok(Some(RunNote {
+            run_folder_path: row.get(0)?,
+            note_text: row.get(1)?,
+            created_at: row.get(2)?,
+            updated_at: row.get(3)?,
+        })),
+        None => Ok(None),
+    }
+}
+
+pub fn set_run_note(conn: &Connection, run_folder_path: &str, note_text: &str) -> Result<()> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    conn.execute(
+        r#"
+        INSERT INTO run_notes (run_folder_path, note_text, created_at, updated_at)
+        VALUES (?1, ?2, datetime('now'), datetime('now'))
+        ON CONFLICT(run_folder_path) DO UPDATE SET
+            note_text = excluded.note_text,
+            updated_at = datetime('now')
+        "#,
+        params![normalized_run_path, note_text],
+    )?;
+    Ok(())
+}
+
+pub fn clear_run_note(conn: &Connection, run_folder_path: &str) -> Result<()> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    conn.execute(
+        "DELETE FROM run_notes WHERE run_folder_path = ?1",
+        [normalized_run_path],
+    )?;
+    Ok(())
+}
+
+pub fn load_run_achievement_notes(
+    conn: &Connection,
+    run_folder_path: &str,
+) -> Result<Vec<RunAchievementNote>> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT run_folder_path, achievement_id, notes, updated_at
+        FROM run_achievement_status
+        WHERE run_folder_path = ?1 AND notes IS NOT NULL AND notes != ''
+        ORDER BY achievement_id COLLATE NOCASE ASC
+        "#,
+    )?;
+
+    let rows = stmt.query_map([normalized_run_path], |row| {
+        Ok(RunAchievementNote {
+            run_folder_path: row.get(0)?,
+            achievement_id: row.get(1)?,
+            notes: row.get(2)?,
+            updated_at: row.get(3)?,
+        })
+    })?;
+
+    rows.collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(Into::into)
+}
+
+pub fn set_run_achievement_note(
+    conn: &Connection,
+    run_folder_path: &str,
+    achievement_id: &str,
+    notes: &str,
+) -> Result<()> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    // Try UPDATE first — preserves user_status
+    let updated = conn.execute(
+        r#"
+        UPDATE run_achievement_status
+        SET notes = ?3, updated_at = datetime('now')
+        WHERE run_folder_path = ?1 AND achievement_id = ?2
+        "#,
+        params![normalized_run_path, achievement_id, notes],
+    )?;
+    if updated == 0 {
+        // No existing row — INSERT with default user_status
+        conn.execute(
+            r#"
+            INSERT INTO run_achievement_status (
+                run_folder_path, achievement_id, user_status, notes, updated_at
+            ) VALUES (?1, ?2, 'planned', ?3, datetime('now'))
+            "#,
+            params![normalized_run_path, achievement_id, notes],
+        )?;
+    }
+    Ok(())
+}
+
+pub fn clear_run_achievement_note(
+    conn: &Connection,
+    run_folder_path: &str,
+    achievement_id: &str,
+) -> Result<()> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    conn.execute(
+        r#"
+        UPDATE run_achievement_status
+        SET notes = NULL, updated_at = datetime('now')
+        WHERE run_folder_path = ?1 AND achievement_id = ?2
+        "#,
+        params![normalized_run_path, achievement_id],
+    )?;
+    Ok(())
+}
+
+pub fn load_fact_overrides(conn: &Connection, run_folder_path: &str) -> Result<Vec<FactOverride>> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT run_folder_path, dimension, key, value_json, reason, created_at, updated_at
+        FROM fact_overrides
+        WHERE run_folder_path = ?1
+        ORDER BY dimension COLLATE NOCASE ASC, key COLLATE NOCASE ASC
+        "#,
+    )?;
+
+    let rows = stmt.query_map([normalized_run_path], |row| {
+        let value_json: String = row.get(3)?;
+        let value: Value = serde_json::from_str(&value_json).unwrap_or(Value::String(value_json));
+        Ok(FactOverride {
+            run_folder_path: row.get(0)?,
+            dimension: row.get(1)?,
+            key: row.get(2)?,
+            value,
+            reason: row.get(4)?,
+            created_at: row.get(5)?,
+            updated_at: row.get(6)?,
+        })
+    })?;
+
+    rows.collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(Into::into)
+}
+
+pub fn set_fact_override(
+    conn: &Connection,
+    run_folder_path: &str,
+    dimension: &str,
+    key: &str,
+    value: &Value,
+    reason: Option<&str>,
+) -> Result<()> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    conn.execute(
+        r#"
+        INSERT INTO fact_overrides (
+            run_folder_path, dimension, key, value_json, reason, created_at, updated_at
+        ) VALUES (?1, ?2, ?3, ?4, ?5, datetime('now'), datetime('now'))
+        ON CONFLICT(run_folder_path, dimension, key) DO UPDATE SET
+            value_json = excluded.value_json,
+            reason = excluded.reason,
+            updated_at = datetime('now')
+        "#,
+        params![
+            normalized_run_path,
+            dimension,
+            key,
+            serde_json::to_string(value)?,
+            reason,
+        ],
+    )?;
+    Ok(())
+}
+
+pub fn clear_fact_override(
+    conn: &Connection,
+    run_folder_path: &str,
+    dimension: &str,
+    key: &str,
+) -> Result<()> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    conn.execute(
+        "DELETE FROM fact_overrides WHERE run_folder_path = ?1 AND dimension = ?2 AND key = ?3",
+        params![normalized_run_path, dimension, key],
+    )?;
     Ok(())
 }
 

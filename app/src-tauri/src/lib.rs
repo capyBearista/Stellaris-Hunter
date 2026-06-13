@@ -130,6 +130,15 @@ pub fn run_app() -> tauri::Result<()> {
             commands::catalog_commands::rescan_saves,
             commands::catalog_commands::load_planner_evaluations,
             commands::catalog_commands::set_run_achievement_status,
+            commands::catalog_commands::load_fact_overrides,
+            commands::catalog_commands::set_fact_override,
+            commands::catalog_commands::clear_fact_override,
+            commands::catalog_commands::load_run_notes,
+            commands::catalog_commands::set_run_note,
+            commands::catalog_commands::clear_run_note,
+            commands::catalog_commands::load_run_achievement_notes,
+            commands::catalog_commands::set_run_achievement_note,
+            commands::catalog_commands::clear_run_achievement_note,
         ])
         .run(tauri::generate_context!())
 }

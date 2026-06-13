@@ -493,6 +493,7 @@ mod tests {
             confidence: "high".to_string(),
             updated_from_save_path: None,
             updated_at: "now".to_string(),
+            is_override: false,
         }
     }
 }

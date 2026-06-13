@@ -14,6 +14,7 @@ import { Overview } from './pages/Overview';
 import { Achievements } from './pages/Achievements';
 import { Planner } from './pages/Planner';
 import { Runs } from './pages/Runs';
+import type { PersistedRunSummary, RunFactSummary } from './tauri';
 
 beforeEach(() => {
   invoke.mockReset();
@@ -35,6 +36,12 @@ beforeEach(() => {
     }
     if (command === 'set_run_achievement_status') {
       return Promise.resolve();
+    }
+    if (command === 'load_run_notes') {
+      return Promise.resolve(null);
+    }
+    if (command === 'load_run_achievement_notes') {
+      return Promise.resolve([]);
     }
     if (command === 'rescan_saves') {
       return Promise.resolve([]);
@@ -182,43 +189,52 @@ it('invokes the scan command with an empty payload', async () => {
 
 it('loads persisted runs and facts on the runs page', async () => {
   const user = userEvent.setup();
-  invoke.mockResolvedValueOnce([
-    {
-      folder_path: '/tmp/documents/save games/run_a',
-      run_folder: 'run_a',
-      display_name: 'Synthetic Run',
-      latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
-      latest_save_file_name: 'ironman.sav',
-      latest_ingame_date: '2532.01.26',
-      game_version: 'Cetus v4.3.7',
-      parse_status: 'parsed',
-      parse_error: null,
-      fact_count: 2,
-      updated_at: '2026-06-03',
-    },
-  ]);
-  invoke.mockResolvedValueOnce([
-    {
-      run_folder_path: '/tmp/documents/save games/run_a',
-      dimension: 'empire',
-      key: 'origin',
-      value: 'origin_default',
-      source: 'parsed_save',
-      confidence: 'high',
-      updated_from_save_path: '/tmp/documents/save games/run_a/ironman.sav',
-      updated_at: '2026-06-03',
-    },
-    ...Array.from({ length: 12 }, (_, index) => ({
-      run_folder_path: '/tmp/documents/save games/run_a',
-      dimension: 'test',
-      key: `fact_${index}`,
-      value: `value_${index}`,
-      source: 'parsed_save',
-      confidence: 'high',
-      updated_from_save_path: '/tmp/documents/save games/run_a/ironman.sav',
-      updated_at: '2026-06-03',
-    })),
-  ]);
+  invoke.mockImplementation((cmd: string) => {
+    if (cmd === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_a',
+          run_folder: 'run_a',
+          display_name: 'Synthetic Run',
+          latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: '2532.01.26',
+          game_version: 'Cetus v4.3.7',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 2,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (cmd === 'load_run_facts') {
+      return Promise.resolve([
+        {
+          run_folder_path: '/tmp/documents/save games/run_a',
+          dimension: 'empire',
+          key: 'origin',
+          value: 'origin_default',
+          source: 'parsed_save',
+          confidence: 'high',
+          updated_from_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          updated_at: '2026-06-03',
+        },
+        ...Array.from({ length: 12 }, (_, index) => ({
+          run_folder_path: '/tmp/documents/save games/run_a',
+          dimension: 'test',
+          key: `fact_${index}`,
+          value: `value_${index}`,
+          source: 'parsed_save',
+          confidence: 'high',
+          updated_from_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          updated_at: '2026-06-03',
+        })),
+      ]);
+    }
+    if (cmd === 'load_run_notes') return Promise.resolve(null);
+    if (cmd === 'load_run_achievement_notes') return Promise.resolve([]);
+    return Promise.resolve(null);
+  });
 
   render(
     <MemoryRouter>
@@ -429,4 +445,249 @@ it('surfaces planner toggle failures', async () => {
   expect(await screen.findByText('First Achievement')).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: /^plan$/i }));
   expect(await screen.findByRole('alert')).toHaveTextContent('planner write failed');
+});
+
+it('edits a fact override from the runs page', async () => {
+  const user = userEvent.setup();
+  const mockRun: PersistedRunSummary = {
+    folder_path: '/test/run',
+    run_folder: 'run',
+    display_name: 'Test Run',
+    latest_save_path: '/test/run/ironman.sav',
+    latest_save_file_name: 'ironman.sav',
+    latest_ingame_date: '2200.01.01',
+    game_version: '4.3.0',
+    parse_status: 'parsed',
+    parse_error: null,
+    fact_count: 1,
+    updated_at: '2026-01-01',
+  };
+  const mockFact: RunFactSummary = {
+    run_folder_path: '/test/run',
+    dimension: 'empire',
+    key: 'origin',
+    value: 'origin_default',
+    source: 'parsed_save',
+    confidence: 'high',
+    updated_from_save_path: '/test/run/ironman.sav',
+    updated_at: '2026-01-01',
+    is_override: false,
+  };
+
+  invoke.mockImplementation(async (cmd: string) => {
+    if (cmd === 'load_runs') return [mockRun];
+    if (cmd === 'load_run_facts') return [mockFact];
+    return null;
+  });
+
+  render(<Runs />);
+  expect((await screen.findAllByText('Test Run')).length).toBeGreaterThanOrEqual(1);
+
+  // Click the run to load facts
+  await user.click(screen.getByRole('button', { name: /Test Run/i }));
+  await screen.findByText('empire.origin');
+
+  // Click Edit button
+  await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+  // Fill in the edit form
+  const valueInput = screen.getByPlaceholderText('Value (JSON)');
+  await user.clear(valueInput);
+  await user.type(valueInput, '"origin_synaptic"');
+
+  const reasonInput = screen.getByPlaceholderText('Reason (optional)');
+  await user.type(reasonInput, 'corrected');
+
+  // Click Save
+  await user.click(screen.getByRole('button', { name: 'Save' }));
+
+  // Verify the IPC call
+  expect(invoke).toHaveBeenCalledWith('set_fact_override', {
+    runFolderPath: '/test/run',
+    dimension: 'empire',
+    key: 'origin',
+    valueJson: '"origin_synaptic"',
+    reason: 'corrected',
+  });
+});
+
+it('clears a fact override from the runs page', async () => {
+  const user = userEvent.setup();
+  const mockRun: PersistedRunSummary = {
+    folder_path: '/test/run',
+    run_folder: 'run',
+    display_name: 'Test Run',
+    latest_save_path: '/test/run/ironman.sav',
+    latest_save_file_name: 'ironman.sav',
+    latest_ingame_date: '2200.01.01',
+    game_version: '4.3.0',
+    parse_status: 'parsed',
+    parse_error: null,
+    fact_count: 1,
+    updated_at: '2026-01-01',
+  };
+  const mockFact: RunFactSummary = {
+    run_folder_path: '/test/run',
+    dimension: 'empire',
+    key: 'origin',
+    value: 'origin_synaptic',
+    source: 'user_override',
+    confidence: 'high',
+    updated_from_save_path: null,
+    updated_at: '2026-01-01',
+    is_override: true,
+  };
+
+  invoke.mockImplementation(async (cmd: string) => {
+    if (cmd === 'load_runs') return [mockRun];
+    if (cmd === 'load_run_facts') return [mockFact];
+    return null;
+  });
+
+  render(<Runs />);
+  expect((await screen.findAllByText('Test Run')).length).toBeGreaterThanOrEqual(1);
+
+  // Click the run to load facts
+  await user.click(screen.getByRole('button', { name: /Test Run/i }));
+  await screen.findByText('override');
+
+  // Click Clear override button
+  await user.click(screen.getByRole('button', { name: 'Clear override' }));
+
+  // Verify the IPC call
+  expect(invoke).toHaveBeenCalledWith('clear_fact_override', {
+    runFolderPath: '/test/run',
+    dimension: 'empire',
+    key: 'origin',
+  });
+});
+
+it('saves a run note from the runs page', async () => {
+  const user = userEvent.setup();
+  const mockRun: PersistedRunSummary = {
+    folder_path: '/test/run',
+    run_folder: 'run',
+    display_name: 'Test Run',
+    latest_save_path: '/test/run/ironman.sav',
+    latest_save_file_name: 'ironman.sav',
+    latest_ingame_date: '2200.01.01',
+    game_version: '4.3.0',
+    parse_status: 'parsed',
+    parse_error: null,
+    fact_count: 1,
+    updated_at: '2026-01-01',
+  };
+
+  invoke.mockImplementation(async (cmd: string) => {
+    if (cmd === 'load_runs') return [mockRun];
+    if (cmd === 'load_run_facts') return [];
+    if (cmd === 'load_run_notes') return null;
+    return null;
+  });
+
+  render(<Runs />);
+  expect((await screen.findAllByText('Test Run')).length).toBeGreaterThanOrEqual(1);
+
+  // Click the run to select it
+  await user.click(screen.getByRole('button', { name: /Test Run/i }));
+  await screen.findByText('Run notes');
+
+  // Type text in the note textarea
+  const textarea = screen.getByPlaceholderText('Add notes for this run…');
+  await user.type(textarea, 'My test note');
+
+  // Click Save note
+  await user.click(screen.getByRole('button', { name: 'Save note' }));
+
+  // Verify the IPC call
+  expect(invoke).toHaveBeenCalledWith('set_run_note', {
+    runFolderPath: '/test/run',
+    noteText: 'My test note',
+  });
+});
+
+it('saves an achievement note from the planner', async () => {
+  const user = userEvent.setup();
+  const mockRun: PersistedRunSummary = {
+    folder_path: '/tmp/documents/save games/run_a',
+    run_folder: 'run_a',
+    display_name: 'Synthetic Run',
+    latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+    latest_save_file_name: 'ironman.sav',
+    latest_ingame_date: '2532.01.26',
+    game_version: 'Cetus v4.3.7',
+    parse_status: 'parsed',
+    parse_error: null,
+    fact_count: 12,
+    updated_at: '2026-06-03',
+  };
+
+  invoke.mockImplementation(async (cmd: string) => {
+    if (cmd === 'load_runs') return [mockRun];
+    if (cmd === 'load_planner_evaluations') {
+      return [
+        {
+          achievement: {
+            id: 'ach_1',
+            steam_app_id: 281990,
+            steam_api_name: 'ACH_ONE',
+            local_key: null,
+            deprecated: false,
+            source: {
+              name: 'First Achievement',
+              description: null,
+              requirement: 'Complete the thing',
+              hint: null,
+              group: 'Base Game',
+              version_added: '1.0',
+              difficulty: 'E',
+            },
+            curation: {
+              tags: ['early'],
+              conditions: [],
+              warnings: [],
+              planner_notes: null,
+              known_limitations: [],
+              rule_confidence: 'medium',
+            },
+          },
+          status: 'Possible',
+          computed_status: 'Possible',
+          planned: false,
+          ignored: false,
+          reasons: ['No hard blocker is known.'],
+          warnings: [],
+          conditions: [],
+        },
+      ];
+    }
+    if (cmd === 'load_run_achievement_notes') return [];
+    if (cmd === 'set_run_achievement_status') return undefined;
+    return null;
+  });
+
+  render(
+    <MemoryRouter>
+      <Planner />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('First Achievement')).toBeInTheDocument();
+
+  // Click Notes to expand the notes section
+  await user.click(screen.getByRole('button', { name: /^Notes$/i }));
+
+  // Type in the note textarea
+  const textarea = screen.getByPlaceholderText('Add a note for this achievement in this run…');
+  await user.type(textarea, 'My achievement note');
+
+  // Click Save note
+  await user.click(screen.getByRole('button', { name: 'Save note' }));
+
+  // Verify the IPC call
+  expect(invoke).toHaveBeenCalledWith('set_run_achievement_note', {
+    runFolderPath: '/tmp/documents/save games/run_a',
+    achievementId: 'ach_1',
+    notes: 'My achievement note',
+  });
 });

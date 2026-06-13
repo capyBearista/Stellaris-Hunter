@@ -22,13 +22,19 @@ pub(crate) mod catalog_commands {
         db::{open_app_db, AppDbPath},
         model::{
             AchievementCatalogEntry, AchievementOverride, CatalogVersionMetadata,
-            PersistedRunSummary, PlannerAchievementEvaluation, RunFactSummary,
+            PersistedRunSummary, PlannerAchievementEvaluation, RunAchievementNote, RunFactSummary,
+            RunNote,
         },
         rules::evaluate_planner_achievements,
         run_state::{
-            load_persisted_runs, load_run_achievement_statuses,
-            load_run_facts as load_run_facts_from_db, persist_scan_report,
+            clear_run_achievement_note as clear_run_achievement_note_in_db,
+            clear_run_note as clear_run_note_in_db, load_persisted_runs,
+            load_run_achievement_notes as load_run_achievement_notes_from_db,
+            load_run_achievement_statuses, load_run_facts as load_run_facts_from_db,
+            load_run_notes as load_run_notes_from_db, persist_scan_report,
+            set_run_achievement_note as set_run_achievement_note_in_db,
             set_run_achievement_status as set_run_achievement_status_in_db,
+            set_run_note as set_run_note_in_db,
         },
         scan_all,
     };
@@ -169,6 +175,7 @@ pub(crate) mod catalog_commands {
                 if !load.issues.is_empty() {
                     eprintln!("catalog load issues: {:?}", load.issues);
                 }
+                // load_run_facts now returns merged facts (overrides applied)
                 let facts = load_run_facts_from_db(&conn, &run_folder_path)
                     .map_err(|e| format!("load run facts: {e}"))?;
                 let completed = load_displayed_completion_map(&conn)
@@ -213,6 +220,160 @@ pub(crate) mod catalog_commands {
                 user_status.as_deref(),
             )
             .map_err(|e| format!("set run achievement status: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn load_fact_overrides(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+    ) -> Result<Vec<crate::model::FactOverride>, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<Vec<crate::model::FactOverride>, String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            crate::run_state::load_fact_overrides(&conn, &run_folder_path)
+                .map_err(|e| format!("load fact overrides: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn set_fact_override(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+        dimension: String,
+        key: String,
+        value_json: String,
+        reason: Option<String>,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            let value: serde_json::Value = serde_json::from_str(&value_json)
+                .map_err(|e| format!("invalid value_json: {e}"))?;
+            crate::run_state::set_fact_override(
+                &conn,
+                &run_folder_path,
+                &dimension,
+                &key,
+                &value,
+                reason.as_deref(),
+            )
+            .map_err(|e| format!("set fact override: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn clear_fact_override(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+        dimension: String,
+        key: String,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            crate::run_state::clear_fact_override(&conn, &run_folder_path, &dimension, &key)
+                .map_err(|e| format!("clear fact override: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn load_run_notes(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+    ) -> Result<Option<RunNote>, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<Option<RunNote>, String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            load_run_notes_from_db(&conn, &run_folder_path)
+                .map_err(|e| format!("load run notes: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn set_run_note(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+        note_text: String,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            set_run_note_in_db(&conn, &run_folder_path, &note_text)
+                .map_err(|e| format!("set run note: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn clear_run_note(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            clear_run_note_in_db(&conn, &run_folder_path)
+                .map_err(|e| format!("clear run note: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn load_run_achievement_notes(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+    ) -> Result<Vec<RunAchievementNote>, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<Vec<RunAchievementNote>, String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            load_run_achievement_notes_from_db(&conn, &run_folder_path)
+                .map_err(|e| format!("load run achievement notes: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn set_run_achievement_note(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+        achievement_id: String,
+        notes: String,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            set_run_achievement_note_in_db(&conn, &run_folder_path, &achievement_id, &notes)
+                .map_err(|e| format!("set run achievement note: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn clear_run_achievement_note(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+        achievement_id: String,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            clear_run_achievement_note_in_db(&conn, &run_folder_path, &achievement_id)
+                .map_err(|e| format!("clear run achievement note: {e}"))
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?

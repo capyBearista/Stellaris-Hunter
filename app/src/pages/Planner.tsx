@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
+  clearRunAchievementNote,
   loadPlannerEvaluations,
+  loadRunAchievementNotes,
   loadRuns,
+  setRunAchievementNote,
   setRunAchievementStatus,
   type PersistedRunSummary,
   type PlannerAchievementEvaluation,
@@ -27,6 +30,7 @@ export function Planner() {
   const [evaluations, setEvaluations] = useState<PlannerAchievementEvaluation[]>([]);
   const [status, setStatus] = useState<LoadState>('idle');
   const [evalStatus, setEvalStatus] = useState<LoadState>('idle');
+  const [achievementNotes, setAchievementNotes] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -77,6 +81,28 @@ export function Planner() {
     return () => {
       cancelled = true;
     };
+  }, [selectedRunPath]);
+
+  useEffect(() => {
+    if (!selectedRunPath) {
+      setAchievementNotes(new Map());
+      return;
+    }
+    let cancelled = false;
+    loadRunAchievementNotes(selectedRunPath)
+      .then((notes) => {
+        if (!cancelled) {
+          const map = new Map<string, string>();
+          for (const note of notes) {
+            map.set(note.achievement_id, note.notes);
+          }
+          setAchievementNotes(map);
+        }
+      })
+      .catch(() => {
+        // Non-critical — silently ignore
+      });
+    return () => { cancelled = true; };
   }, [selectedRunPath]);
 
   const grouped = useMemo(() => {
@@ -170,7 +196,17 @@ export function Planner() {
                         <PlannerItem
                           key={evaluation.achievement.id}
                           evaluation={evaluation}
+                          selectedRunPath={selectedRunPath}
+                          noteText={achievementNotes.get(evaluation.achievement.id) ?? ''}
                           onPlannedToggle={() => void handlePlannedToggle(evaluation)}
+                          onNoteChange={(achievementId, text) => {
+                            setAchievementNotes((prev) => {
+                              const next = new Map(prev);
+                              if (text) next.set(achievementId, text);
+                              else next.delete(achievementId);
+                              return next;
+                            });
+                          }}
                         />
                       ))}
                     </ul>
@@ -190,11 +226,49 @@ export function Planner() {
 
 function PlannerItem({
   evaluation,
+  selectedRunPath,
+  noteText,
   onPlannedToggle,
+  onNoteChange,
 }: {
   evaluation: PlannerAchievementEvaluation;
+  selectedRunPath: string | null;
+  noteText: string;
   onPlannedToggle: () => void;
+  onNoteChange: (achievementId: string, text: string) => void;
 }) {
+  const [showNotes, setShowNotes] = useState(false);
+  const [editNote, setEditNote] = useState(noteText);
+  const [noteError, setNoteError] = useState<string | null>(null);
+
+  // Sync editNote when prop changes
+  useEffect(() => {
+    setEditNote(noteText);
+  }, [noteText]);
+
+  const handleSaveNote = async () => {
+    if (!selectedRunPath) return;
+    setNoteError(null);
+    try {
+      await setRunAchievementNote(selectedRunPath, evaluation.achievement.id, editNote);
+      onNoteChange(evaluation.achievement.id, editNote);
+    } catch (err) {
+      setNoteError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleClearNote = async () => {
+    if (!selectedRunPath) return;
+    setNoteError(null);
+    try {
+      await clearRunAchievementNote(selectedRunPath, evaluation.achievement.id);
+      setEditNote('');
+      onNoteChange(evaluation.achievement.id, '');
+    } catch (err) {
+      setNoteError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
   const firstReason = evaluation.reasons[0] ?? 'No evaluation reason recorded.';
   return (
     <li className="planner-item">
@@ -216,6 +290,36 @@ function PlannerItem({
           <span key={tag} className="tag-pill">{tag}</span>
         ))}
         {evaluation.warnings.length > 0 ? <span className="detail-warning">Warning</span> : null}
+      </div>
+      <div className="planner-note-section">
+        <button
+          type="button"
+          className="link-button"
+          onClick={() => setShowNotes((v) => !v)}
+        >
+          {showNotes ? 'Hide notes' : 'Notes'}
+          {noteText ? ' (has note)' : ''}
+        </button>
+        {showNotes ? (
+          <div className="planner-note-form">
+            <textarea
+              className="filter-input"
+              rows={2}
+              value={editNote}
+              onChange={(e) => setEditNote(e.target.value)}
+              placeholder="Add a note for this achievement in this run…"
+            />
+            {noteError ? <p role="alert" className="error">{noteError}</p> : null}
+            <div className="fact-edit-actions">
+              <button type="button" onClick={handleSaveNote}>Save note</button>
+              {noteText ? (
+                <button type="button" className="secondary-button" onClick={handleClearNote}>
+                  Clear
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </div>
     </li>
   );

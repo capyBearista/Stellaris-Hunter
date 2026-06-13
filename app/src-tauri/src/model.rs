@@ -37,10 +37,27 @@ pub struct AchievementOverride {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct RunNote {
+    pub run_folder_path: String,
+    pub note_text: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct RunAchievementNote {
+    pub run_folder_path: String,
+    pub achievement_id: String,
+    pub notes: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct RunAchievementUserStatus {
     pub run_folder_path: String,
     pub achievement_id: String,
     pub user_status: String,
+    pub notes: Option<String>,
     pub updated_at: String,
 }
 
@@ -233,6 +250,17 @@ pub struct PersistedRunSummary {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct FactOverride {
+    pub run_folder_path: String,
+    pub dimension: String,
+    pub key: String,
+    pub value: Value,
+    pub reason: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct RunFactSummary {
     pub run_folder_path: String,
     pub dimension: String,
@@ -242,6 +270,7 @@ pub struct RunFactSummary {
     pub confidence: String,
     pub updated_from_save_path: Option<String>,
     pub updated_at: String,
+    pub is_override: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
