@@ -5,8 +5,9 @@ use stellaris_hunter_scan::{
     catalog::initialize_catalog_schema,
     model::{SaveRunSummary, SaveSummary},
     run_state::{
-        initialize_run_state_schema, load_persisted_runs, load_run_facts, persist_run_for_tests,
-        persist_scan_report, run_exists,
+        initialize_run_state_schema, load_persisted_runs, load_run_achievement_statuses,
+        load_run_facts, persist_run_for_tests, persist_scan_report, run_exists,
+        set_run_achievement_status,
     },
 };
 use tempfile::tempdir;
@@ -169,6 +170,71 @@ fn loading_run_facts_rejects_corrupt_json_values() {
         result.is_err(),
         "corrupt fact JSON must not be silently displayed"
     );
+}
+
+#[test]
+fn run_achievement_status_round_trips_and_clears() {
+    let conn = Connection::open_in_memory().expect("open in-memory db");
+    initialize_catalog_schema(&conn).expect("catalog schema");
+    initialize_run_state_schema(&conn).expect("run schema");
+    conn.execute(
+        "INSERT INTO achievements (
+            id, steam_app_id, name, source_json, curation_json, created_at, updated_at
+        ) VALUES (?1, 281990, ?2, ?3, ?4, datetime('now'), datetime('now'))",
+        [
+            "ach_1",
+            "Achievement One",
+            r#"{"name":"Achievement One"}"#,
+            r#"{"tags":[],"conditions":[],"warnings":[],"planner_notes":null,"known_limitations":[],"rule_confidence":null}"#,
+        ],
+    )
+    .expect("insert achievement");
+    conn.execute(
+        "INSERT INTO runs (folder_path, run_folder, updated_at) VALUES (?1, ?2, datetime('now'))",
+        ["/tmp/run_a", "run_a"],
+    )
+    .expect("insert run");
+
+    set_run_achievement_status(&conn, "/tmp/run_a", "ach_1", Some("planned")).expect("set planned");
+    let statuses = load_run_achievement_statuses(&conn, "/tmp/run_a").expect("load statuses");
+    assert_eq!(statuses.len(), 1);
+    assert_eq!(statuses[0].achievement_id, "ach_1");
+    assert_eq!(statuses[0].user_status, "planned");
+
+    set_run_achievement_status(&conn, "/tmp/run_a", "ach_1", None).expect("clear status");
+    let statuses = load_run_achievement_statuses(&conn, "/tmp/run_a").expect("reload statuses");
+    assert!(statuses.is_empty());
+}
+
+#[test]
+fn run_achievement_status_normalizes_run_paths() {
+    let conn = Connection::open_in_memory().expect("open in-memory db");
+    initialize_catalog_schema(&conn).expect("catalog schema");
+    initialize_run_state_schema(&conn).expect("run schema");
+    conn.execute(
+        "INSERT INTO achievements (
+            id, steam_app_id, name, source_json, curation_json, created_at, updated_at
+        ) VALUES (?1, 281990, ?2, ?3, ?4, datetime('now'), datetime('now'))",
+        [
+            "ach_1",
+            "Achievement One",
+            r#"{"name":"Achievement One"}"#,
+            r#"{"tags":[],"conditions":[],"warnings":[],"planner_notes":null,"known_limitations":[],"rule_confidence":null}"#,
+        ],
+    )
+    .expect("insert achievement");
+    conn.execute(
+        "INSERT INTO runs (folder_path, run_folder, updated_at) VALUES (?1, ?2, datetime('now'))",
+        ["/tmp/run_a", "run_a"],
+    )
+    .expect("insert run");
+
+    set_run_achievement_status(&conn, "/tmp/other/../run_a", "ach_1", Some("ignored"))
+        .expect("set ignored");
+    let statuses = load_run_achievement_statuses(&conn, "/tmp/run_a").expect("load statuses");
+
+    assert_eq!(statuses.len(), 1);
+    assert_eq!(statuses[0].user_status, "ignored");
 }
 
 #[test]

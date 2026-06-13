@@ -10,7 +10,9 @@ use serde_json::Value;
 use crate::{
     documents::order_saves_by_preference,
     error::Result,
-    model::{PersistedRunSummary, RunFactSummary, SaveRunSummary, SaveSummary},
+    model::{
+        PersistedRunSummary, RunAchievementUserStatus, RunFactSummary, SaveRunSummary, SaveSummary,
+    },
     ScanReport,
 };
 
@@ -73,6 +75,19 @@ pub fn initialize_run_state_schema(conn: &Connection) -> Result<()> {
           updated_at TEXT NOT NULL DEFAULT (datetime('now')),
           PRIMARY KEY (run_folder_path, dimension, key),
           FOREIGN KEY (run_folder_path) REFERENCES runs(folder_path)
+        );
+
+        CREATE TABLE IF NOT EXISTS run_achievement_status (
+          run_folder_path TEXT NOT NULL,
+          achievement_id TEXT NOT NULL,
+          user_status TEXT NOT NULL CHECK (user_status IN ('planned', 'ignored')),
+          priority INTEGER,
+          notes TEXT,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+          PRIMARY KEY (run_folder_path, achievement_id),
+          FOREIGN KEY (run_folder_path) REFERENCES runs(folder_path),
+          FOREIGN KEY (achievement_id) REFERENCES achievements(id)
         );
         "#,
     )?;
@@ -170,6 +185,61 @@ pub fn load_run_facts(conn: &Connection, run_folder_path: &str) -> Result<Vec<Ru
     }
 
     Ok(facts)
+}
+
+pub fn load_run_achievement_statuses(
+    conn: &Connection,
+    run_folder_path: &str,
+) -> Result<Vec<RunAchievementUserStatus>> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT run_folder_path, achievement_id, user_status, updated_at
+        FROM run_achievement_status
+        WHERE run_folder_path = ?1
+        ORDER BY achievement_id COLLATE NOCASE ASC
+        "#,
+    )?;
+
+    let rows = stmt.query_map([normalized_run_path], |row| {
+        Ok(RunAchievementUserStatus {
+            run_folder_path: row.get(0)?,
+            achievement_id: row.get(1)?,
+            user_status: row.get(2)?,
+            updated_at: row.get(3)?,
+        })
+    })?;
+
+    rows.collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(Into::into)
+}
+
+pub fn set_run_achievement_status(
+    conn: &Connection,
+    run_folder_path: &str,
+    achievement_id: &str,
+    user_status: Option<&str>,
+) -> Result<()> {
+    let normalized_run_path = normalize_path(Path::new(run_folder_path));
+    if let Some(user_status) = user_status {
+        conn.execute(
+            r#"
+            INSERT INTO run_achievement_status (
+              run_folder_path, achievement_id, user_status, updated_at
+            ) VALUES (?1, ?2, ?3, datetime('now'))
+            ON CONFLICT(run_folder_path, achievement_id) DO UPDATE SET
+              user_status = excluded.user_status,
+              updated_at = excluded.updated_at
+            "#,
+            params![normalized_run_path, achievement_id, user_status],
+        )?;
+    } else {
+        conn.execute(
+            "DELETE FROM run_achievement_status WHERE run_folder_path = ?1 AND achievement_id = ?2",
+            params![normalized_run_path, achievement_id],
+        )?;
+    }
+    Ok(())
 }
 
 pub fn persist_run_for_tests(

@@ -31,6 +31,12 @@ button:disabled {
   opacity: 0.7;
 }
 
+.secondary-button {
+  background: rgba(124, 92, 255, 0.16);
+  color: #c7d5ff;
+  border: 1px solid rgba(124, 92, 255, 0.35);
+}
+
 /* ----- Layout ----- */
 
 .app-layout {
@@ -425,6 +431,68 @@ button:disabled {
 
 .detail-warning {
   color: #ffd166;
+}
+
+/* ----- Planner ----- */
+
+.planner-groups {
+  display: grid;
+  gap: 1rem;
+}
+
+.planner-group {
+  padding: 0.9rem;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0.75rem;
+}
+
+.planner-group h3 {
+  margin: 0 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.planner-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.planner-item {
+  padding: 0.75rem;
+  list-style: none;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0.6rem;
+}
+
+.planner-item p {
+  margin: 0.35rem 0 0;
+}
+
+.planner-item-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.planner-meta {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.55rem;
+}
+
+.tag-pill {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(157, 184, 255, 0.13);
+  color: #c7d5ff;
+  font-size: 0.78rem;
 }
 
 /* ----- Badges ----- */

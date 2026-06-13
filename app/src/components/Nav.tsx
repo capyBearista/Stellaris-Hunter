@@ -13,6 +13,12 @@ export function Nav() {
       >
         Achievements
       </NavLink>
+      <NavLink
+        to="/planner"
+        className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+      >
+        Planner
+      </NavLink>
       <NavLink to="/runs" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
         Runs
       </NavLink>

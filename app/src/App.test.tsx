@@ -12,6 +12,7 @@ vi.mock('@tauri-apps/api/core', () => ({
 import { App } from './App';
 import { Overview } from './pages/Overview';
 import { Achievements } from './pages/Achievements';
+import { Planner } from './pages/Planner';
 import { Runs } from './pages/Runs';
 
 beforeEach(() => {
@@ -29,6 +30,12 @@ beforeEach(() => {
     if (command === 'load_run_facts') {
       return Promise.resolve([]);
     }
+    if (command === 'load_planner_evaluations') {
+      return Promise.resolve([]);
+    }
+    if (command === 'set_run_achievement_status') {
+      return Promise.resolve();
+    }
     if (command === 'rescan_saves') {
       return Promise.resolve([]);
     }
@@ -45,6 +52,7 @@ it('renders the app shell with navigation links', async () => {
   expect(screen.getAllByText('Stellaris Hunter').length).toBeGreaterThanOrEqual(1);
   expect(screen.getByRole('link', { name: /overview/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /achievements/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /planner/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /runs/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /settings/i })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: /rescan saves/i })).toBeInTheDocument();
@@ -264,4 +272,161 @@ it('rescans saves from the runs page', async () => {
   expect((await screen.findAllByText('run_b')).length).toBeGreaterThanOrEqual(1);
   expect(screen.getByText('failed to parse save')).toBeInTheDocument();
   expect(invoke).toHaveBeenCalledWith('rescan_saves', {});
+});
+
+it('loads planner evaluations and toggles planned status', async () => {
+  const user = userEvent.setup();
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_a',
+          run_folder: 'run_a',
+          display_name: 'Synthetic Run',
+          latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: '2532.01.26',
+          game_version: 'Cetus v4.3.7',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 12,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (command === 'load_planner_evaluations') {
+      return Promise.resolve([
+        {
+          achievement: {
+            id: 'ach_1',
+            steam_app_id: 281990,
+            steam_api_name: 'ACH_ONE',
+            local_key: null,
+            deprecated: false,
+            source: {
+              name: 'First Achievement',
+              description: null,
+              requirement: 'Complete the thing',
+              hint: null,
+              group: 'Base Game',
+              version_added: '1.0',
+              difficulty: 'E',
+            },
+            curation: {
+              tags: ['early'],
+              conditions: [],
+              warnings: [],
+              planner_notes: null,
+              known_limitations: [],
+              rule_confidence: 'medium',
+            },
+          },
+          status: 'Possible',
+          computed_status: 'Possible',
+          planned: false,
+          ignored: false,
+          reasons: ['No hard blocker is known.'],
+          warnings: [],
+          conditions: [],
+        },
+      ]);
+    }
+    if (command === 'set_run_achievement_status') {
+      return Promise.resolve();
+    }
+    return Promise.resolve([]);
+  });
+
+  render(
+    <MemoryRouter>
+      <Planner />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByRole('heading', { name: /planner/i })).toBeInTheDocument();
+  expect(await screen.findByText('First Achievement')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: /^plan$/i }));
+
+  expect(invoke).toHaveBeenCalledWith('load_planner_evaluations', {
+    runFolderPath: '/tmp/documents/save games/run_a',
+  });
+  expect(invoke).toHaveBeenCalledWith('set_run_achievement_status', {
+    runFolderPath: '/tmp/documents/save games/run_a',
+    achievementId: 'ach_1',
+    userStatus: 'planned',
+  });
+});
+
+it('surfaces planner toggle failures', async () => {
+  const user = userEvent.setup();
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_a',
+          run_folder: 'run_a',
+          display_name: 'Synthetic Run',
+          latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: '2532.01.26',
+          game_version: 'Cetus v4.3.7',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 12,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (command === 'load_planner_evaluations') {
+      return Promise.resolve([
+        {
+          achievement: {
+            id: 'ach_1',
+            steam_app_id: 281990,
+            steam_api_name: 'ACH_ONE',
+            local_key: null,
+            deprecated: false,
+            source: {
+              name: 'First Achievement',
+              description: null,
+              requirement: 'Complete the thing',
+              hint: null,
+              group: 'Base Game',
+              version_added: '1.0',
+              difficulty: 'E',
+            },
+            curation: {
+              tags: ['early'],
+              conditions: [],
+              warnings: [],
+              planner_notes: null,
+              known_limitations: [],
+              rule_confidence: 'medium',
+            },
+          },
+          status: 'Possible',
+          computed_status: 'Possible',
+          planned: false,
+          ignored: false,
+          reasons: ['No hard blocker is known.'],
+          warnings: [],
+          conditions: [],
+        },
+      ]);
+    }
+    if (command === 'set_run_achievement_status') {
+      return Promise.reject(new Error('planner write failed'));
+    }
+    return Promise.resolve([]);
+  });
+
+  render(
+    <MemoryRouter>
+      <Planner />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('First Achievement')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: /^plan$/i }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('planner write failed');
 });

@@ -16,15 +16,19 @@ pub(crate) mod catalog_commands {
             clear_completion_override as clear_completion_override_in_db,
             load_catalog_entries_with_issues, load_catalog_metadata,
             load_completion_overrides as load_completion_overrides_from_db,
+            load_displayed_completion_map,
             set_completion_override as set_completion_override_in_db,
         },
         db::{open_app_db, AppDbPath},
         model::{
             AchievementCatalogEntry, AchievementOverride, CatalogVersionMetadata,
-            PersistedRunSummary, RunFactSummary,
+            PersistedRunSummary, PlannerAchievementEvaluation, RunFactSummary,
         },
+        rules::evaluate_planner_achievements,
         run_state::{
-            load_persisted_runs, load_run_facts as load_run_facts_from_db, persist_scan_report,
+            load_persisted_runs, load_run_achievement_statuses,
+            load_run_facts as load_run_facts_from_db, persist_scan_report,
+            set_run_achievement_status as set_run_achievement_status_in_db,
         },
         scan_all,
     };
@@ -146,6 +150,69 @@ pub(crate) mod catalog_commands {
             }
             persist_scan_report(&mut conn, &report).map_err(|e| format!("persist scan: {e}"))?;
             load_persisted_runs(&conn).map_err(|e| format!("load runs: {e}"))
+        })
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn load_planner_evaluations(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+    ) -> Result<Vec<PlannerAchievementEvaluation>, String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(
+            move || -> Result<Vec<PlannerAchievementEvaluation>, String> {
+                let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+                let load = load_catalog_entries_with_issues(&conn)
+                    .map_err(|e| format!("load achievements: {e}"))?;
+                if !load.issues.is_empty() {
+                    eprintln!("catalog load issues: {:?}", load.issues);
+                }
+                let facts = load_run_facts_from_db(&conn, &run_folder_path)
+                    .map_err(|e| format!("load run facts: {e}"))?;
+                let completed = load_displayed_completion_map(&conn)
+                    .map_err(|e| format!("load displayed completion: {e}"))?
+                    .into_iter()
+                    .filter_map(|(achievement_id, displayed)| displayed.then_some(achievement_id))
+                    .collect();
+                let user_statuses = load_run_achievement_statuses(&conn, &run_folder_path)
+                    .map_err(|e| format!("load run achievement statuses: {e}"))?;
+
+                Ok(evaluate_planner_achievements(
+                    load.entries,
+                    &facts,
+                    &completed,
+                    &user_statuses,
+                ))
+            },
+        )
+        .await
+        .map_err(|e| format!("worker failed: {e}"))?
+    }
+
+    #[tauri::command]
+    pub async fn set_run_achievement_status(
+        db_path: State<'_, AppDbPath>,
+        run_folder_path: String,
+        achievement_id: String,
+        user_status: Option<String>,
+    ) -> Result<(), String> {
+        let path = db_path.0.clone();
+        tokio::task::spawn_blocking(move || -> Result<(), String> {
+            let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+            if let Some(status) = user_status.as_deref() {
+                if !matches!(status, "planned" | "ignored") {
+                    return Err(format!("unsupported run achievement status: {status}"));
+                }
+            }
+            set_run_achievement_status_in_db(
+                &conn,
+                &run_folder_path,
+                &achievement_id,
+                user_status.as_deref(),
+            )
+            .map_err(|e| format!("set run achievement status: {e}"))
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?

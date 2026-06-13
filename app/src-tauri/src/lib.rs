@@ -7,6 +7,7 @@ pub mod error;
 pub mod install;
 pub mod model;
 pub mod paths;
+pub mod rules;
 pub mod run_state;
 pub mod save;
 pub mod steam;
@@ -127,6 +128,8 @@ pub fn run_app() -> tauri::Result<()> {
             commands::catalog_commands::load_runs,
             commands::catalog_commands::load_run_facts,
             commands::catalog_commands::rescan_saves,
+            commands::catalog_commands::load_planner_evaluations,
+            commands::catalog_commands::set_run_achievement_status,
         ])
         .run(tauri::generate_context!())
 }

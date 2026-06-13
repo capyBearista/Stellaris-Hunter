@@ -37,6 +37,39 @@ pub struct AchievementOverride {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct RunAchievementUserStatus {
+    pub run_folder_path: String,
+    pub achievement_id: String,
+    pub user_status: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct PlannerAchievementEvaluation {
+    pub achievement: AchievementCatalogEntry,
+    pub status: String,
+    pub computed_status: String,
+    pub planned: bool,
+    pub ignored: bool,
+    pub reasons: Vec<String>,
+    pub warnings: Vec<String>,
+    pub conditions: Vec<ConditionEvaluation>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ConditionEvaluation {
+    pub dimension: String,
+    pub operator: String,
+    pub condition_value: Value,
+    pub fact_value: Option<Value>,
+    pub passed: Option<bool>,
+    pub severity: String,
+    pub timing: String,
+    pub mutability: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AchievementCatalogEntry {
     pub id: String,

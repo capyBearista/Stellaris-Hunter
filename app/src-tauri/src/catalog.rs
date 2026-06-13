@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use rusqlite::{params, Connection, OptionalExtension};
 
@@ -492,6 +492,24 @@ pub fn clear_completion_override(conn: &Connection, achievement_id: &str) -> Res
     )?;
 
     Ok(())
+}
+
+pub fn load_displayed_completion_map(conn: &Connection) -> Result<HashMap<String, bool>> {
+    initialize_catalog_schema(conn)?;
+
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT achievement_id, displayed_unlocked
+        FROM player_achievements
+        WHERE displayed_unlocked = 1
+        ORDER BY achievement_id COLLATE NOCASE ASC
+        "#,
+    )?;
+
+    let rows = stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, bool>(1)?))
+    })?;
+    Ok(rows.collect::<std::result::Result<HashMap<_, _>, _>>()?)
 }
 
 fn ensure_achievement_exists(conn: &Connection, achievement_id: &str) -> Result<()> {

@@ -33,7 +33,7 @@ pub fn open_app_db(path: &Path) -> Result<Connection> {
     conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")?;
     initialize_catalog_schema(&conn)?;
     initialize_run_state_schema(&conn)?;
-    conn.execute_batch("PRAGMA user_version = 2;")?;
+    conn.execute_batch("PRAGMA user_version = 3;")?;
     Ok(conn)
 }
 

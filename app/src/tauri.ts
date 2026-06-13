@@ -14,11 +14,23 @@ export interface AchievementSourceFields {
 
 export interface AchievementCurationFields {
   tags: string[];
-  conditions: unknown[];
+  conditions: AchievementCondition[];
   warnings: string[];
   planner_notes: string | null;
   known_limitations: string[];
   rule_confidence: string | null;
+}
+
+export interface AchievementCondition {
+  condition_type: string;
+  dimension: string;
+  operator: string;
+  value: unknown;
+  timing: string;
+  mutability: string;
+  severity: string;
+  source: string | null;
+  notes: string | null;
 }
 
 export interface AchievementEntry {
@@ -102,6 +114,40 @@ export interface RunFactSummary {
   updated_at: string;
 }
 
+// --- Planner/evaluation types ---
+
+export interface ConditionEvaluation {
+  dimension: string;
+  operator: string;
+  condition_value: unknown;
+  fact_value: unknown | null;
+  passed: boolean | null;
+  severity: string;
+  timing: string;
+  mutability: string;
+  reason: string;
+}
+
+export interface PlannerAchievementEvaluation {
+  achievement: AchievementEntry;
+  status: PlannerStatus;
+  computed_status: PlannerStatus;
+  planned: boolean;
+  ignored: boolean;
+  reasons: string[];
+  warnings: string[];
+  conditions: ConditionEvaluation[];
+}
+
+export type PlannerStatus =
+  | 'Completed'
+  | 'Planned'
+  | 'Possible'
+  | 'Incompatible'
+  | 'Impossible'
+  | 'Incomplete'
+  | 'Unknown';
+
 // --- IPC wrappers (existing) ---
 
 export function scanLocalState() {
@@ -118,6 +164,20 @@ export function loadRunFacts(runFolderPath: string): Promise<RunFactSummary[]> {
 
 export function rescanSaves(): Promise<PersistedRunSummary[]> {
   return invoke<PersistedRunSummary[]>('rescan_saves', {});
+}
+
+export function loadPlannerEvaluations(
+  runFolderPath: string,
+): Promise<PlannerAchievementEvaluation[]> {
+  return invoke<PlannerAchievementEvaluation[]>('load_planner_evaluations', { runFolderPath });
+}
+
+export function setRunAchievementStatus(
+  runFolderPath: string,
+  achievementId: string,
+  userStatus: 'planned' | 'ignored' | null,
+): Promise<void> {
+  return invoke<void>('set_run_achievement_status', { runFolderPath, achievementId, userStatus });
 }
 
 // --- IPC wrappers (new) ---
