@@ -144,7 +144,8 @@ pub fn sync_icons_from_steam(
             stats_flag.store(true, std::sync::atomic::Ordering::SeqCst);
         }
     });
-    client.user_stats().request_current_stats();
+    let steam_id = client.user().steam_id();
+    client.user_stats().request_user_stats(steam_id.raw());
 
     let start = std::time::Instant::now();
     while !stats_received.load(std::sync::atomic::Ordering::SeqCst) {
@@ -166,22 +167,22 @@ pub fn sync_icons_from_steam(
         }
 
         // Try Steam API icon — get raw RGBA data and convert to PNG
-        if let Some(img) = client.user_stats().achievement(api_name).get_icon() {
-            let width = img.width();
-            let height = img.height();
-            if width > 0 && height > 0 {
-                let rgba = img.rgba();
-                if let Some(rgba_img) = image::RgbaImage::from_raw(width, height, rgba.to_vec()) {
-                    let mut png_buf = Vec::new();
-                    let mut cursor = std::io::Cursor::new(&mut png_buf);
-                    if rgba_img
-                        .write_to(&mut cursor, image::ImageFormat::Png)
-                        .is_ok()
-                        && cache.store(achievement_id, &png_buf).is_ok()
-                    {
-                        synced += 1;
-                        continue;
-                    }
+        if let Some(rgba) = client
+            .user_stats()
+            .achievement(api_name)
+            .get_achievement_icon()
+        {
+            // Steam achievement icons are always 64×64 RGBA
+            if let Some(rgba_img) = image::RgbaImage::from_raw(64, 64, rgba) {
+                let mut png_buf = Vec::new();
+                let mut cursor = std::io::Cursor::new(&mut png_buf);
+                if rgba_img
+                    .write_to(&mut cursor, image::ImageFormat::Png)
+                    .is_ok()
+                    && cache.store(achievement_id, &png_buf).is_ok()
+                {
+                    synced += 1;
+                    continue;
                 }
             }
         }

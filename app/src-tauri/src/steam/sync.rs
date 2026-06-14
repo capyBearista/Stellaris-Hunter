@@ -46,7 +46,8 @@ pub fn read_steam_achievements() -> Result<Vec<SteamAchievementState>, SteamSync
         }
     });
 
-    client.user_stats().request_current_stats();
+    let steam_id = client.user().steam_id();
+    client.user_stats().request_user_stats(steam_id.raw());
 
     // Pump callbacks with timeout (10 seconds)
     let start = std::time::Instant::now();
@@ -62,13 +63,13 @@ pub fn read_steam_achievements() -> Result<Vec<SteamAchievementState>, SteamSync
     let names = client
         .user_stats()
         .get_achievement_names()
-        .map_err(|_| SteamSyncError::Read("failed to get achievement names".into()))?;
+        .ok_or_else(|| SteamSyncError::Read("failed to get achievement names".into()))?;
 
     let mut achievements = Vec::with_capacity(names.len());
     for name in &names {
         let unlocked = client.user_stats().achievement(name).get().ok();
         achievements.push(SteamAchievementState {
-            api_name: name.clone(),
+            api_name: name.to_string(),
             unlocked,
         });
     }
