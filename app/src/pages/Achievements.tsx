@@ -418,7 +418,7 @@ function toOverrideRecord(overrides: AchievementOverride[]): Record<string, bool
 }
 
 // ---------------------------------------------------------------------------
-// Icon component (fetches and caches blob URL per achievement)
+// Icon component (fetches and converts to base64 data URL per achievement)
 // ---------------------------------------------------------------------------
 
 function AchievementIcon({
@@ -428,20 +428,18 @@ function AchievementIcon({
   achievementId: string;
   iconVersion: number;
 }) {
-  const [url, setUrl] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     getAchievementIcon(achievementId).then((bytes) => {
       if (cancelled || !bytes) return;
-      const blob = new Blob([new Uint8Array(bytes)], { type: 'image/png' });
-      const blobUrl = URL.createObjectURL(blob);
-      if (!cancelled) {
-        setUrl(blobUrl);
-      } else {
-        URL.revokeObjectURL(blobUrl);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
       }
+      setSrc('data:image/png;base64,' + btoa(binary));
     });
 
     return () => {
@@ -449,8 +447,8 @@ function AchievementIcon({
     };
   }, [achievementId, iconVersion]);
 
-  return url ? (
-    <img src={url} alt="" width={32} height={32} style={{ borderRadius: 4 }} />
+  return src ? (
+    <img src={src} alt="" width={32} height={32} style={{ borderRadius: 4 }} />
   ) : (
     <IconPlaceholder />
   );
