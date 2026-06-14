@@ -19,13 +19,13 @@ pub(crate) mod catalog_commands {
             load_displayed_completion_map,
             set_completion_override as set_completion_override_in_db,
         },
-        catalog_sync::{self, CatalogSyncResult},
+        catalog_sync,
         db::{
             load_app_config as load_app_config_from_db, load_app_info as load_app_info_from_db,
             open_app_db, save_app_config as save_app_config_in_db, AppDbPath,
         },
         model::{
-            AchievementCatalogEntry, AchievementOverride, AppConfig, AppInfo,
+            AchievementCatalogEntry, AchievementOverride, AppConfig, AppInfo, CatalogSyncResult,
             CatalogVersionMetadata, PersistedRunSummary, PlannerAchievementEvaluation,
             RunAchievementNote, RunFactSummary, RunNote,
         },

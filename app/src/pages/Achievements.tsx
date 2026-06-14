@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   loadAchievements,
@@ -46,44 +46,6 @@ export function Achievements() {
   const [iconSyncMessage, setIconSyncMessage] = useState<string | null>(null);
   const [iconSyncError, setIconSyncError] = useState<string | null>(null);
   const [iconVersion, setIconVersion] = useState(0);
-
-  // Track icon blob URLs per achievement ID for cleanup
-  const iconUrlsRef = useRef<Map<string, string>>(new Map());
-  const pendingIconsRef = useRef<Map<string, boolean>>(new Map());
-
-  // Load an achievement icon and return a blob URL.
-  // Uses iconVersion to refetch after sync.
-  const useIconUrl = (achievementId: string): string | null => {
-    const [url, setUrl] = useState<string | null>(null);
-
-    useEffect(() => {
-      // Avoid re-fetching for in-flight or cached (via pending) requests
-      if (pendingIconsRef.current.get(achievementId)) {
-        return;
-      }
-      pendingIconsRef.current.set(achievementId, true);
-      let cancelled = false;
-
-      getAchievementIcon(achievementId).then((bytes) => {
-        pendingIconsRef.current.delete(achievementId);
-        if (cancelled || !bytes) return;
-        const blob = new Blob([new Uint8Array(bytes)], { type: 'image/png' });
-        const blobUrl = URL.createObjectURL(blob);
-        if (!cancelled) {
-          setUrl(blobUrl);
-        } else {
-          URL.revokeObjectURL(blobUrl);
-        }
-      });
-
-      return () => {
-        cancelled = true;
-      };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [achievementId, iconVersion]);
-
-    return url;
-  };
 
   const handleSyncSteam = async () => {
     setSteamSyncing(true);
@@ -421,7 +383,7 @@ export function Achievements() {
                 diffClass={diffClass}
                 completed={overrides[ach.id] ?? false}
                 onCompletionToggle={() => handleCompletionToggle(ach.id, overrides[ach.id] ?? false)}
-                iconUrl={useIconUrl(ach.id)}
+                iconVersion={iconVersion}
               />
             ))}
           </tbody>
@@ -442,7 +404,7 @@ interface AchievementRowProps {
   diffClass: (d: string | null) => string;
   completed: boolean;
   onCompletionToggle: () => void;
-  iconUrl: string | null;
+  iconVersion: number;
 }
 
 function toOverrideRecord(overrides: AchievementOverride[]): Record<string, boolean> {
@@ -455,6 +417,45 @@ function toOverrideRecord(overrides: AchievementOverride[]): Record<string, bool
   return record;
 }
 
+// ---------------------------------------------------------------------------
+// Icon component (fetches and caches blob URL per achievement)
+// ---------------------------------------------------------------------------
+
+function AchievementIcon({
+  achievementId,
+  iconVersion,
+}: {
+  achievementId: string;
+  iconVersion: number;
+}) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getAchievementIcon(achievementId).then((bytes) => {
+      if (cancelled || !bytes) return;
+      const blob = new Blob([new Uint8Array(bytes)], { type: 'image/png' });
+      const blobUrl = URL.createObjectURL(blob);
+      if (!cancelled) {
+        setUrl(blobUrl);
+      } else {
+        URL.revokeObjectURL(blobUrl);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [achievementId, iconVersion]);
+
+  return url ? (
+    <img src={url} alt="" width={32} height={32} style={{ borderRadius: 4 }} />
+  ) : (
+    <IconPlaceholder />
+  );
+}
+
 function AchievementRow({
   ach,
   expanded,
@@ -462,7 +463,7 @@ function AchievementRow({
   diffClass,
   completed,
   onCompletionToggle,
-  iconUrl,
+  iconVersion,
 }: AchievementRowProps) {
   return (
     <>
@@ -479,11 +480,7 @@ function AchievementRow({
         }}
       >
         <td style={{ width: 40 }}>
-          {iconUrl ? (
-            <img src={iconUrl} alt="" width={32} height={32} style={{ borderRadius: 4 }} />
-          ) : (
-            <IconPlaceholder />
-          )}
+          <AchievementIcon achievementId={ach.id} iconVersion={iconVersion} />
         </td>
         <td>{ach.source.name}</td>
         <td>{ach.source.group ?? '—'}</td>
