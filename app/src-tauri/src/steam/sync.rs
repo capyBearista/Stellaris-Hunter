@@ -33,7 +33,7 @@ pub enum SteamSyncError {
 
 /// Initialize Steam client, request stats, and read all achievement states.
 pub fn read_steam_achievements() -> Result<Vec<SteamAchievementState>, SteamSyncError> {
-    let (client, single) = Client::init_app(AppId(STELLARIS_APP_ID))
+    let client = Client::init_app(AppId(STELLARIS_APP_ID))
         .map_err(|e| SteamSyncError::Init(format!("{e:?}")))?;
 
     // Request stats and pump callbacks until received
@@ -51,7 +51,7 @@ pub fn read_steam_achievements() -> Result<Vec<SteamAchievementState>, SteamSync
     // Pump callbacks with timeout (10 seconds)
     let start = std::time::Instant::now();
     while !stats_received.load(std::sync::atomic::Ordering::SeqCst) {
-        single.run_callbacks();
+        client.run_callbacks();
         std::thread::sleep(std::time::Duration::from_millis(100));
         if start.elapsed() > std::time::Duration::from_secs(10) {
             return Err(SteamSyncError::Timeout("stats request timed out".into()));

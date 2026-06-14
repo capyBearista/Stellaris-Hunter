@@ -133,7 +133,7 @@ pub fn sync_icons_from_steam(
 ) -> Result<IconSyncResult, crate::steam::sync::SteamSyncError> {
     use steamworks::{AppId, Client};
 
-    let (client, single) = Client::init_app(AppId(281990))
+    let client = Client::init_app(AppId(281990))
         .map_err(|e| crate::steam::sync::SteamSyncError::Init(format!("{e:?}")))?;
 
     // Request stats to enable icon access
@@ -148,7 +148,7 @@ pub fn sync_icons_from_steam(
 
     let start = std::time::Instant::now();
     while !stats_received.load(std::sync::atomic::Ordering::SeqCst) {
-        single.run_callbacks();
+        client.run_callbacks();
         std::thread::sleep(std::time::Duration::from_millis(100));
         if start.elapsed() > std::time::Duration::from_secs(10) {
             break; // Continue anyway, icons may still work
