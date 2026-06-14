@@ -166,14 +166,20 @@ pub fn sync_icons_from_steam(
             continue;
         }
 
-        // Try Steam API icon — get raw RGBA data and convert to PNG
-        if let Some(rgba) = client
+        // Pump callbacks to let Steam deliver pending icon data
+        client.run_callbacks();
+        std::thread::sleep(std::time::Duration::from_millis(10));
+
+        // Use get_achievement_icon_v2 which accepts any icon size (not just 64×64)
+        if let Some(img_buf) = client
             .user_stats()
             .achievement(api_name)
-            .get_achievement_icon()
+            .get_achievement_icon_v2()
         {
-            // Steam achievement icons are always 64×64 RGBA
-            if let Some(rgba_img) = image::RgbaImage::from_raw(64, 64, rgba) {
+            let w = img_buf.width();
+            let h = img_buf.height();
+            let raw = img_buf.into_raw();
+            if let Some(rgba_img) = image::RgbaImage::from_raw(w, h, raw) {
                 let mut png_buf = Vec::new();
                 let mut cursor = std::io::Cursor::new(&mut png_buf);
                 if rgba_img
@@ -187,6 +193,42 @@ pub fn sync_icons_from_steam(
             }
         }
         failed += 1;
+    }
+
+    // Retry pass: pump callbacks and retry failed icons
+    if failed > 0 {
+        for _ in 0..50 {
+            client.run_callbacks();
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+        let mut recovered = 0u32;
+        for (achievement_id, api_name) in steam_api_names {
+            if cache.get(achievement_id).is_some() {
+                continue;
+            }
+            if let Some(img_buf) = client
+                .user_stats()
+                .achievement(api_name)
+                .get_achievement_icon_v2()
+            {
+                let w = img_buf.width();
+                let h = img_buf.height();
+                let raw = img_buf.into_raw();
+                if let Some(rgba_img) = image::RgbaImage::from_raw(w, h, raw) {
+                    let mut png_buf = Vec::new();
+                    let mut cursor = std::io::Cursor::new(&mut png_buf);
+                    if rgba_img
+                        .write_to(&mut cursor, image::ImageFormat::Png)
+                        .is_ok()
+                        && cache.store(achievement_id, &png_buf).is_ok()
+                    {
+                        recovered += 1;
+                    }
+                }
+            }
+        }
+        synced += recovered;
+        failed -= recovered;
     }
 
     Ok(IconSyncResult {
