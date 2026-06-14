@@ -660,6 +660,7 @@ mod tests {
                 conditions: vec![condition],
                 ..AchievementCurationFields::default()
             },
+            completed: false,
         }
     }
 
