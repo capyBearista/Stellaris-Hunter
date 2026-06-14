@@ -193,11 +193,16 @@ pub fn load_catalog_entries(conn: &Connection) -> Result<Vec<AchievementCatalogE
 }
 
 pub fn load_catalog_entries_with_issues(conn: &Connection) -> Result<CatalogEntriesLoad> {
+    initialize_catalog_schema(conn)?;
+
     let mut stmt = conn.prepare(
         r#"
-        SELECT id, steam_app_id, steam_api_name, local_key, deprecated, source_json, curation_json
-        FROM achievements
-        ORDER BY name COLLATE NOCASE ASC
+        SELECT a.id, a.steam_app_id, a.steam_api_name, a.local_key, a.deprecated,
+               a.source_json, a.curation_json,
+               COALESCE(pa.displayed_unlocked, 0)
+        FROM achievements a
+        LEFT JOIN player_achievements pa ON a.id = pa.achievement_id
+        ORDER BY a.name COLLATE NOCASE ASC
         "#,
     )?;
 
@@ -271,6 +276,7 @@ pub fn load_catalog_entries_with_issues(conn: &Connection) -> Result<CatalogEntr
                 continue;
             }
         };
+        let completed = row.get::<_, i64>(7).unwrap_or(0) != 0;
 
         let source: AchievementSourceFields = match serde_json::from_str(&source_json) {
             Ok(value) => value,
@@ -297,6 +303,7 @@ pub fn load_catalog_entries_with_issues(conn: &Connection) -> Result<CatalogEntr
             deprecated,
             source,
             curation,
+            completed,
         };
 
         if let Err(error) =

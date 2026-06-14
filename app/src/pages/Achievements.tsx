@@ -381,7 +381,7 @@ export function Achievements() {
                 expanded={expanded.has(ach.id)}
                 onToggle={() => toggleExpanded(ach.id)}
                 diffClass={diffClass}
-                completed={overrides[ach.id] ?? false}
+                completed={overrides[ach.id] ?? ach.completed ?? false}
                 onCompletionToggle={() => handleCompletionToggle(ach.id, overrides[ach.id] ?? false)}
                 iconVersion={iconVersion}
               />

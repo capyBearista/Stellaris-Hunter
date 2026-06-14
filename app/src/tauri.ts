@@ -41,6 +41,7 @@ export interface AchievementEntry {
   deprecated: boolean;
   source: AchievementSourceFields;
   curation: AchievementCurationFields;
+  completed?: boolean;
 }
 
 export interface CatalogInfo {

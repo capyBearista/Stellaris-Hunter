@@ -99,6 +99,10 @@ pub struct AchievementCatalogEntry {
     pub source: AchievementSourceFields,
     #[serde(default)]
     pub curation: AchievementCurationFields,
+    /// Whether this achievement is completed (from Steam sync or manual override).
+    /// Populated at query time via LEFT JOIN with player_achievements.
+    #[serde(default)]
+    pub completed: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
