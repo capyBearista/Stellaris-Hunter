@@ -51,11 +51,7 @@ pub(crate) fn extract_progression_facts(
         starbase_count: query_f64(country_value, &["num_upgraded_starbase"]).map(|v| v as usize),
         gateway_count: count_gateways(game_root),
         hyper_relay_count: count_hyper_relays(game_root),
-        rare_technologies_acquired: {
-            // TODO: Requires filtering tech_status entries against rare_technology category
-            // from common/technology/. Currently counts all techs which overcounts.
-            None
-        },
+        rare_technologies_acquired: count_rare_technologies(country_value),
         traditions_adopted: query_count(country_value, &["traditions"]),
         ascension_perks_unlocked: query_count(country_value, &["ascension_perks"]),
         ascension_path: detect_ascension_path(country_value),
@@ -121,6 +117,72 @@ fn count_surveyed_planets(game_root: &ClausewitzValue) -> Option<usize> {
 /// the block, which gives the fleet count.
 fn count_owned_fleet_entries(country_value: &ClausewitzValue) -> Option<usize> {
     query_count(country_value, &["fleets_manager", "owned_fleets"])
+}
+
+/// Internal technology IDs for technologies with the `rare_technology` category.
+/// These are the techs that count toward achievement requirements involving
+/// rare technology acquisition.
+const RARE_TECHNOLOGIES: &[&str] = &[
+    "tech_arcane_deciphering",
+    "tech_archaeostudies",
+    "tech_bio_reactor",
+    "tech_climate_restoration",
+    "tech_colossus",
+    "tech_commercialization",
+    "tech_cryostasis_2",
+    "tech_dangerous_initiatives",
+    "tech_decryption_1",
+    "tech_diplomatic_networking",
+    "tech_encryption_1",
+    "tech_genome_mapping",
+    "tech_global_production_strategy",
+    "tech_living_matter",
+    "tech_mine_rare_crystals",
+    "tech_mine_rare_gases",
+    "tech_mine_satramene",
+    "tech_mine_zro",
+    "tech_nanite_transmutation",
+    "tech_neural_implants",
+    "tech_paradise_dome",
+    "tech_psionic_theory",
+    "tech_repeatable_improved_tile_energy",
+    "tech_repeatable_improved_tile_minerals",
+    "tech_repeatable_improved_tile_food",
+    "tech_repeatable_improved_tile_physics",
+    "tech_repeatable_improved_tile_society",
+    "tech_repeatable_improved_tile_engineering",
+    "tech_repeatable_naval_cap",
+    "tech_repeatable_command_limit",
+    "tech_sapient_ai",
+    "tech_sentient_ai",
+    "tech_society_engineering",
+    "tech_subdermal_stimulation",
+    "tech_symbolism",
+    "tech_teratogenic_society",
+    "tech_transcendent_thought",
+    "tech_utopian_abundance",
+    "tech_wilderness_preservation",
+    "tech_xeno_diplomacy",
+    "tech_zro_distillation",
+];
+
+/// Count `technology` entries in `tech_status` that match the
+/// `RARE_TECHNOLOGIES` list.
+fn count_rare_technologies(country_value: &ClausewitzValue) -> Option<usize> {
+    let tech_status = query_path(country_value, &["tech_status"])?;
+    match tech_status {
+        ClausewitzValue::Block(nodes) => {
+            let count = nodes
+                .iter()
+                .filter(|node| {
+                    matches!(node, ClausewitzNode::Pair(key, ClausewitzValue::Atom(val))
+                        if key == "technology" && RARE_TECHNOLOGIES.contains(&val.as_str()))
+                })
+                .count();
+            Some(count)
+        }
+        _ => None,
+    }
 }
 
 /// Count all `technology` entries in `tech_status` as a proxy for acquired
@@ -899,7 +961,38 @@ mod tests {
 
         let facts = extract_progression_facts(&game, &country);
 
-        assert!(facts.rare_technologies_acquired.is_none());
+        // None of the test techs are in the rare list
+        assert_eq!(facts.rare_technologies_acquired, Some(0));
+    }
+
+    #[test]
+    fn test_rare_technologies_count() {
+        let game = block(vec![
+            ("date", a("2205.01.01")),
+            ("player", block(vec![("country", a("0"))])),
+        ]);
+        let country = block(vec![(
+            "tech_status",
+            block(vec![
+                // Rare techs
+                ("technology", a("tech_psionic_theory")),
+                ("level", a("1")),
+                ("technology", a("tech_paradise_dome")),
+                ("level", a("1")),
+                ("technology", a("tech_colossus")),
+                ("level", a("1")),
+                // Non-rare techs (should not be counted)
+                ("technology", a("tech_physics_1")),
+                ("level", a("2")),
+                ("technology", a("tech_society_2")),
+                ("level", a("1")),
+            ]),
+        )]);
+
+        let facts = extract_progression_facts(&game, &country);
+
+        // Should count only the 3 rare techs
+        assert_eq!(facts.rare_technologies_acquired, Some(3));
     }
 
     #[test]

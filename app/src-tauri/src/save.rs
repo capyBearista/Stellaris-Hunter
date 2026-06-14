@@ -378,7 +378,6 @@ fn dedupe_preserve_order(values: Vec<String>) -> Vec<String> {
 
 /// Navigate a path through the Clausewitz AST using direct child lookups.
 /// Returns None if any segment is missing.
-#[allow(dead_code)]
 pub(crate) fn query_path<'a>(
     value: &'a ClausewitzValue,
     path: &[&str],
@@ -392,7 +391,6 @@ pub(crate) fn query_path<'a>(
 
 /// Count the number of direct entries (Pair or Value nodes) in a block.
 /// Returns 0 if the value is not a Block.
-#[allow(dead_code)]
 pub(crate) fn count_entries(value: &ClausewitzValue) -> usize {
     match value {
         ClausewitzValue::Block(nodes) => nodes.len(),
@@ -402,7 +400,6 @@ pub(crate) fn count_entries(value: &ClausewitzValue) -> usize {
 
 /// Parse a numeric value from a Clausewitz atom string.
 /// Handles integers and floats. Returns None if not a valid number.
-#[allow(dead_code)]
 pub(crate) fn parse_f64(value: &ClausewitzValue) -> Option<f64> {
     match value {
         ClausewitzValue::Atom(s) => s.parse::<f64>().ok(),
@@ -411,13 +408,11 @@ pub(crate) fn parse_f64(value: &ClausewitzValue) -> Option<f64> {
 }
 
 /// Navigate a path and parse the final value as f64.
-#[allow(dead_code)]
 pub(crate) fn query_f64(value: &ClausewitzValue, path: &[&str]) -> Option<f64> {
     query_path(value, path).and_then(parse_f64)
 }
 
 /// Navigate a path and extract the final value as a string atom.
-#[allow(dead_code)]
 pub(crate) fn query_atom(value: &ClausewitzValue, path: &[&str]) -> Option<String> {
     query_path(value, path).and_then(atom_string)
 }
@@ -429,13 +424,11 @@ pub(crate) fn query_bool(value: &ClausewitzValue, path: &[&str]) -> Option<bool>
 }
 
 /// Count entries at a given path.
-#[allow(dead_code)]
 pub(crate) fn query_count(value: &ClausewitzValue, path: &[&str]) -> Option<usize> {
     query_path(value, path).map(count_entries)
 }
 
 /// Collect all atoms at a given path.
-#[allow(dead_code)]
 pub(crate) fn query_atoms(value: &ClausewitzValue, path: &[&str]) -> Vec<String> {
     query_path(value, path)
         .map(collect_atoms)

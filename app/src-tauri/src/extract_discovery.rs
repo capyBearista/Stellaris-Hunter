@@ -1,7 +1,4 @@
-// Allow dead_code: this module's functions are not yet wired into the save
-// parse pipeline, but will be once fact extraction is integrated into
-// save parsing. Tests below verify correctness.
-#![allow(dead_code)]
+// Extraction functions are called from save.rs as part of the parse pipeline.
 
 /// Extract discovery facts (galaxy-generation-dependent) from a parsed
 /// Stellaris gamestate AST.
@@ -508,6 +505,7 @@ mod tests {
     }
 
     /// Convenience: create a ClausewitzValue::Block from value-only nodes.
+    #[allow(dead_code)]
     fn value_block(values: Vec<ClausewitzValue>) -> ClausewitzValue {
         ClausewitzValue::Block(values.into_iter().map(ClausewitzNode::Value).collect())
     }
