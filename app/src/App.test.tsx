@@ -699,3 +699,312 @@ it('saves an achievement note from the planner', async () => {
     notes: 'My achievement note',
   });
 });
+
+it('hides Tags and Rule Confidence columns by default and supports reset', async () => {
+  const user = userEvent.setup();
+  invoke.mockResolvedValueOnce([]);
+  invoke.mockResolvedValueOnce({
+    catalog_version: '1.0',
+    stellaris_version: '4.0',
+    source_url: null,
+    source_hash: null,
+    updated_at: '2025-01-01',
+    imported_at: '2025-01-02',
+  });
+  invoke.mockResolvedValueOnce([]);
+
+  render(
+    <MemoryRouter>
+      <Achievements />
+    </MemoryRouter>,
+  );
+
+  await screen.findByText('Achievement Catalog');
+
+  // Open columns panel
+  await user.click(screen.getByRole('button', { name: /columns/i }));
+
+  // Tags and Rule Confidence checkboxes should be unchecked
+  const tagsCheckbox = screen.getByLabelText('Tags');
+  const ruleConfCheckbox = screen.getByLabelText('Rule Confidence');
+  expect(tagsCheckbox).not.toBeChecked();
+  expect(ruleConfCheckbox).not.toBeChecked();
+
+  // Reset button should be disabled initially
+  const resetButton = screen.getByRole('button', { name: /reset/i });
+  expect(resetButton).toBeDisabled();
+
+  // Toggle a column, now Reset should be enabled
+  await user.click(tagsCheckbox);
+  expect(resetButton).toBeEnabled();
+
+  // Click Reset
+  await user.click(resetButton);
+  expect(tagsCheckbox).not.toBeChecked();
+});
+
+it('shows correct sort options without Version', async () => {
+  invoke.mockResolvedValueOnce([]);
+  invoke.mockResolvedValueOnce({
+    catalog_version: '1.0',
+    stellaris_version: '4.0',
+    source_url: null,
+    source_hash: null,
+    updated_at: '2025-01-01',
+    imported_at: '2025-01-02',
+  });
+  invoke.mockResolvedValueOnce([]);
+
+  render(
+    <MemoryRouter>
+      <Achievements />
+    </MemoryRouter>,
+  );
+
+  await screen.findByText('Achievement Catalog');
+
+  const sortSelect = screen.getByLabelText('Sort achievements');
+  const options = Array.from(sortSelect.querySelectorAll('option')).map((opt) => opt.textContent);
+
+  expect(options.some((o) => o.startsWith('Name'))).toBe(true);
+  expect(options.some((o) => o.startsWith('DLC'))).toBe(true);
+  expect(options.some((o) => o.startsWith('Difficulty'))).toBe(true);
+  expect(options.some((o) => o.startsWith('Version'))).toBe(false);
+});
+
+it('creates a force-incomplete override for Steam-baseline completed achievements', async () => {
+  const user = userEvent.setup();
+
+  // First call: loadAchievements
+  invoke.mockResolvedValueOnce([
+    {
+      id: 'ach_steam_done',
+      steam_app_id: 281990,
+      steam_api_name: 'ACH_DONE',
+      local_key: null,
+      deprecated: false,
+      completed: true, // Steam baseline complete
+      source: {
+        name: 'Steam Done Achievement',
+        description: 'Already done',
+        requirement: null,
+        hint: null,
+        group: 'Base Game',
+        version_added: '1.0',
+        difficulty: 'VE',
+      },
+      curation: {
+        tags: [],
+        conditions: [],
+        warnings: [],
+        planner_notes: null,
+        known_limitations: [],
+        rule_confidence: null,
+      },
+    },
+  ]);
+  // Second call: loadCatalogInfo
+  invoke.mockResolvedValueOnce({
+    catalog_version: '1.0',
+    stellaris_version: '4.0',
+    source_url: null,
+    source_hash: null,
+    updated_at: '2025-01-01',
+    imported_at: '2025-01-02',
+  });
+  // Third call: loadCompletionOverrides (empty)
+  invoke.mockResolvedValueOnce([]);
+
+  render(
+    <MemoryRouter>
+      <Achievements />
+    </MemoryRouter>,
+  );
+
+  await screen.findByText('Steam Done Achievement');
+
+  // Click completion toggle on the Steam-baseline item
+  const toggleButton = screen.getByRole('button', { name: /set local incomplete/i });
+  expect(toggleButton).toBeInTheDocument();
+  await user.click(toggleButton);
+
+  // Should have called setCompletionOverride with false (force_incomplete)
+  expect(invoke).toHaveBeenCalledWith('set_completion_override', {
+    achievementId: 'ach_steam_done',
+    completed: false,
+  });
+});
+
+it('rolls back a failed Steam-baseline force-incomplete override', async () => {
+  const user = userEvent.setup();
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_achievements') {
+      return Promise.resolve([
+        {
+          id: 'ach_steam_done',
+          steam_app_id: 281990,
+          steam_api_name: 'ACH_DONE',
+          local_key: null,
+          deprecated: false,
+          completed: true,
+          source: {
+            name: 'Steam Done Achievement',
+            description: 'Already done',
+            requirement: null,
+            hint: null,
+            group: 'Base Game',
+            version_added: '1.0',
+            difficulty: 'VE',
+          },
+          curation: {
+            tags: [],
+            conditions: [],
+            warnings: [],
+            planner_notes: null,
+            known_limitations: [],
+            rule_confidence: null,
+          },
+        },
+      ]);
+    }
+    if (command === 'load_catalog_info') {
+      return Promise.resolve({
+        catalog_version: '1.0',
+        stellaris_version: '4.0',
+        source_url: null,
+        source_hash: null,
+        updated_at: '2025-01-01',
+        imported_at: '2025-01-02',
+      });
+    }
+    if (command === 'load_completion_overrides') return Promise.resolve([]);
+    if (command === 'set_completion_override') return Promise.reject(new Error('override write failed'));
+    if (command === 'get_achievement_icon') return Promise.resolve(null);
+    return Promise.resolve(null);
+  });
+
+  render(
+    <MemoryRouter>
+      <Achievements />
+    </MemoryRouter>,
+  );
+
+  const toggleButton = await screen.findByRole('button', { name: /set local incomplete/i });
+  expect(toggleButton).toHaveTextContent('✓');
+
+  await user.click(toggleButton);
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Override error: override write failed');
+  expect(screen.getByRole('button', { name: /set local incomplete/i })).toHaveTextContent('✓');
+});
+
+it('renders difficulty legend without literal brackets', async () => {
+  invoke.mockResolvedValueOnce([]);
+  invoke.mockResolvedValueOnce({
+    catalog_version: '1.0',
+    stellaris_version: '4.0',
+    source_url: null,
+    source_hash: null,
+    updated_at: '2025-01-01',
+    imported_at: '2025-01-02',
+  });
+  invoke.mockResolvedValueOnce([]);
+
+  render(
+    <MemoryRouter>
+      <Achievements />
+    </MemoryRouter>,
+  );
+
+  await screen.findByText('Achievement Catalog');
+
+  const legend = screen.getByLabelText('Difficulty legend');
+  expect(legend.textContent).not.toContain('[');
+  expect(legend.textContent).not.toContain(']');
+});
+
+it('renders Collapse All and Expand All controls in Planner', async () => {
+  const user = userEvent.setup();
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_a',
+          run_folder: 'run_a',
+          display_name: 'Collapse Run',
+          latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: '2532.01.26',
+          game_version: 'Cetus v4.3.7',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 5,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (command === 'load_planner_evaluations') {
+      return Promise.resolve([
+        {
+          achievement: {
+            id: 'ach_pl',
+            steam_app_id: 281990,
+            steam_api_name: 'ACH_PL',
+            local_key: null,
+            deprecated: false,
+            source: {
+              name: 'Plannable Achievement',
+              description: null,
+              requirement: 'Do the thing',
+              hint: null,
+              group: 'Base Game',
+              version_added: '1.0',
+              difficulty: 'E',
+            },
+            curation: {
+              tags: [],
+              conditions: [],
+              warnings: [],
+              planner_notes: null,
+              known_limitations: [],
+              rule_confidence: null,
+            },
+          },
+          status: 'Possible',
+          computed_status: 'Possible',
+          planned: false,
+          ignored: false,
+          reasons: ['No blocker.'],
+          warnings: [],
+          conditions: [],
+        },
+      ]);
+    }
+    if (command === 'load_run_achievement_notes') return Promise.resolve([]);
+    if (command === 'set_run_achievement_status') return Promise.resolve();
+    return Promise.resolve([]);
+  });
+
+  render(
+    <MemoryRouter>
+      <Planner />
+    </MemoryRouter>,
+  );
+
+  await screen.findByText('Plannable Achievement');
+
+  // Collapse All and Expand All buttons should exist
+  const collapseAll = screen.getByRole('button', { name: /collapse all/i });
+  const expandAll = screen.getByRole('button', { name: /expand all/i });
+  expect(collapseAll).toBeInTheDocument();
+  expect(expandAll).toBeInTheDocument();
+
+  // Click Collapse All
+  await user.click(collapseAll);
+  // The group should now be collapsed, so the achievement should not be visible
+  expect(screen.queryByText('Plannable Achievement')).not.toBeInTheDocument();
+
+  // Click Expand All
+  await user.click(expandAll);
+  expect(await screen.findByText('Plannable Achievement')).toBeInTheDocument();
+});

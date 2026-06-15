@@ -31,6 +31,7 @@ export function Planner() {
   const [status, setStatus] = useState<LoadState>('idle');
   const [evalStatus, setEvalStatus] = useState<LoadState>('idle');
   const [achievementNotes, setAchievementNotes] = useState<Map<string, string>>(new Map());
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<PlannerStatus>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -139,6 +140,23 @@ export function Planner() {
     }
   };
 
+  const toggleGroupCollapse = (status: PlannerStatus) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  };
+
+  const collapseAllGroups = () => {
+    setCollapsedGroups(new Set(STATUS_ORDER));
+  };
+
+  const expandAllGroups = () => {
+    setCollapsedGroups(new Set());
+  };
+
   return (
     <section aria-labelledby="planner-heading" className="panel planner-panel">
       <div className="panel-header">
@@ -181,42 +199,66 @@ export function Planner() {
           </p>
           {evalStatus === 'loading' ? <p className="muted">Evaluating achievements…</p> : null}
           {evalStatus !== 'loading' ? (
-            <div className="planner-groups">
-              {STATUS_ORDER.map((statusName) => {
-                const items = grouped.get(statusName) ?? [];
-                if (items.length === 0) return null;
-                return (
-                  <section key={statusName} className="planner-group" aria-label={`${statusName} achievements`}>
-                    <h3>
-                      <span className={statusBadgeClass(statusName)}>{statusName}</span>
-                      <span className="muted">{items.length}</span>
-                    </h3>
-                    <ul className="planner-list">
-                      {items.slice(0, 25).map((evaluation) => (
-                        <PlannerItem
-                          key={evaluation.achievement.id}
-                          evaluation={evaluation}
-                          selectedRunPath={selectedRunPath}
-                          noteText={achievementNotes.get(evaluation.achievement.id) ?? ''}
-                          onPlannedToggle={() => void handlePlannedToggle(evaluation)}
-                          onNoteChange={(achievementId, text) => {
-                            setAchievementNotes((prev) => {
-                              const next = new Map(prev);
-                              if (text) next.set(achievementId, text);
-                              else next.delete(achievementId);
-                              return next;
-                            });
-                          }}
-                        />
-                      ))}
-                    </ul>
-                    {items.length > 25 ? (
-                      <p className="muted">Showing first 25 of {items.length} in this group.</p>
-                    ) : null}
-                  </section>
-                );
-              })}
-            </div>
+            <>
+              <div className="planner-collapse-controls">
+                <button type="button" className="secondary-button" onClick={collapseAllGroups}>
+                  Collapse All
+                </button>
+                <button type="button" className="secondary-button" onClick={expandAllGroups}>
+                  Expand All
+                </button>
+              </div>
+              <div className="planner-groups">
+                {STATUS_ORDER.map((statusName) => {
+                  const items = grouped.get(statusName) ?? [];
+                  if (items.length === 0) return null;
+                  const isCollapsed = collapsedGroups.has(statusName);
+                  return (
+                    <section key={statusName} className="planner-group" aria-label={`${statusName} achievements`}>
+                      <h3>
+                        <button
+                          type="button"
+                          className="planner-group-toggle"
+                          onClick={() => toggleGroupCollapse(statusName)}
+                          aria-expanded={!isCollapsed}
+                          aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${statusName} group`}
+                        >
+                          {isCollapsed ? '\u25B6' : '\u25BC'}
+                        </button>
+                        <span className={statusBadgeClass(statusName)}>{statusName}</span>
+                        <span className="muted">{items.length}</span>
+                      </h3>
+                      {!isCollapsed ? (
+                        <>
+                          <ul className="planner-list">
+                            {items.slice(0, 25).map((evaluation) => (
+                              <PlannerItem
+                                key={evaluation.achievement.id}
+                                evaluation={evaluation}
+                                selectedRunPath={selectedRunPath}
+                                noteText={achievementNotes.get(evaluation.achievement.id) ?? ''}
+                                onPlannedToggle={() => void handlePlannedToggle(evaluation)}
+                                onNoteChange={(achievementId, text) => {
+                                  setAchievementNotes((prev) => {
+                                    const next = new Map(prev);
+                                    if (text) next.set(achievementId, text);
+                                    else next.delete(achievementId);
+                                    return next;
+                                  });
+                                }}
+                              />
+                            ))}
+                          </ul>
+                          {items.length > 25 ? (
+                            <p className="muted">Showing first 25 of {items.length} in this group.</p>
+                          ) : null}
+                        </>
+                      ) : null}
+                    </section>
+                  );
+                })}
+              </div>
+            </>
           ) : null}
         </>
       )}

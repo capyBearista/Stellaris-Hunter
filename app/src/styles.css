@@ -556,7 +556,7 @@ p .link-button {
 
 .achievement-filter-panel {
   display: grid;
-  grid-template-columns: minmax(260px, 1.3fr) repeat(4, minmax(150px, 0.7fr)) auto;
+  grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
   gap: var(--space-12);
   align-items: end;
   margin: var(--space-24) 0;
@@ -581,12 +581,14 @@ p .link-button {
 
 .achievement-filter-search {
   min-width: min(100%, 260px);
+  grid-column: 1 / -1;
 }
 
 .achievement-filter-actions {
   display: flex;
   gap: var(--space-8);
   align-items: center;
+  justify-content: flex-end;
 }
 
 .achievement-search {
@@ -740,6 +742,8 @@ p .link-button {
   padding: var(--space-12) var(--space-16);
   border-bottom: 1px solid color-mix(in oklch, var(--border-subtle) 70%, transparent);
   transition: background 0.15s ease-out, outline-color 0.15s ease-out;
+  content-visibility: auto;
+  contain-intrinsic-size: 120px;
 }
 
 .achievement-split-row:hover,
@@ -1043,6 +1047,28 @@ p .link-button {
 .sync-btn {
   padding: var(--space-8) var(--space-12);
   font-size: 0.78rem;
+}
+
+.planner-collapse-controls {
+  display: flex;
+  gap: var(--space-8);
+  margin-bottom: var(--space-16);
+}
+
+.planner-group-toggle {
+  padding: 0;
+  min-width: 24px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.planner-group-toggle:hover:not(:disabled) {
+  background: var(--bg-panel);
+  color: var(--text-main);
+  box-shadow: none;
 }
 
 .planner-group h3 {

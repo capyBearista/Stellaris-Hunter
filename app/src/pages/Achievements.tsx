@@ -19,6 +19,10 @@ import {
 } from '../tauri';
 import { IconPlaceholder } from '../components/IconPlaceholder';
 
+// Icon cache keyed by achievementId + iconVersion to avoid redundant IPC calls.
+const iconCache = new Map<string, string | null>();
+const inflightIconFetches = new Map<string, Promise<string | null>>();
+
 const DIFFICULTIES = ['All', 'VE', 'E', 'M', 'H', 'VH', 'I', 'UC'] as const;
 const DIFFICULTY_LABELS: Record<string, string> = {
   VE: 'Very Easy',
@@ -35,8 +39,8 @@ const COLUMN_CONFIG = [
   { key: 'icon', label: 'Icon', defaultVisible: true },
   { key: 'group', label: 'Group', defaultVisible: true },
   { key: 'difficulty', label: 'Difficulty', defaultVisible: true },
-  { key: 'tags', label: 'Tags', defaultVisible: true },
-  { key: 'ruleConfidence', label: 'Rule Confidence', defaultVisible: true },
+  { key: 'tags', label: 'Tags', defaultVisible: false },
+  { key: 'ruleConfidence', label: 'Rule Confidence', defaultVisible: false },
   { key: 'warnings', label: 'Warnings', defaultVisible: true },
   { key: 'version', label: 'Version Added', defaultVisible: false },
   { key: 'steamApi', label: 'Steam API Name', defaultVisible: false },
@@ -45,7 +49,7 @@ const COLUMN_CONFIG = [
 type ColumnKey = (typeof COLUMN_CONFIG)[number]['key'];
 type ViewMode = 'list' | 'board';
 type CompletionFilter = 'all' | 'completed' | 'incomplete';
-type SortKey = 'name' | 'group' | 'difficulty' | 'version';
+type SortKey = 'name' | 'group' | 'difficulty';
 type SortDir = 'asc' | 'desc';
 
 export function Achievements() {
@@ -78,12 +82,22 @@ export function Achievements() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [showColumns, setShowColumns] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [visibleColumns, setVisibleColumns] = useState<Record<ColumnKey, boolean>>(() =>
-    Object.fromEntries(COLUMN_CONFIG.map((column) => [column.key, column.defaultVisible])) as Record<
-      ColumnKey,
-      boolean
-    >,
+  const DEFAULT_COLUMNS = useMemo(
+    () =>
+      Object.fromEntries(COLUMN_CONFIG.map((column) => [column.key, column.defaultVisible])) as Record<
+        ColumnKey,
+        boolean
+      >,
+    [],
   );
+  const [visibleColumns, setVisibleColumns] = useState<Record<ColumnKey, boolean>>(() => ({ ...DEFAULT_COLUMNS }));
+
+  const columnsChanged = useMemo(
+    () => COLUMN_CONFIG.some((column) => visibleColumns[column.key] !== DEFAULT_COLUMNS[column.key]),
+    [visibleColumns, DEFAULT_COLUMNS],
+  );
+
+  const resetColumns = () => setVisibleColumns({ ...DEFAULT_COLUMNS });
 
   const handleSyncSteam = async () => {
     setSteamSyncing(true);
@@ -107,6 +121,8 @@ export function Achievements() {
     try {
       const result: IconSyncResult = await syncIcons();
       setIconSyncMessage(result.message);
+      iconCache.clear();
+      inflightIconFetches.clear();
       setIconVersion((v) => v + 1);
     } catch (unknownError) {
       setIconSyncError(errorMessage(unknownError));
@@ -219,9 +235,6 @@ export function Achievements() {
           case 'difficulty':
             cmp = (a.source.difficulty ?? 'UC').localeCompare(b.source.difficulty ?? 'UC');
             break;
-          case 'version':
-            cmp = (a.source.version_added ?? '').localeCompare(b.source.version_added ?? '');
-            break;
         }
         return sortDir === 'asc' ? cmp : -cmp;
       });
@@ -246,23 +259,50 @@ export function Achievements() {
 
   const handleCompletionToggle = async (id: string) => {
     setOverrideError(null);
-    const hasManualCompletion = overrides[id] === true;
+    const prevOverride = id in overrides ? overrides[id] : undefined;
     const achievement = achievements.find((entry) => entry.id === id);
-    if (!hasManualCompletion && achievement?.completed) return;
-    try {
-      if (hasManualCompletion) {
-        await clearCompletionOverride(id);
-        setOverrides((prev) => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
+
+    let newOverride: boolean | undefined;
+    if (prevOverride !== undefined) {
+      // Has manual override (true or false) -> clear it
+      newOverride = undefined;
+    } else if (achievement?.completed) {
+      // Steam baseline complete, no override -> force incomplete locally
+      newOverride = false;
+    } else {
+      // No override and not completed -> mark complete locally
+      newOverride = true;
+    }
+
+    // Optimistic update
+    setOverrides((prev) => {
+      const next = { ...prev };
+      if (newOverride === undefined) {
+        delete next[id];
       } else {
-        await setCompletionOverride(id, true);
-        setOverrides((prev) => ({ ...prev, [id]: true }));
+        next[id] = newOverride;
+      }
+      return next;
+    });
+
+    try {
+      if (newOverride === undefined) {
+        await clearCompletionOverride(id);
+      } else {
+        await setCompletionOverride(id, newOverride);
       }
     } catch (unknownError) {
       setOverrideError(errorMessage(unknownError));
+      // Rollback only this id
+      setOverrides((prev) => {
+        const next = { ...prev };
+        if (prevOverride === undefined) {
+          delete next[id];
+        } else {
+          next[id] = prevOverride;
+        }
+        return next;
+      });
     }
   };
 
@@ -354,7 +394,7 @@ export function Achievements() {
           <input
             type="search"
             aria-label="Search achievements"
-            placeholder="Name, requirement, tag, group…"
+            placeholder="Name, requirement, tag, DLC…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="filter-input achievement-search"
@@ -374,16 +414,16 @@ export function Achievements() {
           </select>
         </label>
         <label className="achievement-filter-field">
-          <span>DLC / Group</span>
+          <span>DLC</span>
           <select
             value={groupFilter}
             onChange={(e) => setGroupFilter(e.target.value)}
             className="filter-select"
-            aria-label="Filter by group"
+            aria-label="Filter by DLC"
           >
             {groups.map((g) => (
               <option key={g} value={g}>
-                {g === 'All' ? 'All groups' : g}
+                {g === 'All' ? 'All DLC' : g}
               </option>
             ))}
           </select>
@@ -412,9 +452,8 @@ export function Achievements() {
             aria-label="Sort achievements"
           >
             <option value="name">Name{sortArrow('name')}</option>
-            <option value="group">Group{sortArrow('group')}</option>
+            <option value="group">DLC{sortArrow('group')}</option>
             <option value="difficulty">Difficulty{sortArrow('difficulty')}</option>
-            <option value="version">Version{sortArrow('version')}</option>
           </select>
         </label>
         <div className="achievement-filter-actions">
@@ -428,7 +467,12 @@ export function Achievements() {
       </div>
 
       {showColumns ? (
-        <ColumnControls visibleColumns={visibleColumns} onToggle={toggleColumn} />
+        <ColumnControls
+          visibleColumns={visibleColumns}
+          onToggle={toggleColumn}
+          onReset={resetColumns}
+          changed={columnsChanged}
+        />
       ) : null}
 
       <DifficultyLegend />
@@ -494,15 +538,19 @@ function ViewToggle({
 function ColumnControls({
   visibleColumns,
   onToggle,
+  onReset,
+  changed,
 }: {
   visibleColumns: Record<ColumnKey, boolean>;
   onToggle: (key: ColumnKey) => void;
+  onReset: () => void;
+  changed: boolean;
 }) {
   return (
     <div className="achievement-column-controls" aria-label="Visible achievement fields">
       <div>
         <strong>Visible fields</strong>
-        <p className="muted">Show or hide list-view fields. Version Added starts hidden by default.</p>
+        <p className="muted">Show or hide list-view fields. Tags and Rule Confidence start hidden by default.</p>
       </div>
       <div className="achievement-column-grid">
         {COLUMN_CONFIG.map((column) => (
@@ -516,6 +564,9 @@ function ColumnControls({
           </label>
         ))}
       </div>
+      <button type="button" className="secondary-button" onClick={onReset} disabled={!changed}>
+        Reset
+      </button>
     </div>
   );
 }
@@ -526,7 +577,7 @@ function DifficultyLegend() {
       <strong>Difficulty</strong>
       {Object.entries(DIFFICULTY_LABELS).map(([key, label]) => (
         <span key={key} className={`difficulty-legend-chip ${difficultyTone(key)}`}>
-          [ <b>{key}</b> - {label} ]
+          <b>{key}</b> - {label}
         </span>
       ))}
     </div>
@@ -634,7 +685,6 @@ function AchievementListRow({
           source={completionSource}
           onToggle={onCompletionToggle}
           label={completionToggleLabel(completionSource, achievement.source.name)}
-          disabled={completionSource === 'Steam baseline'}
         />
       ) : null}
       {visibleColumns.icon ? (
@@ -704,7 +754,6 @@ function AchievementDetailPanel({
             source={completionSource}
             onToggle={onCompletionToggle}
             label={completionToggleLabel(completionSource, achievement.source.name)}
-            disabled={completionSource === 'Steam baseline'}
             large
           />
           <button type="button" className="detail-close-button" onClick={onClose} aria-label="Close achievement details">
@@ -781,7 +830,6 @@ function AchievementBoardView({
                     source={completionSource(achievement, overrides)}
                     onToggle={() => onCompletionToggle(achievement.id)}
                     label={completionToggleLabel(completionSource(achievement, overrides), achievement.source.name)}
-                    disabled={completionSource(achievement, overrides) === 'Steam baseline'}
                   />
                 </div>
                 <div className="planner-meta">
@@ -823,14 +871,12 @@ function CompletionControl({
   source,
   onToggle,
   label,
-  disabled = false,
   large = false,
 }: {
   completed: boolean;
   source: string;
   onToggle: () => void;
   label: string;
-  disabled?: boolean;
   large?: boolean;
 }) {
   return (
@@ -841,14 +887,12 @@ function CompletionControl({
       aria-pressed={completed}
       aria-label={label}
       title={`${source}. ${label}`}
-      disabled={disabled}
       onClick={(event) => {
         event.stopPropagation();
-        if (disabled) return;
         onToggle();
       }}
     >
-      {completed ? '✓' : '·'}
+      {completed ? '\u2713' : '\u00B7'}
     </button>
   );
 }
@@ -862,32 +906,25 @@ function AchievementIcon({
   iconVersion: number;
   size?: number;
 }) {
-  const [src, setSrc] = useState<string | null>(null);
+  const cacheKey = `${achievementId}-${iconVersion}`;
+  const [src, setSrc] = useState<string | null>(() => iconCache.get(cacheKey) ?? null);
 
   useEffect(() => {
-    let cancelled = false;
+    const cached = iconCache.get(cacheKey);
+    if (cached !== undefined) {
+      setSrc(cached);
+      return;
+    }
 
-    getAchievementIcon(achievementId)
-      .then((bytes) => {
-        if (cancelled) return;
-        if (!bytes) {
-          setSrc(null);
-          return;
-        }
-        let binary = '';
-        for (let i = 0; i < bytes.length; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        setSrc('data:image/png;base64,' + btoa(binary));
-      })
-      .catch(() => {
-        if (!cancelled) setSrc(null);
-      });
+    let cancelled = false;
+    loadAchievementIconDataUrl(achievementId, cacheKey).then((dataUri) => {
+      if (!cancelled) setSrc(dataUri);
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [achievementId, iconVersion]);
+  }, [achievementId, iconVersion, cacheKey]);
 
   return src ? (
     <img className="achievement-icon" src={src} alt="" width={size} height={size} />
@@ -896,6 +933,38 @@ function AchievementIcon({
       <IconPlaceholder size={Math.max(32, Math.round(size * 0.72))} />
     </span>
   );
+}
+
+function loadAchievementIconDataUrl(achievementId: string, cacheKey: string): Promise<string | null> {
+  const cached = iconCache.get(cacheKey);
+  if (cached !== undefined) return Promise.resolve(cached);
+
+  const inflight = inflightIconFetches.get(cacheKey);
+  if (inflight) return inflight;
+
+  const fetchPromise = getAchievementIcon(achievementId)
+    .then((bytes) => {
+      let dataUri: string | null = null;
+      if (bytes) {
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        dataUri = 'data:image/png;base64,' + btoa(binary);
+      }
+      iconCache.set(cacheKey, dataUri);
+      return dataUri;
+    })
+    .catch(() => {
+      iconCache.set(cacheKey, null);
+      return null;
+    })
+    .finally(() => {
+      inflightIconFetches.delete(cacheKey);
+    });
+
+  inflightIconFetches.set(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 function DifficultyBadge({ difficulty }: { difficulty: string | null }) {
@@ -934,10 +1003,16 @@ function FactTile({ label, value }: { label: string; value: string }) {
   );
 }
 
+/**
+ * Maps achievement IDs to local override state:
+ * - true: locally marked complete
+ * - false: locally marked incomplete, overriding a true Steam baseline
+ * - missing key: defer to Steam baseline
+ */
 function toOverrideRecord(overrides: AchievementOverride[]): Record<string, boolean> {
   const record: Record<string, boolean> = {};
   for (const o of overrides) {
-    if (o.completed) record[o.achievement_id] = true;
+    record[o.achievement_id] = o.completed;
   }
   return record;
 }
@@ -978,15 +1053,15 @@ function isCompleted(achievement: AchievementEntry, overrides: Record<string, bo
 }
 
 function completionSource(achievement: AchievementEntry, overrides: Record<string, boolean>) {
-  if (overrides[achievement.id]) return 'Manual override';
+  if (achievement.id in overrides) return 'Local override';
   if (achievement.completed) return 'Steam baseline';
   return 'Incomplete';
 }
 
 function completionToggleLabel(source: string, achievementName: string) {
-  if (source === 'Manual override') return `Clear local completion for ${achievementName}`;
-  if (source === 'Steam baseline') return `Completed from Steam: ${achievementName}`;
-  return `Mark completed ${achievementName}`;
+  if (source === 'Local override') return `Clear local completion mark for ${achievementName}`;
+  if (source === 'Steam baseline') return `Set local incomplete for ${achievementName}`;
+  return `Mark locally completed: ${achievementName}`;
 }
 
 function diffClass(difficulty: string | null): string {
