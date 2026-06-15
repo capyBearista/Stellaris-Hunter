@@ -271,7 +271,7 @@ function PlannerItem({
 
   const firstReason = evaluation.reasons[0] ?? 'No evaluation reason recorded.';
   return (
-    <li className="planner-item">
+    <li className="planner-item" data-status={evaluation.status}>
       <div className="planner-item-main">
         <div>
           <strong>{evaluation.achievement.source.name}</strong>

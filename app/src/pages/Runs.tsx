@@ -82,7 +82,7 @@ export function Runs() {
     <section aria-labelledby="runs-heading" className="panel">
       <div className="panel-header">
         <div>
-          <h2 id="runs-heading">Runs / Saves</h2>
+          <h2 id="runs-heading">Campaign Archives</h2>
           <p className="muted panel-subtitle">Persisted save folders and latest parsed facts.</p>
         </div>
         <button type="button" onClick={handleRescan} disabled={status === 'loading'}>

@@ -132,6 +132,7 @@ it('loads persisted overview state and rescans saves', async () => {
 });
 
 it('renders achievements page with mocked data', async () => {
+  const user = userEvent.setup();
   invoke.mockResolvedValueOnce([
     {
       id: 'ach_1',
@@ -174,8 +175,15 @@ it('renders achievements page with mocked data', async () => {
     </MemoryRouter>,
   );
 
-  expect(await screen.findByText('First Achievement')).toBeInTheDocument();
-  expect(screen.getByRole('cell', { name: 'Base Game' })).toBeInTheDocument();
+  const achievementTitles = await screen.findAllByText('First Achievement');
+  expect(achievementTitles.length).toBeGreaterThanOrEqual(1);
+  expect(screen.getByLabelText('Achievement list')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Selected achievement details')).not.toBeInTheDocument();
+  await user.click(achievementTitles[0]);
+  expect(screen.getByLabelText('Selected achievement details')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: /Close achievement details/i }));
+  expect(screen.queryByLabelText('Selected achievement details')).not.toBeInTheDocument();
+  expect(screen.getAllByText('Base Game').length).toBeGreaterThanOrEqual(1);
 });
 
 it('invokes the scan command with an empty payload', async () => {

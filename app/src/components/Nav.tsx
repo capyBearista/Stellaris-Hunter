@@ -1,33 +1,33 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Trophy, Map, FolderOpen, Settings } from 'lucide-react';
+import { Terminal, Award, Radar, Database, Sliders } from 'lucide-react';
 
 export function Nav() {
   return (
     <nav className="app-nav">
       <span className="nav-brand">Stellaris Hunter</span>
       <NavLink to="/" end className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-        <LayoutDashboard size={18} /> Overview
+        <Terminal size={18} aria-hidden="true" /> Overview
       </NavLink>
       <NavLink
         to="/achievements"
         className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
       >
-        <Trophy size={18} /> Achievements
+        <Award size={18} aria-hidden="true" /> Achievements
       </NavLink>
       <NavLink
         to="/planner"
         className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
       >
-        <Map size={18} /> Planner
+        <Radar size={18} aria-hidden="true" /> Planner
       </NavLink>
       <NavLink to="/runs" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-        <FolderOpen size={18} /> Runs
+        <Database size={18} aria-hidden="true" /> Runs
       </NavLink>
       <NavLink
         to="/settings"
         className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
       >
-        <Settings size={18} /> Settings
+        <Sliders size={18} aria-hidden="true" /> Settings
       </NavLink>
     </nav>
   );

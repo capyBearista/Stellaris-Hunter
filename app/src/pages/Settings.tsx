@@ -131,7 +131,7 @@ export function Settings() {
   return (
     <section className="panel">
       <div className="panel-header">
-        <h2>Settings</h2>
+        <h2>Configuration</h2>
       </div>
 
       {/* App Info */}
@@ -230,21 +230,21 @@ export function Settings() {
         <h3>Attribution</h3>
         <p className="muted">
           Stellaris is a game by{' '}
-          <a href="https://www.paradoxinteractive.com/games/stellaris/about" target="_blank" rel="noopener noreferrer" style={{ color: '#9db8ff' }}>
+          <a href="https://www.paradoxinteractive.com/games/stellaris/about" target="_blank" rel="noopener noreferrer" className="link-button">
             Paradox Interactive
           </a>
           .
         </p>
         <p className="muted">
           Achievement data synced via{' '}
-          <a href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer" style={{ color: '#9db8ff' }}>
+          <a href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer" className="link-button">
             Steam
           </a>
           .
         </p>
         <p className="muted">
           This project is licensed under{' '}
-          <a href="https://www.mozilla.org/en-US/MPL/2.0/" target="_blank" rel="noopener noreferrer" style={{ color: '#9db8ff' }}>
+          <a href="https://www.mozilla.org/en-US/MPL/2.0/" target="_blank" rel="noopener noreferrer" className="link-button">
             MPL-2.0
           </a>
           .
