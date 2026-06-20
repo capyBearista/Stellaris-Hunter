@@ -210,26 +210,16 @@ fn values_equal(left: &Value, right: &Value) -> bool {
             if left.eq_ignore_ascii_case(right) {
                 return true;
             }
-            // Fall back to DLC base-name comparison only when at least one side
-            // looks like an internal DLC identifier. This keeps unrelated string
-            // comparisons strict.
-            if !looks_like_dlc_identifier(left) && !looks_like_dlc_identifier(right) {
-                return false;
-            }
+            // Fall back to search-key normalization so human-readable names
+            // ("Ancient Relics"), normalized underscore keys ("ancient_relics"),
+            // and canonical IDs ("dlc028_ancient_relics") all resolve
+            // equivalently.
             let left_key = dlc_search_key(left);
             let right_key = dlc_search_key(right);
             left_key.eq_ignore_ascii_case(&right_key)
         }
         _ => left == right,
     }
-}
-
-fn looks_like_dlc_identifier(s: &str) -> bool {
-    let lower = s.to_lowercase();
-    let Some(rest) = lower.strip_prefix("dlc") else {
-        return false;
-    };
-    rest.chars().next().is_some_and(|ch| ch.is_ascii_digit())
 }
 
 /// Produce a case-insensitive search key for DLC matching.
@@ -805,12 +795,23 @@ mod tests {
 
         let result = evaluate_operator(
             "contains",
+            &json!(["ancient_relics"]),
+            &json!("Ancient Relics"),
+        );
+        assert_eq!(
+            result.0,
+            Some(true),
+            "normalized 'ancient_relics' should match 'Ancient Relics' via contains"
+        );
+
+        let result = evaluate_operator(
+            "contains",
             &json!(["dlc009_plantoids"]),
             &json!("Plantoids"),
         );
         assert_eq!(result.0, Some(true), "Plantoids should match via contains");
 
-        // Underscore variant also works via the DLC normalization:
+        // When save required_dlcs is normalized without dlcNNN_ prefix
         let result = evaluate_operator(
             "contains",
             &json!(["dlc028_ancient_relics"]),

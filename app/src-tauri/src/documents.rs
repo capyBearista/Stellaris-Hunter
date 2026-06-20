@@ -324,15 +324,99 @@ fn merge_launcher_dlcs(
     let mut ids: Vec<&String> = dlc_catalog.keys().collect();
     ids.sort();
 
-    ids.into_iter()
+    let mut result: Vec<LauncherDlcSummary> = ids
+        .into_iter()
         .filter_map(|id| {
             dlc_catalog.get(id).map(|summary| {
                 let mut summary = summary.clone();
-                summary.enabled_in_active_playset = active_playset_dlcs.get(id).copied();
+                // Enablement lookup via match keys rather than raw catalog key,
+                // because `dlc.id` (catalog key) may not match `playsets_dlcs.dlcId`
+                // (e.g. UUID catalog keys vs short launcher IDs like "leviathans").
+                summary.enabled_in_active_playset =
+                    find_playset_enablement(&summary, active_playset_dlcs);
                 summary
             })
         })
-        .collect()
+        .collect();
+
+    // Supplement entries from playsets_dlcs that no catalog row already
+    // covers.  Real launcher databases can have an empty `dlc` table while
+    // `playsets_dlcs` still carries DLC enablement info keyed by short IDs
+    // (e.g. "leviathans", "utopia", "plantoid").  When catalog rows do exist
+    // but use opaque keys, we must check via match keys to avoid duplicates.
+    //
+    // First, collect all match keys already covered by catalog entries.
+    let mut covered_keys: std::collections::HashSet<String> = std::collections::HashSet::new();
+    for summary in dlc_catalog.values() {
+        if let Some(key) = crate::model::launcher_dlc_match_key(summary) {
+            covered_keys.extend(crate::model::dlc_match_keys(&key));
+        }
+        if let Some(raw_id) = summary.id.as_deref() {
+            covered_keys.extend(crate::model::dlc_match_keys(raw_id));
+        }
+    }
+    let mut supplement_ids: Vec<&String> = active_playset_dlcs
+        .keys()
+        .filter(|id| {
+            let ps_keys = crate::model::dlc_match_keys(id);
+            !ps_keys.iter().any(|k| covered_keys.contains(k))
+        })
+        .collect();
+    supplement_ids.sort();
+
+    for id in supplement_ids {
+        let enabled = active_playset_dlcs.get(id).copied();
+        result.push(LauncherDlcSummary {
+            id: Some(id.clone()),
+            enabled_in_active_playset: enabled,
+            ..Default::default()
+        });
+    }
+
+    result
+}
+
+/// Look up enablement for a catalog DLC entry in the active playset's DLC
+/// enablement map, using multi‑key matching instead of raw key equality.
+///
+/// Collects all candidate keys from the catalog entry's fields (registry_id,
+/// path, name, AND the raw `id`) and expands each via `dlc_match_keys`, then
+/// checks for overlap against expanded forms of each `playsets_dlcs` key.
+///
+/// This handles both directions:
+/// - Catalog `id` = `"dlc-1"`, playsets_dlcs `dlcId` = `"dlc-1"` (same key)
+/// - Catalog `registry_id` = `"dlc014_leviathans"`, playsets_dlcs `dlcId` = `"leviathans"` (different formats)
+fn find_playset_enablement(
+    summary: &LauncherDlcSummary,
+    active_playset_dlcs: &HashMap<String, bool>,
+) -> Option<bool> {
+    // Collect all candidate match keys from the catalog entry's fields.
+    let mut candidates: Vec<String> = Vec::new();
+    if let Some(key) = crate::model::launcher_dlc_match_key(summary) {
+        candidates.push(key);
+    }
+    // Also include the raw dlc.id — it may be the direct key used in
+    // playsets_dlcs.dlcId even when registry_id/path provide a different key.
+    if let Some(raw_id) = summary.id.as_deref() {
+        let norm = crate::model::normalize_dlc_id(raw_id);
+        if !candidates.contains(&norm) {
+            candidates.push(norm);
+        }
+    }
+
+    // Expand each candidate via dlc_match_keys and check for overlap with
+    // expanded playsets_dlcs keys.
+    for candidate in &candidates {
+        let our_keys = crate::model::dlc_match_keys(candidate);
+        for (ps_key, &enabled) in active_playset_dlcs {
+            let ps_keys = crate::model::dlc_match_keys(ps_key);
+            if our_keys.iter().any(|k| ps_keys.contains(k)) {
+                return Some(enabled);
+            }
+        }
+    }
+
+    None
 }
 
 fn read_enabled_mods(

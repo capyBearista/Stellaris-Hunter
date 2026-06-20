@@ -241,11 +241,93 @@ pub struct RunDlcInfo {
     pub all_disabled_dlcs: Vec<String>,
 }
 
+/// Generate all possible search keys for a DLC identifier, enabling matching
+/// between canonical IDs (e.g. `"dlc014_leviathans"`) and short launcher IDs
+/// (e.g. `"leviathans"`), including known aliases like `plantoid` ↔ `plantoids`.
+///
+/// The returned set always includes the normalized form of the input itself.
+/// For canonical IDs (`dlcNNN_name`) the short `name` suffix is also included.
+/// Known aliases (e.g. `plantoid` ↔ `plantoids`) are added so that either form
+/// matches the other.
+pub fn dlc_match_keys(id: &str) -> Vec<String> {
+    let normalized = normalize_dlc_id(id);
+    let mut keys = vec![normalized.clone()];
+
+    // Short name from canonical ID pattern: "dlc014_leviathans" → "leviathans"
+    if let Some((_prefix, suffix)) = normalized.split_once('_') {
+        if !suffix.is_empty()
+            && !suffix.chars().all(|c| c.is_ascii_digit())
+            && !keys.contains(&suffix.to_string())
+        {
+            keys.push(suffix.to_string());
+        }
+    }
+
+    // Known aliases: launcher short names that differ from the canonical suffix
+    // by more than the prefix.  Key = canonical suffix, values = launcher forms.
+    // Example: canonical saves use "plantoids" but the launcher stores "plantoid".
+    static DLC_ALIASES: &[(&str, &[&str])] = &[
+        ("plantoids", &["plantoid"]),
+        ("anniversary_portraits", &["anniversary"]),
+        ("first_contact", &["firstcontact"]),
+        ("galactic_paragons", &["paragon"]),
+        ("shadows_of_the_shroud", &["shadows_shroud"]),
+        ("rick_the_cube_species_portrait", &["rick_the_cube"]),
+        ("stargazer_species_portrait", &["stargazer"]),
+    ];
+
+    // Collect extra alias keys for any key we already have.
+    let mut extra = Vec::new();
+    for key in &keys {
+        for &(canonical, aliases) in DLC_ALIASES {
+            if key == canonical {
+                extra.extend(aliases.iter().map(|s| s.to_string()));
+            }
+            // Also handle reverse: if key is an alias, add the canonical form.
+            if aliases.iter().any(|a| a == key) {
+                extra.push(canonical.to_string());
+            }
+        }
+    }
+    keys.extend(extra);
+
+    keys.sort();
+    keys.dedup();
+    keys
+}
+
+/// Derive the best single match key from a `LauncherDlcSummary` for use in
+/// enablement lookup and DLC state matching.
+///
+/// Field priority:
+/// 1. `registry_id`  (e.g. `"dlc009_plantoids"`) — the internal game key
+/// 2. `path` / `dirPath` — extract last path component
+/// 3. `name` — human-readable (least reliable for matching)
+/// 4. `id` — raw primary key from the `dlc` table
+pub(crate) fn launcher_dlc_match_key(dlc: &LauncherDlcSummary) -> Option<String> {
+    if let Some(registry_id) = dlc.registry_id.as_deref() {
+        return Some(normalize_dlc_id(registry_id));
+    }
+    if let Some(path) = dlc.path.as_deref() {
+        let filename = path
+            .split(&['/', '\\'][..])
+            .rfind(|s| !s.is_empty())
+            .unwrap_or(path);
+        return Some(normalize_dlc_id(filename));
+    }
+    if let Some(name) = dlc.name.as_deref() {
+        return Some(normalize_dlc_id(name));
+    }
+    dlc.id.as_deref().map(normalize_dlc_id)
+}
+
 /// Normalize a raw DLC identifier from dlc_load.json or save metadata into a
 /// canonical form for matching.
 ///
 /// Strips a leading `dlc/` or `dlc\` path prefix and a trailing `.dlc`
-/// extension, then lowercases.
+/// extension, then lowercases.  For subdirectory paths like
+/// `dlc/dlc031_astral_planes/dlc031.dlc`, only the DLC directory name
+/// (`dlc031_astral_planes`) is kept.
 ///
 /// # Examples
 ///
@@ -254,6 +336,7 @@ pub struct RunDlcInfo {
 /// assert_eq!(normalize_dlc_id("dlc/dlc014_leviathans.dlc"), "dlc014_leviathans");
 /// assert_eq!(normalize_dlc_id("dlc028_ancient_relics"), "dlc028_ancient_relics");
 /// assert_eq!(normalize_dlc_id("DLC/DLC_ALPHA.DLC"), "dlc_alpha");
+/// assert_eq!(normalize_dlc_id("dlc/dlc031_astral_planes/dlc031.dlc"), "dlc031_astral_planes");
 /// ```
 pub fn normalize_dlc_id(raw: &str) -> String {
     let lower = raw.to_lowercase();
@@ -262,7 +345,34 @@ pub fn normalize_dlc_id(raw: &str) -> String {
         .or_else(|| lower.strip_prefix("dlc\\"))
         .unwrap_or(&lower);
     let s = s.strip_suffix(".dlc").unwrap_or(s);
+    // For subdirectory paths like "dlc031_astral_planes/dlc031", keep only
+    // the DLC directory name (the part before any remaining separator).
+    let s = s.split(&['/', '\\'][..]).next().unwrap_or(s);
     s.trim_end_matches(['/', '\\']).to_string()
+}
+
+/// Normalize a human-readable save `required_dlcs` name into a stable
+/// underscore key for matching against launcher/registry DLC identifiers.
+///
+/// Canonical/internal IDs (e.g. `"dlc014_leviathans"`) pass through unchanged.
+/// Human-readable names are lowercased, spaces become underscores, and known
+/// suffixes (`_story_pack`, `_species_pack`) are stripped so that
+/// `"Ancient Relics Story Pack"` → `"ancient_relics"`.
+pub fn normalize_readable_dlc_name(raw: &str) -> String {
+    // Canonical/internal IDs pass through (they already contain "dlc" prefix
+    // and use underscores, so the suffix-strip below won't touch them).
+    let mut s = raw.to_lowercase();
+    s = s.replace(' ', "_");
+
+    // Strip common DLC name suffixes (order matters: longer first).
+    let suffixes = ["_story_pack", "_species_pack", "_expansion"];
+    for suffix in &suffixes {
+        if let Some(stripped) = s.strip_suffix(suffix) {
+            return stripped.to_string();
+        }
+    }
+
+    s
 }
 
 /// Classify entries from dlc_load.json into DLC vs non-DLC mods using naming

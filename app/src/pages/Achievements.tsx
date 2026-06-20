@@ -50,7 +50,6 @@ const COLUMN_CONFIG = [
 ] as const;
 
 type ColumnKey = (typeof COLUMN_CONFIG)[number]['key'];
-type ViewMode = 'list' | 'board';
 type CompletionFilter = 'all' | 'completed' | 'incomplete';
 type DlcAvailabilityFilter = 'all' | 'attention' | 'available' | 'unknown';
 type SortKey = 'name' | 'group' | 'difficulty';
@@ -85,7 +84,6 @@ export function Achievements() {
   const [difficultyFilter, setDifficultyFilter] = useState('All');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [showColumns, setShowColumns] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const DEFAULT_COLUMNS = useMemo(
@@ -369,13 +367,7 @@ export function Achievements() {
             {achievements.length} records · {filtered.length} shown · {completedCount} completed · {warningCount} with warnings
           </p>
         </div>
-        <ViewToggle viewMode={viewMode} onChange={setViewMode} />
       </div>
-      <p className="sr-only" aria-live="polite">
-        {viewMode === 'list'
-          ? 'List view active. Selected achievement details are available.'
-          : 'Board view active. Selecting a board card opens it in list view.'}
-      </p>
 
       {catalogInfo ? (
         <div className="catalog-info-row">
@@ -513,7 +505,7 @@ export function Achievements() {
 
       {filtered.length === 0 ? (
         <p className="muted empty-state">No achievements match the current filters.</p>
-      ) : viewMode === 'list' ? (
+      ) : (
         <AchievementSplitView
           achievements={filtered}
           selectedAchievement={selectedAchievement}
@@ -525,49 +517,8 @@ export function Achievements() {
           onSelect={setSelectedId}
           onCompletionToggle={handleCompletionToggle}
         />
-      ) : (
-        <AchievementBoardView
-          achievements={filtered}
-          overrides={overrides}
-          iconVersion={iconVersion}
-          dlcStatusByGroup={dlcStatusByGroup}
-          onSelect={(achievement) => {
-            setSelectedId(achievement.id);
-            setViewMode('list');
-          }}
-          onCompletionToggle={handleCompletionToggle}
-        />
       )}
     </section>
-  );
-}
-
-function ViewToggle({
-  viewMode,
-  onChange,
-}: {
-  viewMode: ViewMode;
-  onChange: (viewMode: ViewMode) => void;
-}) {
-  return (
-    <div className="achievement-view-toggle" aria-label="Achievement view mode">
-      <button
-        type="button"
-        className={viewMode === 'list' ? 'active' : ''}
-        aria-pressed={viewMode === 'list'}
-        onClick={() => onChange('list')}
-      >
-        List
-      </button>
-      <button
-        type="button"
-        className={viewMode === 'board' ? 'active' : ''}
-        aria-pressed={viewMode === 'board'}
-        onClick={() => onChange('board')}
-      >
-        Board
-      </button>
-    </div>
   );
 }
 
@@ -842,85 +793,6 @@ function AchievementDetailPanel({
   );
 }
 
-function AchievementBoardView({
-  achievements,
-  overrides,
-  iconVersion,
-  dlcStatusByGroup,
-  onSelect,
-  onCompletionToggle,
-}: {
-  achievements: AchievementEntry[];
-  overrides: Record<string, boolean>;
-  iconVersion: number;
-  dlcStatusByGroup: Map<string, LocalDlcStatus>;
-  onSelect: (achievement: AchievementEntry) => void;
-  onCompletionToggle: (id: string) => void;
-}) {
-  const [expandedLanes, setExpandedLanes] = useState<Set<string>>(new Set());
-  const lanes = useMemo(() => buildBoardLanes(achievements, overrides), [achievements, overrides]);
-  return (
-    <div className="achievement-board" aria-label="Achievement board view">
-      {lanes.map((lane) => (
-        <section key={lane.key} className="achievement-board-lane" aria-label={lane.title}>
-          <div className="achievement-board-lane-head">
-            <h3>{lane.title}</h3>
-            <span className="muted">{lane.items.length}</span>
-          </div>
-          <div className="achievement-board-stack">
-            {lane.items.length === 0 ? <p className="muted">No records in this lane.</p> : null}
-            {(expandedLanes.has(lane.key) ? lane.items : lane.items.slice(0, 24)).map((achievement) => (
-              <article key={achievement.id} className="achievement-board-card">
-                {getAchievementDlcStatus(achievement, dlcStatusByGroup) === 'attention' ? (
-                  <span className="board-card-dlc-flag">DLC not enabled</span>
-                ) : null}
-                <div className="achievement-board-card-top">
-                  <AchievementIcon achievementId={achievement.id} iconVersion={iconVersion} size={56} completed={isCompleted(achievement, overrides)} />
-                  <button type="button" className="achievement-board-title" onClick={() => onSelect(achievement)}>
-                    <strong>{achievement.source.name}</strong>
-                    <span>{achievement.source.requirement ?? achievement.source.description ?? 'No requirement text.'}</span>
-                  </button>
-                  <CompletionControl
-                    completed={isCompleted(achievement, overrides)}
-                    source={completionSource(achievement, overrides)}
-                    onToggle={() => onCompletionToggle(achievement.id)}
-                    label={completionToggleLabel(completionSource(achievement, overrides), achievement.source.name)}
-                  />
-                </div>
-                <div className="planner-meta">
-                  <DifficultyBadge difficulty={achievement.source.difficulty} />
-                  {achievement.source.group ? <span className="tag-pill">{achievement.source.group}</span> : null}
-                  {achievement.curation.rule_confidence ? (
-                    <span className="tag-pill">{achievement.curation.rule_confidence}</span>
-                  ) : null}
-                </div>
-              </article>
-            ))}
-            {lane.items.length > 24 ? (
-              <button
-                type="button"
-                className="link-button board-lane-toggle"
-                onClick={() => {
-                  setExpandedLanes((current) => {
-                    const next = new Set(current);
-                    if (next.has(lane.key)) next.delete(lane.key);
-                    else next.add(lane.key);
-                    return next;
-                  });
-                }}
-              >
-                {expandedLanes.has(lane.key)
-                  ? 'Show fewer'
-                  : `Show all ${lane.items.length}`}
-              </button>
-            ) : null}
-          </div>
-        </section>
-      ))}
-    </div>
-  );
-}
-
 function CompletionControl({
   completed,
   source,
@@ -1074,37 +946,6 @@ function toOverrideRecord(overrides: AchievementOverride[]): Record<string, bool
     record[o.achievement_id] = o.completed;
   }
   return record;
-}
-
-function buildBoardLanes(achievements: AchievementEntry[], overrides: Record<string, boolean>) {
-  const completed: AchievementEntry[] = [];
-  const warnings: AchievementEntry[] = [];
-  const lowFriction: AchievementEntry[] = [];
-  const standard: AchievementEntry[] = [];
-  const extreme: AchievementEntry[] = [];
-
-  for (const achievement of achievements) {
-    if (isCompleted(achievement, overrides)) {
-      completed.push(achievement);
-      continue;
-    }
-    if (achievement.curation.warnings.length > 0 || achievement.curation.known_limitations.length > 0) {
-      warnings.push(achievement);
-      continue;
-    }
-    const difficulty = achievement.source.difficulty ?? 'UC';
-    if (difficulty === 'VE' || difficulty === 'E') lowFriction.push(achievement);
-    else if (difficulty === 'M' || difficulty === 'H') standard.push(achievement);
-    else extreme.push(achievement);
-  }
-
-  return [
-    { key: 'low', title: 'Low Friction', items: lowFriction },
-    { key: 'standard', title: 'Standard Ops', items: standard },
-    { key: 'warnings', title: 'Needs Evidence', items: warnings },
-    { key: 'extreme', title: 'Extreme / Unclear', items: extreme },
-    { key: 'completed', title: 'Completed', items: completed },
-  ];
 }
 
 function isCompleted(achievement: AchievementEntry, overrides: Record<string, boolean>) {

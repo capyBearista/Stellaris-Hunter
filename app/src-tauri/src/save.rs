@@ -4,7 +4,7 @@ use zip::ZipArchive;
 
 use crate::{
     error::{Error, Result},
-    model::SaveSummary,
+    model::{normalize_readable_dlc_name, SaveSummary},
 };
 
 const MAX_META_BYTES: u64 = 1_048_576;
@@ -43,7 +43,12 @@ pub fn parse_save(path: impl AsRef<Path>) -> Result<SaveSummary> {
     summary.date = first_atom(&meta_root, "date").or_else(|| first_atom(&game_root, "date"));
     summary.name = first_atom(&meta_root, "name").or_else(|| first_atom(&game_root, "name"));
     summary.required_dlcs = find_value_by_key(&meta_root, "required_dlcs")
-        .map(collect_atoms)
+        .map(|v| {
+            collect_atoms(v)
+                .into_iter()
+                .map(|s| normalize_readable_dlc_name(&s))
+                .collect()
+        })
         .unwrap_or_default();
     summary.ironman =
         first_bool(&meta_root, "ironman").or_else(|| first_bool(&game_root, "ironman"));
