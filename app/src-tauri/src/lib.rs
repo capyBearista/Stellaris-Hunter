@@ -44,9 +44,105 @@ pub fn scan_all(install_path: Option<PathBuf>, documents_path: Option<PathBuf>) 
         Err(err) => report.errors.push(err.to_string()),
     }
 
+    add_dlc_info_summaries(&mut report);
     add_eligibility_summaries(&mut report);
 
     report
+}
+
+fn add_dlc_info_summaries(report: &mut ScanReport) {
+    let Some(documents) = &mut report.documents else {
+        return;
+    };
+
+    let mut enabled_dlcs = documents
+        .dlc_load
+        .as_ref()
+        .and_then(|dlc_load| dlc_load.dlc_state.as_ref())
+        .map(|dlc_state| dlc_state.enabled_dlcs.clone())
+        .unwrap_or_default();
+    let mut disabled_dlcs = documents
+        .dlc_load
+        .as_ref()
+        .and_then(|dlc_load| dlc_load.dlc_state.as_ref())
+        .map(|dlc_state| dlc_state.disabled_dlcs.clone())
+        .unwrap_or_default();
+
+    if let Some(launcher) = documents.launcher.as_ref() {
+        for dlc in &launcher.dlcs {
+            let Some(normalized) = launcher_dlc_match_key(dlc) else {
+                continue;
+            };
+
+            match dlc.enabled_in_active_playset {
+                Some(true) => push_unique(&mut enabled_dlcs, normalized),
+                Some(false) => push_unique(&mut disabled_dlcs, normalized),
+                None => {}
+            }
+        }
+    }
+
+    for run in &mut documents.save_runs {
+        let Some(save) = &run.latest_save else {
+            continue;
+        };
+
+        let mut enabled_and_required = Vec::new();
+        let mut disabled_but_required = Vec::new();
+        let mut unknown_status_required = Vec::new();
+
+        for required_dlc in &save.required_dlcs {
+            // Save `required_dlcs` values are usually already close to the
+            // internal game key form, but we normalize here so save metadata,
+            // dlc_load.json, and launcher-derived identifiers are compared via
+            // the same canonical path.
+            let normalized = model::normalize_dlc_id(required_dlc);
+            if enabled_dlcs.contains(&normalized) {
+                enabled_and_required.push(required_dlc.clone());
+            } else if disabled_dlcs.contains(&normalized) {
+                disabled_but_required.push(required_dlc.clone());
+            } else {
+                unknown_status_required.push(required_dlc.clone());
+            }
+        }
+
+        run.dlc_info = Some(model::RunDlcInfo {
+            enabled_and_required,
+            disabled_but_required,
+            unknown_status_required,
+            all_enabled_dlcs: enabled_dlcs.clone(),
+            all_disabled_dlcs: disabled_dlcs.clone(),
+        });
+    }
+}
+
+fn launcher_dlc_match_key(dlc: &model::LauncherDlcSummary) -> Option<String> {
+    // Prefer registry_id (e.g., "dlc009_plantoids") — it's the internal game key
+    if let Some(registry_id) = dlc.registry_id.as_deref() {
+        return Some(model::normalize_dlc_id(registry_id));
+    }
+    // Fall back to path (dirPath), extracting the last non-empty component.
+    // Real launcher values: "dlc/dlc009_plantoids/" or "dlc/dlc009_plantoids.dlc"
+    // NOTE: split on trailing delimiter yields an empty part, so we filter it out.
+    if let Some(path) = dlc.path.as_deref() {
+        let filename = path
+            .split(&['/', '\\'][..])
+            .rfind(|s| !s.is_empty())
+            .unwrap_or(path);
+        return Some(model::normalize_dlc_id(filename));
+    }
+    // Fall back to human-readable name; may not match internal game IDs.
+    if let Some(name) = dlc.name.as_deref() {
+        return Some(model::normalize_dlc_id(name));
+    }
+    // Last resort: the raw primary-key id.
+    dlc.id.as_deref().map(model::normalize_dlc_id)
+}
+
+fn push_unique(items: &mut Vec<String>, value: String) {
+    if !items.contains(&value) {
+        items.push(value);
+    }
 }
 
 fn add_eligibility_summaries(report: &mut ScanReport) {

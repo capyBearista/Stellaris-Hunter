@@ -312,6 +312,13 @@ function PlannerItem({
   };
 
   const firstReason = evaluation.reasons[0] ?? 'No evaluation reason recorded.';
+  const dlcCondition = evaluation.conditions.find((condition) =>
+    ['required_dlc', 'dlc_required', 'dlc'].includes(condition.dimension),
+  );
+  const dlcWarning =
+    dlcCondition && dlcCondition.passed !== true
+      ? dlcCondition.reason || 'This achievement depends on DLC state that is not currently confirmed.'
+      : null;
   return (
     <li className="planner-item" data-status={evaluation.status}>
       <div className="planner-item-main">
@@ -324,10 +331,12 @@ function PlannerItem({
         </button>
       </div>
       <p>{firstReason}</p>
+      {dlcWarning ? <p className="planner-dlc-warning">DLC gate · {dlcWarning}</p> : null}
       <div className="planner-meta">
         {evaluation.achievement.source.difficulty ? (
           <span className="badge badge-medium">{evaluation.achievement.source.difficulty}</span>
         ) : null}
+        {dlcWarning ? <span className="badge badge-dlc-warning">DLC attention</span> : null}
         {evaluation.achievement.curation.tags.slice(0, 4).map((tag) => (
           <span key={tag} className="tag-pill">{tag}</span>
         ))}

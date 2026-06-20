@@ -49,6 +49,18 @@ fn reads_launcher_state_from_synthetic_fixtures() {
         summary.launcher.as_ref().map(|l| l.enabled_mods.len()),
         Some(2)
     );
+    assert_eq!(summary.launcher.as_ref().map(|l| l.dlcs.len()), Some(3));
+    let plantoids = summary
+        .launcher
+        .as_ref()
+        .and_then(|launcher| {
+            launcher
+                .dlcs
+                .iter()
+                .find(|dlc| dlc.registry_id.as_deref() == Some("dlc009_plantoids"))
+        })
+        .expect("plantoids dlc should be present in synthetic launcher data");
+    assert_eq!(plantoids.enabled_in_active_playset, Some(false));
     let bad_run = summary
         .save_runs
         .iter()

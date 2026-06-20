@@ -376,6 +376,25 @@ button:disabled {
 .run-detail-list dt { color: var(--text-muted); }
 .run-detail-list dd { margin: 0; word-break: break-word; color: var(--text-main); }
 
+.run-dlc-section {
+  margin-bottom: var(--space-16);
+}
+
+.run-dlc-summary {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.run-dlc-summary p {
+  margin: 0;
+}
+
+.run-dlc-warning {
+  color: var(--accent-amber);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
 .fact-list {
   display: grid;
   gap: var(--space-8);
@@ -556,7 +575,7 @@ p .link-button {
 
 .achievement-filter-panel {
   display: grid;
-  grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
+  grid-template-columns: repeat(5, minmax(150px, 1fr)) auto;
   gap: var(--space-12);
   align-items: end;
   margin: var(--space-24) 0;
@@ -808,6 +827,14 @@ p .link-button {
   margin-top: 0;
 }
 
+.achievement-row-dlc-warning {
+  display: inline-flex;
+  margin-top: var(--space-8);
+  color: var(--accent-amber);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
 .achievement-row-tags,
 .achievement-detail-tags {
   display: flex;
@@ -823,6 +850,11 @@ p .link-button {
   border: 1px solid var(--border-subtle);
   border-radius: 2px;
   background: radial-gradient(circle at 35% 25%, var(--accent-cyan-dim), var(--bg-void));
+}
+
+.achievement-icon[data-completed='false'] {
+  filter: grayscale(1);
+  opacity: 0.55;
 }
 
 .achievement-icon.placeholder {
@@ -991,6 +1023,21 @@ p .link-button {
   padding: var(--space-12);
   background: var(--bg-panel);
   border: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+.board-card-dlc-flag {
+  position: absolute;
+  top: var(--space-8);
+  right: var(--space-8);
+  padding: 2px var(--space-8);
+  border: 1px solid var(--accent-amber);
+  background: var(--accent-amber-dim);
+  color: var(--accent-amber);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .achievement-board-card-top {
@@ -1118,6 +1165,12 @@ p .link-button {
 
 .planner-item p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
 
+.planner-dlc-warning {
+  color: var(--accent-amber) !important;
+  font-family: var(--font-mono);
+  font-size: 0.82rem !important;
+}
+
 .planner-item-main {
   display: flex;
   justify-content: space-between;
@@ -1176,6 +1229,7 @@ p .link-button {
 .badge-hard { color: var(--accent-red); background: var(--accent-red-dim); }
 .badge-insane { color: var(--accent-red); background: transparent; border-style: dashed; }
 .badge-override { color: var(--accent-cyan); background: var(--accent-cyan-dim); margin-left: var(--space-8); }
+.badge-dlc-warning { color: var(--accent-amber); background: var(--accent-amber-dim); }
 
 /* Fact forms */
 .fact-edit-form, .fact-add-form, .planner-note-form {

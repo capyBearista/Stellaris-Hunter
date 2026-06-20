@@ -15,9 +15,12 @@ import {
   type CatalogInfo,
   type CatalogSyncResult,
   type IconSyncResult,
+  type LauncherDlcSummary,
+  type ScanReport,
   type SteamSyncResult,
 } from '../tauri';
 import { IconPlaceholder } from '../components/IconPlaceholder';
+import { getCachedScanReport, scanLocalStateCached } from '../scanCache';
 
 // Icon cache keyed by achievementId + iconVersion to avoid redundant IPC calls.
 const iconCache = new Map<string, string | null>();
@@ -49,12 +52,14 @@ const COLUMN_CONFIG = [
 type ColumnKey = (typeof COLUMN_CONFIG)[number]['key'];
 type ViewMode = 'list' | 'board';
 type CompletionFilter = 'all' | 'completed' | 'incomplete';
+type DlcAvailabilityFilter = 'all' | 'attention' | 'available' | 'unknown';
 type SortKey = 'name' | 'group' | 'difficulty';
 type SortDir = 'asc' | 'desc';
 
 export function Achievements() {
   const [achievements, setAchievements] = useState<AchievementEntry[]>([]);
   const [catalogInfo, setCatalogInfo] = useState<CatalogInfo | null>(null);
+  const [scanReport, setScanReport] = useState<ScanReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
@@ -76,6 +81,7 @@ export function Achievements() {
   const [search, setSearch] = useState('');
   const [completionFilter, setCompletionFilter] = useState<CompletionFilter>('all');
   const [groupFilter, setGroupFilter] = useState('All');
+  const [dlcAvailabilityFilter, setDlcAvailabilityFilter] = useState<DlcAvailabilityFilter>('all');
   const [difficultyFilter, setDifficultyFilter] = useState('All');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
@@ -149,14 +155,16 @@ export function Achievements() {
   };
 
   const reloadAchievementState = async () => {
-    const [ach, cat, ovr] = await Promise.all([
+    const [ach, cat, ovr, latestScanReport] = await Promise.all([
       loadAchievements(),
       loadCatalogInfo(),
       loadCompletionOverrides(),
+      scanLocalStateCached({ force: true }),
     ]);
     setAchievements(ach);
     setCatalogInfo(cat);
     setOverrides(toOverrideRecord(ovr));
+    setScanReport(latestScanReport);
   };
 
   useEffect(() => {
@@ -166,15 +174,18 @@ export function Achievements() {
       setLoading(true);
       setError(null);
       try {
-        const [ach, cat, ovr] = await Promise.all([
+        const existing = getCachedScanReport();
+        const [ach, cat, ovr, latestScanReport] = await Promise.all([
           loadAchievements(),
           loadCatalogInfo(),
           loadCompletionOverrides(),
+          existing ? Promise.resolve(existing) : scanLocalStateCached(),
         ]);
         if (!cancelled) {
           setAchievements(ach);
           setCatalogInfo(cat);
           setOverrides(toOverrideRecord(ovr));
+          setScanReport(latestScanReport);
         }
       } catch (unknownError) {
         if (!cancelled) {
@@ -200,6 +211,11 @@ export function Achievements() {
     return [...g].sort();
   }, [achievements]);
 
+  const dlcStatusByGroup = useMemo(
+    () => buildDlcStatusByGroup(scanReport?.documents?.launcher?.dlcs ?? []),
+    [scanReport],
+  );
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return achievements
@@ -219,6 +235,10 @@ export function Achievements() {
         if (completionFilter === 'completed' && !isCompleted(a, overrides)) return false;
         if (completionFilter === 'incomplete' && isCompleted(a, overrides)) return false;
         if (groupFilter !== 'All' && a.source.group !== groupFilter) return false;
+        const dlcStatus = getAchievementDlcStatus(a, dlcStatusByGroup);
+        if (dlcAvailabilityFilter === 'attention' && dlcStatus !== 'attention') return false;
+        if (dlcAvailabilityFilter === 'available' && dlcStatus !== 'available') return false;
+        if (dlcAvailabilityFilter === 'unknown' && dlcStatus !== 'unknown') return false;
         if (difficultyFilter !== 'All' && (a.source.difficulty ?? 'UC') !== difficultyFilter)
           return false;
         return true;
@@ -238,7 +258,7 @@ export function Achievements() {
         }
         return sortDir === 'asc' ? cmp : -cmp;
       });
-  }, [achievements, search, completionFilter, groupFilter, difficultyFilter, sortKey, sortDir, overrides]);
+  }, [achievements, search, completionFilter, groupFilter, dlcAvailabilityFilter, difficultyFilter, sortKey, sortDir, overrides, dlcStatusByGroup]);
 
   useEffect(() => {
     if (filtered.length === 0) {
@@ -429,6 +449,20 @@ export function Achievements() {
           </select>
         </label>
         <label className="achievement-filter-field">
+          <span>DLC status</span>
+          <select
+            value={dlcAvailabilityFilter}
+            onChange={(e) => setDlcAvailabilityFilter(e.target.value as DlcAvailabilityFilter)}
+            className="filter-select"
+            aria-label="Filter by DLC availability"
+          >
+            <option value="all">All statuses</option>
+            <option value="attention">Needs DLC attention</option>
+            <option value="available">Locally enabled</option>
+            <option value="unknown">Unknown local status</option>
+          </select>
+        </label>
+        <label className="achievement-filter-field">
           <span>Difficulty</span>
           <select
             value={difficultyFilter}
@@ -487,6 +521,7 @@ export function Achievements() {
           visibleColumns={visibleColumns}
           overrides={overrides}
           iconVersion={iconVersion}
+          dlcStatusByGroup={dlcStatusByGroup}
           onSelect={setSelectedId}
           onCompletionToggle={handleCompletionToggle}
         />
@@ -495,6 +530,7 @@ export function Achievements() {
           achievements={filtered}
           overrides={overrides}
           iconVersion={iconVersion}
+          dlcStatusByGroup={dlcStatusByGroup}
           onSelect={(achievement) => {
             setSelectedId(achievement.id);
             setViewMode('list');
@@ -608,6 +644,7 @@ function AchievementSplitView({
   visibleColumns,
   overrides,
   iconVersion,
+  dlcStatusByGroup,
   onSelect,
   onCompletionToggle,
 }: {
@@ -617,6 +654,7 @@ function AchievementSplitView({
   visibleColumns: Record<ColumnKey, boolean>;
   overrides: Record<string, boolean>;
   iconVersion: number;
+  dlcStatusByGroup: Map<string, LocalDlcStatus>;
   onSelect: (id: string | null) => void;
   onCompletionToggle: (id: string) => void;
 }) {
@@ -637,6 +675,7 @@ function AchievementSplitView({
               completed={isCompleted(achievement, overrides)}
               completionSource={completionSource(achievement, overrides)}
               iconVersion={iconVersion}
+              dlcStatus={getAchievementDlcStatus(achievement, dlcStatusByGroup)}
               onSelect={() => onSelect(achievement.id)}
               onCompletionToggle={() => onCompletionToggle(achievement.id)}
             />
@@ -649,6 +688,7 @@ function AchievementSplitView({
           completed={isCompleted(selectedAchievement, overrides)}
           completionSource={completionSource(selectedAchievement, overrides)}
           iconVersion={iconVersion}
+          dlcStatus={getAchievementDlcStatus(selectedAchievement, dlcStatusByGroup)}
           onCompletionToggle={() => onCompletionToggle(selectedAchievement.id)}
           onClose={() => onSelect(null)}
         />
@@ -664,6 +704,7 @@ function AchievementListRow({
   completed,
   completionSource,
   iconVersion,
+  dlcStatus,
   onSelect,
   onCompletionToggle,
 }: {
@@ -673,6 +714,7 @@ function AchievementListRow({
   completed: boolean;
   completionSource: string;
   iconVersion: number;
+  dlcStatus: LocalDlcStatus;
   onSelect: () => void;
   onCompletionToggle: () => void;
 }) {
@@ -688,7 +730,7 @@ function AchievementListRow({
         />
       ) : null}
       {visibleColumns.icon ? (
-        <AchievementIcon achievementId={achievement.id} iconVersion={iconVersion} size={64} />
+        <AchievementIcon achievementId={achievement.id} iconVersion={iconVersion} size={64} completed={completed} />
       ) : null}
       <button type="button" className="achievement-row-main" onClick={onSelect} aria-pressed={selected}>
         <span className="achievement-row-name">{achievement.source.name}</span>
@@ -700,8 +742,10 @@ function AchievementListRow({
           {visibleColumns.version ? <span>v{achievement.source.version_added ?? '—'}</span> : null}
           {visibleColumns.steamApi ? <span>{achievement.steam_api_name ?? 'No Steam API name'}</span> : null}
         </span>
+        {dlcStatus === 'attention' ? <span className="achievement-row-dlc-warning">DLC not enabled locally</span> : null}
       </button>
       <div className="achievement-row-signals">
+        {dlcStatus === 'attention' ? <span className="badge badge-dlc-warning">DLC not enabled</span> : null}
         {visibleColumns.difficulty ? <DifficultyBadge difficulty={achievement.source.difficulty} /> : null}
         {visibleColumns.ruleConfidence && achievement.curation.rule_confidence ? (
           <span className="badge badge-unknown">{achievement.curation.rule_confidence}</span>
@@ -728,6 +772,7 @@ function AchievementDetailPanel({
   completed,
   completionSource,
   iconVersion,
+  dlcStatus,
   onCompletionToggle,
   onClose,
 }: {
@@ -735,13 +780,14 @@ function AchievementDetailPanel({
   completed: boolean;
   completionSource: string;
   iconVersion: number;
+  dlcStatus: LocalDlcStatus;
   onCompletionToggle: () => void;
   onClose: () => void;
 }) {
   return (
     <aside className="achievement-detail-panel" aria-label="Selected achievement details">
       <div className="achievement-detail-art">
-        <AchievementIcon achievementId={achievement.id} iconVersion={iconVersion} size={96} />
+        <AchievementIcon achievementId={achievement.id} iconVersion={iconVersion} size={96} completed={completed} />
       </div>
       <div className="achievement-detail-body">
         <div className="achievement-detail-title-row">
@@ -771,7 +817,11 @@ function AchievementDetailPanel({
           <FactTile label="Rule Confidence" value={achievement.curation.rule_confidence ?? 'Unknown'} />
           <FactTile label="Steam API" value={achievement.steam_api_name ?? 'Unmapped'} />
           <FactTile label="Completion" value={completionSource} />
+          <FactTile label="DLC status" value={dlcStatusLabel(dlcStatus)} />
         </div>
+        {dlcStatus === 'attention' ? (
+          <p className="detail-warning">This achievement's DLC group is currently disabled in the local launcher playset.</p>
+        ) : null}
         {achievement.curation.tags.length > 0 ? (
           <div className="achievement-detail-tags">
             {achievement.curation.tags.map((tag) => (
@@ -796,12 +846,14 @@ function AchievementBoardView({
   achievements,
   overrides,
   iconVersion,
+  dlcStatusByGroup,
   onSelect,
   onCompletionToggle,
 }: {
   achievements: AchievementEntry[];
   overrides: Record<string, boolean>;
   iconVersion: number;
+  dlcStatusByGroup: Map<string, LocalDlcStatus>;
   onSelect: (achievement: AchievementEntry) => void;
   onCompletionToggle: (id: string) => void;
 }) {
@@ -819,8 +871,11 @@ function AchievementBoardView({
             {lane.items.length === 0 ? <p className="muted">No records in this lane.</p> : null}
             {(expandedLanes.has(lane.key) ? lane.items : lane.items.slice(0, 24)).map((achievement) => (
               <article key={achievement.id} className="achievement-board-card">
+                {getAchievementDlcStatus(achievement, dlcStatusByGroup) === 'attention' ? (
+                  <span className="board-card-dlc-flag">DLC not enabled</span>
+                ) : null}
                 <div className="achievement-board-card-top">
-                  <AchievementIcon achievementId={achievement.id} iconVersion={iconVersion} size={56} />
+                  <AchievementIcon achievementId={achievement.id} iconVersion={iconVersion} size={56} completed={isCompleted(achievement, overrides)} />
                   <button type="button" className="achievement-board-title" onClick={() => onSelect(achievement)}>
                     <strong>{achievement.source.name}</strong>
                     <span>{achievement.source.requirement ?? achievement.source.description ?? 'No requirement text.'}</span>
@@ -901,10 +956,12 @@ function AchievementIcon({
   achievementId,
   iconVersion,
   size = 56,
+  completed,
 }: {
   achievementId: string;
   iconVersion: number;
   size?: number;
+  completed?: boolean;
 }) {
   const cacheKey = `${achievementId}-${iconVersion}`;
   const [src, setSrc] = useState<string | null>(() => iconCache.get(cacheKey) ?? null);
@@ -926,10 +983,12 @@ function AchievementIcon({
     };
   }, [achievementId, iconVersion, cacheKey]);
 
+  const dataCompleted = completed ? 'true' : 'false';
+
   return src ? (
-    <img className="achievement-icon" src={src} alt="" width={size} height={size} />
+    <img className="achievement-icon" src={src} alt="" width={size} height={size} data-completed={dataCompleted} />
   ) : (
-    <span className="achievement-icon placeholder" style={{ width: size, height: size }}>
+    <span className="achievement-icon placeholder" style={{ width: size, height: size }} data-completed={dataCompleted}>
       <IconPlaceholder size={Math.max(32, Math.round(size * 0.72))} />
     </span>
   );
@@ -1085,4 +1144,52 @@ function difficultyTone(difficulty: string) {
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
+}
+
+type LocalDlcStatus = 'available' | 'attention' | 'unknown';
+
+function buildDlcStatusByGroup(dlcs: LauncherDlcSummary[]): Map<string, LocalDlcStatus> {
+  const statusByGroup = new Map<string, LocalDlcStatus>();
+  for (const dlc of dlcs) {
+    const name = dlc.name?.trim();
+    if (!name) continue;
+    const normalized = normalizeDlcLabel(name);
+    if (!normalized) continue;
+    const status: LocalDlcStatus =
+      dlc.enabled_in_active_playset === true
+        ? 'available'
+        : dlc.enabled_in_active_playset === false
+          ? 'attention'
+          : 'unknown';
+    statusByGroup.set(normalized, status);
+  }
+  return statusByGroup;
+}
+
+function getAchievementDlcStatus(
+  achievement: AchievementEntry,
+  statusByGroup: Map<string, LocalDlcStatus>,
+): LocalDlcStatus {
+  const group = achievement.source.group;
+  if (!group || isBaseGameGroup(group)) return 'available';
+  return statusByGroup.get(normalizeDlcLabel(group)) ?? 'unknown';
+}
+
+function normalizeDlcLabel(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/\b(story|species|portrait|expansion|pack)\b/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function isBaseGameGroup(group: string): boolean {
+  return normalizeDlcLabel(group) === 'base game';
+}
+
+function dlcStatusLabel(status: LocalDlcStatus): string {
+  if (status === 'available') return 'Enabled locally';
+  if (status === 'attention') return 'Disabled in active playset';
+  return 'Unknown';
 }

@@ -9,8 +9,9 @@ use rusqlite::Connection;
 use crate::{
     error::{Error, Result},
     model::{
-        ContinueGameTarget, DlcLoadSummary, DocumentsSummary, LauncherModSummary,
-        LauncherPlaysetSummary, LauncherStateSummary, SaveRunSummary,
+        classify_dlc_state, ContinueGameTarget, DlcLoadSummary, DocumentsSummary,
+        LauncherDlcSummary, LauncherModSummary, LauncherPlaysetSummary, LauncherStateSummary,
+        SaveRunSummary,
     },
     paths, save,
 };
@@ -58,9 +59,11 @@ fn read_dlc_load(root: &Path) -> Result<Option<DlcLoadSummary>> {
         .get("disabled_dlcs")
         .map(normalize_string_list)
         .unwrap_or_default();
+    let dlc_state = classify_dlc_state(&enabled_mods, &disabled_dlcs);
     Ok(Some(DlcLoadSummary {
         enabled_mods,
         disabled_dlcs,
+        dlc_state: Some(dlc_state),
     }))
 }
 
@@ -133,6 +136,7 @@ fn discover_save_runs(root: &Path) -> Result<Vec<SaveRunSummary>> {
             save_count: files.len(),
             latest_save,
             eligibility: None,
+            dlc_info: None,
             issues,
         });
     }
@@ -178,10 +182,21 @@ fn read_launcher_state(root: &Path) -> Result<Option<LauncherStateSummary>> {
             issues.push(err.to_string());
             Vec::new()
         });
+    let dlc_catalog = read_dlc_catalog(&conn).unwrap_or_else(|err| {
+        issues.push(err.to_string());
+        HashMap::new()
+    });
+    let active_playset_dlcs = read_active_playset_dlcs(&conn, active_playset.as_ref())
+        .unwrap_or_else(|err| {
+            issues.push(err.to_string());
+            HashMap::new()
+        });
+    let dlcs = merge_launcher_dlcs(&dlc_catalog, &active_playset_dlcs);
 
     Ok(Some(LauncherStateSummary {
         active_playset,
         enabled_mods,
+        dlcs,
         issues,
     }))
 }
@@ -191,7 +206,7 @@ fn read_active_playset(conn: &Connection) -> Result<Option<LauncherPlaysetSummar
     let mut rows = stmt.query([])?;
     if let Some(row) = rows.next()? {
         let playset = LauncherPlaysetSummary {
-            uuid: string_column(row, &["uuid", "id"]),
+            uuid: string_column(row, &["uuid", "id", "playsetId"]),
             name: string_column(row, &["name", "display_name"]),
             sync_state: string_column(row, &["syncState", "sync_state"]),
             state: string_column(row, &["state"]),
@@ -234,6 +249,90 @@ fn read_mod_catalog(conn: &Connection) -> Result<HashMap<String, LauncherModSumm
     }
 
     Ok(catalog)
+}
+
+fn read_dlc_catalog(conn: &Connection) -> Result<HashMap<String, LauncherDlcSummary>> {
+    let mut stmt = conn.prepare("SELECT * FROM dlc")?;
+    let mut rows = stmt.query([])?;
+    let mut catalog = HashMap::new();
+
+    while let Some(row) = rows.next()? {
+        let id = string_column(row, &["id", "uuid", "dlc_id"]);
+        let summary = LauncherDlcSummary {
+            id: id.clone(),
+            name: string_column(row, &["displayName", "name", "display_name", "title"]),
+            registry_id: string_column(row, &["gameRegistryId", "registry_id", "registryId"]),
+            path: string_column(
+                row,
+                &[
+                    "dirPath",
+                    "archivePath",
+                    "descriptorPath",
+                    "repositoryPath",
+                    "path",
+                ],
+            ),
+            enabled_in_active_playset: None,
+        };
+
+        if let Some(id) = id {
+            catalog.insert(id, summary);
+        }
+    }
+
+    Ok(catalog)
+}
+
+fn read_active_playset_dlcs(
+    conn: &Connection,
+    active_playset: Option<&LauncherPlaysetSummary>,
+) -> Result<HashMap<String, bool>> {
+    let Some(active_playset_id) = active_playset.and_then(|playset| playset.uuid.as_deref()) else {
+        return Ok(HashMap::new());
+    };
+
+    let mut stmt = conn.prepare("SELECT * FROM playsets_dlcs")?;
+    let mut rows = stmt.query([])?;
+    let mut states = HashMap::new();
+
+    while let Some(row) = rows.next()? {
+        let Some(playset_id) =
+            string_column(row, &["playset_uuid", "playset_id", "playsetId", "playset"])
+        else {
+            continue;
+        };
+        if playset_id != active_playset_id {
+            continue;
+        }
+
+        let Some(dlc_id) = string_column(row, &["dlc_id", "dlc_uuid", "dlcId", "id"]) else {
+            continue;
+        };
+        let enabled = integer_column(row, &["enabled", "isEnabled"])
+            .map(|value| value != 0)
+            .unwrap_or(true);
+        states.insert(dlc_id, enabled);
+    }
+
+    Ok(states)
+}
+
+fn merge_launcher_dlcs(
+    dlc_catalog: &HashMap<String, LauncherDlcSummary>,
+    active_playset_dlcs: &HashMap<String, bool>,
+) -> Vec<LauncherDlcSummary> {
+    let mut ids: Vec<&String> = dlc_catalog.keys().collect();
+    ids.sort();
+
+    ids.into_iter()
+        .filter_map(|id| {
+            dlc_catalog.get(id).map(|summary| {
+                let mut summary = summary.clone();
+                summary.enabled_in_active_playset = active_playset_dlcs.get(id).copied();
+                summary
+            })
+        })
+        .collect()
 }
 
 fn read_enabled_mods(

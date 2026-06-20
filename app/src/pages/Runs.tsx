@@ -11,7 +11,10 @@ import {
   setRunNote,
   type PersistedRunSummary,
   type RunFactSummary,
+  type RunDlcInfo,
+  type ScanReport,
 } from '../tauri';
+import { getCachedScanReport, scanLocalStateCached } from '../scanCache';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -19,6 +22,7 @@ export function Runs() {
   const [runs, setRuns] = useState<PersistedRunSummary[]>([]);
   const [selectedRunPath, setSelectedRunPath] = useState<string | null>(null);
   const [facts, setFacts] = useState<RunFactSummary[]>([]);
+  const [scanReport, setScanReport] = useState<ScanReport | null>(null);
   const [status, setStatus] = useState<LoadState>('idle');
   const [factStatus, setFactStatus] = useState<LoadState>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -55,19 +59,29 @@ export function Runs() {
   }, [selectedRunPath]);
 
   const handleRescan = async () => {
-    await refreshRuns(rescanSaves, 'loading');
+    await refreshRuns(rescanSaves, 'loading', { forceScan: true });
   };
 
   async function refreshRuns(
     loader: () => Promise<PersistedRunSummary[]>,
     loadingState: LoadState,
+    options?: { forceScan?: boolean },
   ) {
     setStatus(loadingState);
     setError(null);
 
     try {
-      const loadedRuns = await loader();
+      const existing = getCachedScanReport();
+      const [loadedRuns, latestScanReport] = await Promise.all([
+        loader(),
+        options?.forceScan
+          ? scanLocalStateCached({ force: true })
+          : existing
+            ? Promise.resolve(existing)
+            : scanLocalStateCached(),
+      ]);
       setRuns(loadedRuns);
+      setScanReport(latestScanReport);
       setSelectedRunPath((current) => keepExistingSelection(current, loadedRuns));
       setStatus('ready');
     } catch (unknownError) {
@@ -77,6 +91,8 @@ export function Runs() {
   }
 
   const selectedRun = runs.find((run) => run.folder_path === selectedRunPath) ?? null;
+  const scanRunMap = new Map((scanReport?.documents?.save_runs ?? []).map((run) => [run.run_folder, run]));
+  const selectedRunSnapshot = selectedRun ? scanRunMap.get(selectedRun.run_folder) ?? null : null;
 
   return (
     <section aria-labelledby="runs-heading" className="panel">
@@ -123,6 +139,8 @@ export function Runs() {
 
           <RunFactPanel
             run={selectedRun}
+            runDlcInfo={selectedRunSnapshot?.dlc_info ?? null}
+            requiredDlcs={selectedRunSnapshot?.latest_save?.required_dlcs ?? []}
             facts={facts}
             factStatus={factStatus}
             onFactsChanged={() => {
@@ -152,11 +170,15 @@ export function Runs() {
 
 function RunFactPanel({
   run,
+  runDlcInfo,
+  requiredDlcs,
   facts,
   factStatus,
   onFactsChanged,
 }: {
   run: PersistedRunSummary | null;
+  runDlcInfo: RunDlcInfo | null;
+  requiredDlcs: string[];
   facts: RunFactSummary[];
   factStatus: LoadState;
   onFactsChanged: () => void;
@@ -263,7 +285,36 @@ function RunFactPanel({
         <dd>{run.folder_path}</dd>
         <dt>Latest save</dt>
         <dd>{run.latest_save_path ?? 'Unknown'}</dd>
+        {requiredDlcs.length > 0 ? (
+          <>
+            <dt>Required DLC</dt>
+            <dd>{requiredDlcs.join(', ')}</dd>
+          </>
+        ) : null}
       </dl>
+
+      {runDlcInfo ? (
+        <div className="run-dlc-section">
+          <h4>DLC status</h4>
+          <div className="run-dlc-summary">
+            {runDlcInfo.disabled_but_required.length > 0 ? (
+              <p className="run-dlc-warning">Disabled but required: {runDlcInfo.disabled_but_required.join(', ')}</p>
+            ) : null}
+            {runDlcInfo.unknown_status_required.length > 0 ? (
+              <p className="muted">Unknown local status: {runDlcInfo.unknown_status_required.join(', ')}</p>
+            ) : null}
+            {runDlcInfo.enabled_and_required.length > 0 ? (
+              <p className="muted">Enabled and required: {runDlcInfo.enabled_and_required.join(', ')}</p>
+            ) : null}
+            {requiredDlcs.length === 0 ? <p className="muted">This save does not report any required DLC.</p> : null}
+          </div>
+        </div>
+      ) : requiredDlcs.length > 0 ? (
+        <div className="run-dlc-section">
+          <h4>DLC status</h4>
+          <p className="muted">This save reports DLC requirements, but no local DLC state is available.</p>
+        </div>
+      ) : null}
 
       <div className="run-note-section">
         <h4>Run notes</h4>

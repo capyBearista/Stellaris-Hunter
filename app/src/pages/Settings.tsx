@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { invalidateScanCache } from '../scanCache';
 import {
   loadAppConfig,
   saveAppConfig,
@@ -54,6 +55,7 @@ export function Settings() {
       };
       await saveAppConfig(newConfig);
       setConfig(newConfig);
+      invalidateScanCache();
       setConfigMessage({ kind: 'success', text: 'Configuration saved.' });
     } catch (err) {
       setConfigMessage({ kind: 'error', text: `Save failed: ${err}` });
@@ -107,6 +109,7 @@ export function Settings() {
     try {
       const runs: PersistedRunSummary[] = await rescanSaves();
       setSaveRescan('success');
+      invalidateScanCache();
       setSaveMsg(`Scan complete — ${runs.length} run(s) found.`);
     } catch (err) {
       setSaveRescan('error');

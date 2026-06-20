@@ -7,7 +7,9 @@ import {
   rescanSaves,
   type CatalogInfo,
   type PersistedRunSummary,
+  type ScanReport,
 } from '../tauri';
+import { getCachedScanReport, scanLocalStateCached } from '../scanCache';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -15,6 +17,7 @@ export function Overview() {
   const [runs, setRuns] = useState<PersistedRunSummary[]>([]);
   const [catalogInfo, setCatalogInfo] = useState<CatalogInfo | null>(null);
   const [achievementCount, setAchievementCount] = useState<number>(0);
+  const [scanReport, setScanReport] = useState<ScanReport | null>(null);
   const [status, setStatus] = useState<LoadState>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +30,12 @@ export function Overview() {
     setError(null);
 
     try {
-      setRuns(await rescanSaves());
+      const [rescannedRuns, latestScanReport] = await Promise.all([
+        rescanSaves(),
+        scanLocalStateCached({ force: true }),
+      ]);
+      setRuns(rescannedRuns);
+      setScanReport(latestScanReport);
       setStatus('ready');
     } catch (unknownError) {
       setError(errorMessage(unknownError));
@@ -40,14 +48,17 @@ export function Overview() {
     setError(null);
 
     try {
-      const [loadedRuns, loadedCatalogInfo, achievements] = await Promise.all([
+      const existing = getCachedScanReport();
+      const [loadedRuns, loadedCatalogInfo, achievements, latestScanReport] = await Promise.all([
         loadRuns(),
         loadCatalogInfo(),
         loadAchievements(),
+        existing ? Promise.resolve(existing) : scanLocalStateCached(),
       ]);
       setRuns(loadedRuns);
       setCatalogInfo(loadedCatalogInfo);
       setAchievementCount(achievements.length);
+      setScanReport(latestScanReport);
       setStatus('ready');
     } catch (unknownError) {
       setError(errorMessage(unknownError));
@@ -58,6 +69,33 @@ export function Overview() {
   const parsedRuns = runs.filter((run) => run.parse_status === 'parsed').length;
   const failedRuns = runs.filter((run) => run.parse_status === 'failed').length;
   const totalFacts = runs.reduce((sum, run) => sum + run.fact_count, 0);
+  const launcherDlcs = scanReport?.documents?.launcher?.dlcs ?? [];
+  const launcherIssues = scanReport?.documents?.launcher?.issues ?? [];
+  const documentIssues = scanReport?.documents?.issues ?? [];
+  const scanErrors = scanReport?.errors ?? [];
+  const documentsRoot = scanReport?.documents?.root;
+  const disabledDlcCount = launcherDlcs.filter((dlc) => dlc.enabled_in_active_playset === false).length;
+  const enabledDlcCount = launcherDlcs.filter((dlc) => dlc.enabled_in_active_playset === true).length;
+  const dlcStatusLabel =
+    launcherDlcs.length === 0
+      ? 'Unknown'
+      : disabledDlcCount === 0
+        ? 'All enabled'
+        : `${disabledDlcCount} disabled`;
+  const dlcStatusDetail =
+    launcherDlcs.length > 0
+      ? `${enabledDlcCount} enabled locally · ${disabledDlcCount} disabled in the active playset.`
+      : documentIssues[0]
+        ? `Documents scan issue: ${documentIssues[0]}`
+        : !scanReport?.documents
+          ? 'Live scan could not locate the Stellaris Documents folder. Check Settings path overrides if your Documents folder is redirected.'
+          : !scanReport?.documents?.launcher
+            ? `Launcher database not found under ${documentsRoot ?? 'the detected Documents folder'}. If Documents is redirected, set the path override in Settings.`
+            : launcherIssues[0]
+              ? `Launcher scan issue: ${launcherIssues[0]}`
+              : scanErrors[0]
+                ? `Live scan error: ${scanErrors[0]}`
+                : `No launcher DLC rows were discovered under ${documentsRoot ?? 'the detected Documents folder'}.`;
 
   return (
     <>
@@ -97,7 +135,12 @@ export function Overview() {
             <dt>Stored facts</dt>
             <dd>{totalFacts}</dd>
           </div>
+          <div>
+            <dt>DLC status</dt>
+            <dd>{dlcStatusLabel}</dd>
+          </div>
         </dl>
+        <p className="muted panel-subtitle">{dlcStatusDetail}</p>
       </section>
 
       <section aria-labelledby="scan-heading" className="panel">

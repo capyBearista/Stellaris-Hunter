@@ -14,9 +14,11 @@ import { Overview } from './pages/Overview';
 import { Achievements } from './pages/Achievements';
 import { Planner } from './pages/Planner';
 import { Runs } from './pages/Runs';
+import { invalidateScanCache, resetScanCache, scanLocalStateCached } from './scanCache';
 import type { PersistedRunSummary, RunFactSummary } from './tauri';
 
 beforeEach(() => {
+  resetScanCache();
   invoke.mockReset();
   invoke.mockImplementation((command: string) => {
     if (command === 'load_runs') {
@@ -195,6 +197,115 @@ it('invokes the scan command with an empty payload', async () => {
   expect(invoke).toHaveBeenCalledWith('scan_local_state', {});
 });
 
+it('sets data-completed attribute on achievement icons per completion state', async () => {
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_achievements') {
+      return Promise.resolve([
+        {
+          id: 'ach_done',
+          steam_app_id: 281990,
+          steam_api_name: 'ACH_DONE',
+          local_key: null,
+          deprecated: false,
+          completed: true,
+          source: {
+            name: 'Done Achievement',
+            description: null,
+            requirement: 'Do the thing',
+            hint: null,
+            group: 'Base Game',
+            version_added: '1.0',
+            difficulty: 'E',
+          },
+          curation: {
+            tags: [],
+            conditions: [],
+            warnings: [],
+            planner_notes: null,
+            known_limitations: [],
+            rule_confidence: null,
+          },
+        },
+        {
+          id: 'ach_not_done',
+          steam_app_id: 281990,
+          steam_api_name: 'ACH_NOT',
+          local_key: null,
+          deprecated: false,
+          completed: false,
+          source: {
+            name: 'Not Done Achievement',
+            description: null,
+            requirement: 'Do the other thing',
+            hint: null,
+            group: 'Base Game',
+            version_added: '1.0',
+            difficulty: 'M',
+          },
+          curation: {
+            tags: [],
+            conditions: [],
+            warnings: [],
+            planner_notes: null,
+            known_limitations: [],
+            rule_confidence: null,
+          },
+        },
+      ]);
+    }
+    if (command === 'load_catalog_info') {
+      return Promise.resolve({
+        catalog_version: '1.0',
+        stellaris_version: '4.0',
+        source_url: null,
+        source_hash: null,
+        updated_at: '2025-01-01',
+        imported_at: '2025-01-02',
+      });
+    }
+    if (command === 'load_completion_overrides') return Promise.resolve([]);
+    if (command === 'scan_local_state') return Promise.resolve({ errors: [] });
+    if (command === 'get_achievement_icon') return Promise.resolve(null);
+    return Promise.resolve(null);
+  });
+
+  const { container } = render(
+    <MemoryRouter>
+      <Achievements />
+    </MemoryRouter>,
+  );
+
+  await screen.findByText('Done Achievement');
+
+  const icons = container.querySelectorAll<HTMLElement>('.achievement-icon');
+  expect(icons.length).toBeGreaterThanOrEqual(1);
+
+  // Collect data-completed values from all icons
+  const dataCompletedValues = Array.from(icons).map((el) => el.dataset.completed);
+  expect(dataCompletedValues).toContain('true');
+  expect(dataCompletedValues).toContain('false');
+});
+
+it('forces a fresh scan after cache invalidation', async () => {
+  let scanCount = 0;
+  invoke.mockImplementation((command: string) => {
+    if (command === 'scan_local_state') {
+      scanCount += 1;
+      return Promise.resolve({ errors: [], scanCount });
+    }
+    return Promise.resolve(null);
+  });
+
+  const first = await scanLocalStateCached();
+  const cached = await scanLocalStateCached();
+  invalidateScanCache();
+  const refreshed = await scanLocalStateCached();
+
+  expect(first).toEqual({ errors: [], scanCount: 1 });
+  expect(cached).toEqual({ errors: [], scanCount: 1 });
+  expect(refreshed).toEqual({ errors: [], scanCount: 2 });
+});
+
 it('loads persisted runs and facts on the runs page', async () => {
   const user = userEvent.setup();
   invoke.mockImplementation((cmd: string) => {
@@ -266,23 +377,29 @@ it('loads persisted runs and facts on the runs page', async () => {
 
 it('rescans saves from the runs page', async () => {
   const user = userEvent.setup();
-  invoke.mockResolvedValueOnce([]);
-  invoke.mockResolvedValueOnce([
-    {
-      folder_path: '/tmp/documents/save games/run_b',
-      run_folder: 'run_b',
-      display_name: null,
-      latest_save_path: '/tmp/documents/save games/run_b/ironman.sav',
-      latest_save_file_name: 'ironman.sav',
-      latest_ingame_date: null,
-      game_version: null,
-      parse_status: 'failed',
-      parse_error: 'failed to parse save',
-      fact_count: 0,
-      updated_at: '2026-06-03',
-    },
-  ]);
-  invoke.mockResolvedValueOnce([]);
+  invoke.mockImplementation((cmd: string) => {
+    if (cmd === 'load_runs') return Promise.resolve([]);
+    if (cmd === 'load_run_facts') return Promise.resolve([]);
+    if (cmd === 'scan_local_state') return Promise.resolve({ errors: [] });
+    if (cmd === 'rescan_saves') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_b',
+          run_folder: 'run_b',
+          display_name: null,
+          latest_save_path: '/tmp/documents/save games/run_b/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: null,
+          game_version: null,
+          parse_status: 'failed',
+          parse_error: 'failed to parse save',
+          fact_count: 0,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    return Promise.resolve(null);
+  });
 
   render(
     <MemoryRouter>
@@ -1007,4 +1124,331 @@ it('renders Collapse All and Expand All controls in Planner', async () => {
   // Click Expand All
   await user.click(expandAll);
   expect(await screen.findByText('Plannable Achievement')).toBeInTheDocument();
+});
+
+it('shows DLC status in overview when launcher data is available', async () => {
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([]);
+    }
+    if (command === 'load_catalog_info') {
+      return Promise.resolve({
+        catalog_version: '1.1.0',
+        stellaris_version: '4.3',
+        source_url: null,
+        source_hash: null,
+        updated_at: '2026-06-03',
+        imported_at: '2026-06-03',
+      });
+    }
+    if (command === 'load_achievements') {
+      return Promise.resolve([{ id: 'ach_1' }]);
+    }
+    if (command === 'scan_local_state') {
+      return Promise.resolve({
+        documents: {
+          launcher: {
+            dlcs: [
+              { id: 'dlc-1', name: 'Utopia', registry_id: 'dlc_utopia', path: null, enabled_in_active_playset: true },
+              { id: 'dlc-2', name: 'Apocalypse', registry_id: 'dlc_apocalypse', path: null, enabled_in_active_playset: false },
+            ],
+          },
+        },
+        errors: [],
+      });
+    }
+    return Promise.resolve(null);
+  });
+
+  render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('1 disabled')).toBeInTheDocument();
+  expect(screen.getByText(/1 enabled locally/i)).toBeInTheDocument();
+});
+
+it('explains unknown DLC status in overview when launcher data is unavailable', async () => {
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([]);
+    }
+    if (command === 'load_catalog_info') {
+      return Promise.resolve({
+        catalog_version: '1.1.0',
+        stellaris_version: '4.3',
+        source_url: null,
+        source_hash: null,
+        updated_at: '2026-06-03',
+        imported_at: '2026-06-03',
+      });
+    }
+    if (command === 'load_achievements') {
+      return Promise.resolve([{ id: 'ach_1' }]);
+    }
+    if (command === 'scan_local_state') {
+      return Promise.resolve({
+        documents: {
+          root: 'C:/Users/Test/OneDrive/Documents/Paradox Interactive/Stellaris',
+          launcher: null,
+        },
+        errors: [],
+      });
+    }
+    return Promise.resolve(null);
+  });
+
+  render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('Unknown')).toBeInTheDocument();
+  expect(
+    screen.getByText(/launcher database not found under c:\/users\/test\/onedrive\/documents\/paradox interactive\/stellaris/i),
+  ).toBeInTheDocument();
+});
+
+it('shows DLC warning badges and supports DLC availability filtering on achievements', async () => {
+  const user = userEvent.setup();
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_achievements') {
+      return Promise.resolve([
+        {
+          id: 'ach_utopia',
+          steam_app_id: 281990,
+          steam_api_name: 'ACH_UTOPIA',
+          local_key: null,
+          deprecated: false,
+          source: {
+            name: 'Utopia Goal',
+            description: 'Needs Utopia',
+            requirement: 'Do the utopia thing',
+            hint: null,
+            group: 'Utopia',
+            version_added: '1.5',
+            difficulty: 'M',
+          },
+          curation: {
+            tags: ['dlc'],
+            conditions: [],
+            warnings: [],
+            planner_notes: null,
+            known_limitations: [],
+            rule_confidence: 'medium',
+          },
+        },
+        {
+          id: 'ach_base',
+          steam_app_id: 281990,
+          steam_api_name: 'ACH_BASE',
+          local_key: null,
+          deprecated: false,
+          source: {
+            name: 'Base Goal',
+            description: 'Base game',
+            requirement: 'Do the base thing',
+            hint: null,
+            group: 'Base game',
+            version_added: '1.0',
+            difficulty: 'E',
+          },
+          curation: {
+            tags: [],
+            conditions: [],
+            warnings: [],
+            planner_notes: null,
+            known_limitations: [],
+            rule_confidence: null,
+          },
+        },
+      ]);
+    }
+    if (command === 'load_catalog_info') {
+      return Promise.resolve({
+        catalog_version: '1.1.0',
+        stellaris_version: '4.3',
+        source_url: null,
+        source_hash: null,
+        updated_at: '2026-06-03',
+        imported_at: '2026-06-03',
+      });
+    }
+    if (command === 'load_completion_overrides') {
+      return Promise.resolve([]);
+    }
+    if (command === 'scan_local_state') {
+      return Promise.resolve({
+        documents: {
+          launcher: {
+            dlcs: [
+              { id: 'dlc-1', name: 'Utopia', registry_id: 'dlc_utopia', path: null, enabled_in_active_playset: false },
+            ],
+          },
+        },
+        errors: [],
+      });
+    }
+    if (command === 'get_achievement_icon') {
+      return Promise.resolve(null);
+    }
+    return Promise.resolve(null);
+  });
+
+  render(
+    <MemoryRouter>
+      <Achievements />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('Utopia Goal')).toBeInTheDocument();
+  expect(screen.getByText('DLC not enabled')).toBeInTheDocument();
+
+  await user.selectOptions(screen.getByLabelText('Filter by DLC availability'), 'attention');
+
+  expect(screen.getByText('Utopia Goal')).toBeInTheDocument();
+  expect(screen.queryByText('Base Goal')).not.toBeInTheDocument();
+});
+
+it('shows per-run DLC summary on the runs page', async () => {
+  invoke.mockImplementation((cmd: string) => {
+    if (cmd === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_a',
+          run_folder: 'run_a',
+          display_name: 'Synthetic Run',
+          latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: '2532.01.26',
+          game_version: 'Cetus v4.3.7',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 2,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (cmd === 'load_run_facts') {
+      return Promise.resolve([]);
+    }
+    if (cmd === 'load_run_notes') return Promise.resolve(null);
+    if (cmd === 'scan_local_state') {
+      return Promise.resolve({
+        documents: {
+          save_runs: [
+            {
+              run_folder: 'run_a',
+              latest_save: { required_dlcs: ['dlc_utopia'] },
+              dlc_info: {
+                enabled_and_required: [],
+                disabled_but_required: ['dlc_utopia'],
+                unknown_status_required: [],
+                all_enabled_dlcs: [],
+                all_disabled_dlcs: ['dlc_utopia'],
+              },
+            },
+          ],
+        },
+        errors: [],
+      });
+    }
+    return Promise.resolve(null);
+  });
+
+  render(
+    <MemoryRouter>
+      <Runs />
+    </MemoryRouter>,
+  );
+
+  expect((await screen.findAllByText('Synthetic Run')).length).toBeGreaterThanOrEqual(1);
+  expect(screen.getByText(/disabled but required: dlc_utopia/i)).toBeInTheDocument();
+});
+
+it('shows planner DLC warnings when a required DLC condition is unresolved', async () => {
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_a',
+          run_folder: 'run_a',
+          display_name: 'Synthetic Run',
+          latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: '2532.01.26',
+          game_version: 'Cetus v4.3.7',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 12,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (command === 'load_planner_evaluations') {
+      return Promise.resolve([
+        {
+          achievement: {
+            id: 'ach_dlc',
+            steam_app_id: 281990,
+            steam_api_name: 'ACH_DLC',
+            local_key: null,
+            deprecated: false,
+            source: {
+              name: 'DLC Goal',
+              description: null,
+              requirement: 'Do the DLC thing',
+              hint: null,
+              group: 'Utopia',
+              version_added: '1.5',
+              difficulty: 'M',
+            },
+            curation: {
+              tags: [],
+              conditions: [],
+              warnings: [],
+              planner_notes: null,
+              known_limitations: [],
+              rule_confidence: 'medium',
+            },
+          },
+          status: 'Unknown',
+          computed_status: 'Unknown',
+          planned: false,
+          ignored: false,
+          reasons: ['Needs DLC confirmation.'],
+          warnings: [],
+          conditions: [
+            {
+              dimension: 'required_dlc',
+              operator: 'contains',
+              condition_value: 'utopia',
+              fact_value: null,
+              passed: null,
+              severity: 'soft',
+              timing: 'setup',
+              mutability: 'normal_change',
+              reason: 'Requires Utopia DLC (not currently confirmed).',
+            },
+          ],
+        },
+      ]);
+    }
+    if (command === 'load_run_achievement_notes') return Promise.resolve([]);
+    if (command === 'set_run_achievement_status') return Promise.resolve();
+    return Promise.resolve([]);
+  });
+
+  render(
+    <MemoryRouter>
+      <Planner />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('DLC Goal')).toBeInTheDocument();
+  expect(screen.getByText(/DLC gate/i)).toBeInTheDocument();
+  expect(screen.getByText(/DLC attention/i)).toBeInTheDocument();
 });

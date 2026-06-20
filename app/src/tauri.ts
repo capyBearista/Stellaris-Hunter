@@ -64,6 +64,51 @@ export interface SaveEligibility {
   warnings: string[];
 }
 
+export interface DlcState {
+  enabled_dlcs: string[];
+  disabled_dlcs: string[];
+}
+
+export interface RunDlcInfo {
+  enabled_and_required: string[];
+  disabled_but_required: string[];
+  unknown_status_required: string[];
+  all_enabled_dlcs: string[];
+  all_disabled_dlcs: string[];
+}
+
+export interface LauncherDlcSummary {
+  id: string | null;
+  name: string | null;
+  registry_id: string | null;
+  path: string | null;
+  enabled_in_active_playset: boolean | null;
+}
+
+export interface DlcLoadSummary {
+  enabled_mods: string[];
+  disabled_dlcs: string[];
+  dlc_state?: DlcState | null;
+}
+
+export interface LauncherStateSummary {
+  active_playset?: {
+    uuid?: string | null;
+    name?: string | null;
+    sync_state?: string | null;
+    state?: string | null;
+  } | null;
+  enabled_mods: Array<{
+    position?: number | null;
+    id?: string | null;
+    name?: string | null;
+    registry_id?: string | null;
+    path?: string | null;
+  }>;
+  dlcs: LauncherDlcSummary[];
+  issues: string[];
+}
+
 // --- ScanReport (existing, extended) ---
 
 export interface ScanReport {
@@ -73,6 +118,9 @@ export interface ScanReport {
   } | null;
   documents?: {
     root?: string;
+    dlc_load?: DlcLoadSummary | null;
+    launcher?: LauncherStateSummary | null;
+    issues?: string[];
     save_runs?: Array<{
       run_folder: string;
       latest_save?: {
@@ -80,8 +128,10 @@ export interface ScanReport {
         date?: string | null;
         ironman?: boolean | null;
         cheated_on_save?: boolean | null;
+        required_dlcs?: string[];
       } | null;
       eligibility?: SaveEligibility | null;
+      dlc_info?: RunDlcInfo | null;
       issues?: string[];
     }> | null;
   } | null;

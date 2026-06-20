@@ -179,6 +179,129 @@ pub struct ContinueGameTarget {
 pub struct DlcLoadSummary {
     pub enabled_mods: Vec<String>,
     pub disabled_dlcs: Vec<String>,
+    /// Classified DLC state with enabled vs disabled DLCs identified by naming
+    /// heuristics against the raw dlc_load.json fields.
+    pub dlc_state: Option<DlcState>,
+}
+
+/// Classified DLC state from dlc_load.json.
+/// This is a conservative view: we identify DLC entries from the enabled_mods
+/// list by their naming pattern, but we do NOT infer ownership from
+/// dlc_load.json.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct DlcState {
+    /// DLC identifiers extracted from enabled_mods list, normalized for
+    /// matching against save-required DLCs.  Entries are normalized by
+    /// stripping a leading `dlc/` or `dlc\` prefix and a trailing `.dlc`
+    /// extension, then lowercased for comparison.
+    pub enabled_dlcs: Vec<String>,
+    /// DLC identifiers from the disabled_dlcs field, normalized the same way.
+    /// An explicit disable is **not** treated as proof of non-ownership, but
+    /// it is a useful signal: a DLC the user has deliberately switched off
+    /// may indicate they do not want its content active.
+    pub disabled_dlcs: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct LauncherDlcSummary {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub registry_id: Option<String>,
+    pub path: Option<String>,
+    /// Whether this DLC is enabled in the active launcher playset.
+    ///
+    /// `Some(true)` means the active playset explicitly enables it.
+    /// `Some(false)` means the active playset explicitly disables it.
+    /// `None` means the launcher catalog knows about it, but the active
+    /// playset did not expose a clear enablement row for it.
+    pub enabled_in_active_playset: Option<bool>,
+}
+
+/// Per-run DLC information combining save-required DLCs with current local DLC
+/// state from `dlc_load.json` and launcher tables. Conservative semantics:
+///
+///   - **enabled**  = present in `dlc_load.json` DLC signals or explicitly
+///     enabled in the active launcher playset
+///   - **disabled** = present in `dlc_load.json` disabled_dlcs or explicitly
+///     disabled in the active launcher playset
+///   - **unknown**  = neither enabled nor disabled — the app cannot determine
+///     whether the account owns this DLC from local-only sources
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct RunDlcInfo {
+    /// DLCs required by this save AND detected as enabled locally.
+    pub enabled_and_required: Vec<String>,
+    /// DLCs required by this save but explicitly disabled locally.
+    pub disabled_but_required: Vec<String>,
+    /// DLCs required by this save whose status is unknown (not found in either
+    /// the enabled or disabled lists).
+    pub unknown_status_required: Vec<String>,
+    /// All DLCs detected as currently enabled across local sources.
+    pub all_enabled_dlcs: Vec<String>,
+    /// All DLCs currently disabled across local sources.
+    pub all_disabled_dlcs: Vec<String>,
+}
+
+/// Normalize a raw DLC identifier from dlc_load.json or save metadata into a
+/// canonical form for matching.
+///
+/// Strips a leading `dlc/` or `dlc\` path prefix and a trailing `.dlc`
+/// extension, then lowercases.
+///
+/// # Examples
+///
+/// ```
+/// # use stellaris_hunter_scan::model::normalize_dlc_id;
+/// assert_eq!(normalize_dlc_id("dlc/dlc014_leviathans.dlc"), "dlc014_leviathans");
+/// assert_eq!(normalize_dlc_id("dlc028_ancient_relics"), "dlc028_ancient_relics");
+/// assert_eq!(normalize_dlc_id("DLC/DLC_ALPHA.DLC"), "dlc_alpha");
+/// ```
+pub fn normalize_dlc_id(raw: &str) -> String {
+    let lower = raw.to_lowercase();
+    let s = lower
+        .strip_prefix("dlc/")
+        .or_else(|| lower.strip_prefix("dlc\\"))
+        .unwrap_or(&lower);
+    let s = s.strip_suffix(".dlc").unwrap_or(s);
+    s.trim_end_matches(['/', '\\']).to_string()
+}
+
+/// Classify entries from dlc_load.json into DLC vs non-DLC mods using naming
+/// heuristics.
+///
+/// Entries in `enabled_mods` whose last path component ends with `.dlc` are
+/// classified as DLCs.  Everything else (mod paths, workshop items, etc.) is
+/// treated as a non-DLC mod and discarded from the DLC state.
+///
+/// The `disabled_dlcs` field is already identified by the game as DLC, so
+/// its entries are passed through and normalized for matching.
+///
+/// This is **conservative**: we do not infer ownership from either list.
+pub fn classify_dlc_state(enabled_mods: &[String], disabled_dlcs: &[String]) -> DlcState {
+    let mut enabled_dlcs = Vec::new();
+    for entry in enabled_mods
+        .iter()
+        .filter(|entry| {
+            let filename = entry.split(&['/', '\\'][..]).next_back().unwrap_or(entry);
+            filename.to_lowercase().ends_with(".dlc")
+        })
+        .map(|entry| normalize_dlc_id(entry))
+    {
+        if !enabled_dlcs.contains(&entry) {
+            enabled_dlcs.push(entry);
+        }
+    }
+
+    let mut normalized_disabled_dlcs = Vec::new();
+    for entry in disabled_dlcs.iter().map(|entry| normalize_dlc_id(entry)) {
+        if !normalized_disabled_dlcs.contains(&entry) {
+            normalized_disabled_dlcs.push(entry);
+        }
+    }
+
+    DlcState {
+        enabled_dlcs,
+        disabled_dlcs: normalized_disabled_dlcs,
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -202,6 +325,7 @@ pub struct LauncherModSummary {
 pub struct LauncherStateSummary {
     pub active_playset: Option<LauncherPlaysetSummary>,
     pub enabled_mods: Vec<LauncherModSummary>,
+    pub dlcs: Vec<LauncherDlcSummary>,
     pub issues: Vec<String>,
 }
 
@@ -391,6 +515,9 @@ pub struct SaveRunSummary {
     /// current launcher active-playset snapshot. This is not historical per-run
     /// mod state.
     pub eligibility: Option<SaveEligibility>,
+    /// Conservative DLC info for this run, combining save-required DLCs with
+    /// current local DLC state from `dlc_load.json` and launcher tables.
+    pub dlc_info: Option<RunDlcInfo>,
     pub issues: Vec<String>,
 }
 

@@ -145,10 +145,20 @@ fn evaluate_operator(
     condition_value: &Value,
 ) -> (Option<bool>, String) {
     match operator {
-        "equals" => (
-            Some(values_equal(fact_value, condition_value)),
-            format!("Parsed value is {}.", display_value(fact_value)),
-        ),
+        "equals" => {
+            // When the fact is an array (e.g., required_dlcs), check if ANY
+            // element matches the condition value.  Without this, "equals"
+            // against an array always returns false due to type mismatch.
+            let eq = if let Some(values) = fact_value.as_array() {
+                values.iter().any(|v| values_equal(v, condition_value))
+            } else {
+                values_equal(fact_value, condition_value)
+            };
+            (
+                Some(eq),
+                format!("Parsed value is {}.", display_value(fact_value)),
+            )
+        }
         "contains" => match fact_value.as_array() {
             Some(values) => (
                 Some(
@@ -195,9 +205,54 @@ fn evaluate_operator(
 
 fn values_equal(left: &Value, right: &Value) -> bool {
     match (left, right) {
-        (Value::String(left), Value::String(right)) => left.eq_ignore_ascii_case(right),
+        (Value::String(left), Value::String(right)) => {
+            // Fast path: case-insensitive direct comparison.
+            if left.eq_ignore_ascii_case(right) {
+                return true;
+            }
+            // Fall back to DLC base-name comparison only when at least one side
+            // looks like an internal DLC identifier. This keeps unrelated string
+            // comparisons strict.
+            if !looks_like_dlc_identifier(left) && !looks_like_dlc_identifier(right) {
+                return false;
+            }
+            let left_key = dlc_search_key(left);
+            let right_key = dlc_search_key(right);
+            left_key.eq_ignore_ascii_case(&right_key)
+        }
         _ => left == right,
     }
+}
+
+fn looks_like_dlc_identifier(s: &str) -> bool {
+    let lower = s.to_lowercase();
+    let Some(rest) = lower.strip_prefix("dlc") else {
+        return false;
+    };
+    rest.chars().next().is_some_and(|ch| ch.is_ascii_digit())
+}
+
+/// Produce a case-insensitive search key for DLC matching.
+///
+/// 1. Strips a leading `dlc\d+_` prefix so `"dlc009_plantoids"` → `"plantoids"`.
+/// 2. Replaces underscores with spaces so `"ancient_relics"` and
+///    `"Ancient Relics"` both resolve to `"ancient relics"`.
+///
+/// Strings without the `dlc` prefix are still lowercased and have underscores
+/// replaced, making this safe for general-purpose case/separator normalization
+/// in the rule engine's fallback comparison path.
+fn dlc_search_key(s: &str) -> String {
+    let lower = s.to_lowercase();
+    if let Some(rest) = lower.strip_prefix("dlc") {
+        let after_digits: String = rest.chars().skip_while(|c| c.is_ascii_digit()).collect();
+        if after_digits.len() < rest.len() && after_digits.starts_with('_') {
+            return after_digits[1..].to_string().replace('_', " ");
+        }
+    }
+    // Fallback: also normalize underscores to spaces so human-readable names
+    // like "Ancient Relics" match internal IDs like "dlc028_ancient_relics"
+    // (after stripping the prefix in the fast path above).
+    lower.replace('_', " ")
 }
 
 fn compare_numbers(
@@ -643,6 +698,141 @@ mod tests {
 
         assert_eq!(result.status, STATUS_UNKNOWN);
         assert_eq!(result.conditions[0].passed, None);
+    }
+
+    // ── DLC condition evaluation tests ────────────────────────────
+
+    #[test]
+    fn equal_on_dlc_array_matches_by_base_name() {
+        // Catalog: required_dlc equals "Plantoids"
+        // Fact save.required_dlcs = ["dlc009_plantoids"]
+        let result = evaluate_achievement(
+            achievement_with_condition(AchievementCondition {
+                condition_type: "required".to_string(),
+                dimension: "required_dlc".to_string(),
+                operator: "equals".to_string(),
+                value: json!("Plantoids"),
+                timing: "setup".to_string(),
+                mutability: "immutable".to_string(),
+                severity: "hard".to_string(),
+                source: None,
+                notes: None,
+            }),
+            &FactLookup::new(&[fact("save", "required_dlcs", json!(["dlc009_plantoids"]))]),
+            false,
+            None,
+        );
+
+        assert_eq!(
+            result.status, STATUS_POSSIBLE,
+            "DLC condition should pass when base name matches"
+        );
+        assert_eq!(result.conditions[0].passed, Some(true));
+    }
+
+    #[test]
+    fn equal_on_dlc_array_matches_leviathans_base_name() {
+        let result = evaluate_achievement(
+            achievement_with_condition(AchievementCondition {
+                condition_type: "required".to_string(),
+                dimension: "required_dlc".to_string(),
+                operator: "equals".to_string(),
+                value: json!("Leviathans"),
+                timing: "setup".to_string(),
+                mutability: "immutable".to_string(),
+                severity: "hard".to_string(),
+                source: None,
+                notes: None,
+            }),
+            &FactLookup::new(&[fact(
+                "save",
+                "required_dlcs",
+                json!(["dlc014_leviathans", "dlc028_ancient_relics"]),
+            )]),
+            false,
+            None,
+        );
+
+        assert_eq!(
+            result.status, STATUS_POSSIBLE,
+            "Leviathans base name should match in multi-DLC array"
+        );
+        assert_eq!(result.conditions[0].passed, Some(true));
+    }
+
+    #[test]
+    fn equal_on_dlc_array_fails_when_base_name_absent() {
+        let result = evaluate_achievement(
+            achievement_with_condition(AchievementCondition {
+                condition_type: "required".to_string(),
+                dimension: "required_dlc".to_string(),
+                operator: "equals".to_string(),
+                value: json!("Plantoids"),
+                timing: "setup".to_string(),
+                mutability: "immutable".to_string(),
+                severity: "hard".to_string(),
+                source: None,
+                notes: None,
+            }),
+            &FactLookup::new(&[fact("save", "required_dlcs", json!(["dlc014_leviathans"]))]),
+            false,
+            None,
+        );
+
+        assert_eq!(
+            result.conditions[0].passed,
+            Some(false),
+            "Plantoids should not match when not in required_dlcs array"
+        );
+    }
+
+    #[test]
+    fn contains_on_dlc_array_matches_by_base_name() {
+        // Same as equals with base-name matching, but using contains
+        // operator (which is the canonical operator for array facts).
+        // Catalog uses space-separated human-readable names; internal IDs
+        // use underscores — both should match.
+        let result = evaluate_operator(
+            "contains",
+            &json!(["dlc028_ancient_relics"]),
+            &json!("Ancient Relics"),
+        );
+        assert_eq!(
+            result.0,
+            Some(true),
+            "Ancient Relics (space separated) should match via contains"
+        );
+
+        let result = evaluate_operator(
+            "contains",
+            &json!(["dlc009_plantoids"]),
+            &json!("Plantoids"),
+        );
+        assert_eq!(result.0, Some(true), "Plantoids should match via contains");
+
+        // Underscore variant also works via the DLC normalization:
+        let result = evaluate_operator(
+            "contains",
+            &json!(["dlc028_ancient_relics"]),
+            &json!("Ancient_Relics"),
+        );
+        assert_eq!(
+            result.0,
+            Some(true),
+            "Ancient_Relics (underscored) should also match"
+        );
+    }
+
+    #[test]
+    fn dlc_search_key_strips_numeric_prefix() {
+        assert_eq!(super::dlc_search_key("dlc009_plantoids"), "plantoids");
+        assert_eq!(super::dlc_search_key("Plantoids"), "plantoids");
+        assert_eq!(super::dlc_search_key("dlc014_leviathans"), "leviathans");
+        // Non-DLC strings have underscores normalized to spaces (safe fallback
+        // — fast-path case-insensitive match in values_equal handles exact
+        // matches first, so this only affects separator-style differences).
+        assert_eq!(super::dlc_search_key("ethic_xenophile"), "ethic xenophile");
+        assert_eq!(super::dlc_search_key("Lithoid"), "lithoid");
     }
 
     fn achievement_with_condition(condition: AchievementCondition) -> AchievementCatalogEntry {
