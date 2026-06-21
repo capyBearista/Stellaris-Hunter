@@ -1056,10 +1056,34 @@ p .link-button {
 
 .planner-item p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
 
-.planner-dlc-warning {
-  color: var(--accent-amber) !important;
+.planner-blocker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.planner-dlc-label {
+  color: var(--accent-amber);
   font-family: var(--font-mono);
-  font-size: 0.82rem !important;
+  font-size: 0.85rem;
+}
+
+.planner-blocker-label {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.planner-detail-reason {
+  width: 100%;
+  margin: var(--space-4) 0 0;
+  padding: var(--space-8);
+  background: var(--bg-void);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 .planner-item-main {

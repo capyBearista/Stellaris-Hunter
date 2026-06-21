@@ -344,6 +344,7 @@ fn fact_address(catalog_dimension: &str) -> Option<(&'static str, &'static str)>
         "government_type" => Some(("empire", "government_type")),
         "species_class" => Some(("species", "founder_species_class")),
         "species_trait" => Some(("species", "founder_species_traits")),
+        "ruler_trait" => Some(("empire", "ruler_trait")),
         "portrait" | "species_portrait" => Some(("species", "founder_species_portrait")),
         "required_dlc" | "dlc" | "dlc_required" => Some(("save", "required_dlcs")),
         "ironman" => Some(("eligibility", "ironman")),

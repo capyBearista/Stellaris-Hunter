@@ -1449,6 +1449,7 @@ it('shows planner DLC warnings when a required DLC condition is unresolved', asy
   );
 
   expect(await screen.findByText('DLC Goal')).toBeInTheDocument();
-  expect(screen.getByText(/DLC gate/i)).toBeInTheDocument();
+  // Compact DLC blocker summary shown instead of verbose raw reason
+  expect(screen.getByText(/Missing: utopia/i)).toBeInTheDocument();
   expect(screen.getByText(/DLC attention/i)).toBeInTheDocument();
 });

@@ -159,6 +159,7 @@ venv/
 env/
 ENV/
 session-ses_*.md
+.slim/deepwork/
 
 # ============================================================================
 # Temporary Files
@@ -187,3 +188,6 @@ session-ses_*.md
 # Test Fixtures and Generated Files
 # ============================================================================
 *.out
+
+# Catalog update tool generated output
+tools/catalog-diff/out/

@@ -89,6 +89,16 @@ pub fn parse_save(path: impl AsRef<Path>) -> Result<SaveSummary> {
                         .or_else(|| direct_value_by_key(country_value, "species"))
                         .and_then(atom_string);
 
+                // Ruler trait extraction: country.ruler -> leader ID -> leaders.{id}.traits
+                summary.ruler_traits = direct_value_by_key(country_value, "ruler")
+                    .and_then(atom_string)
+                    .and_then(|ruler_id| {
+                        let leaders_root = top_level_value_by_key(&game_root, "leaders")?;
+                        let leader_value = direct_entry(leaders_root, &ruler_id)?;
+                        direct_value_by_key(leader_value, "traits").map(collect_atoms)
+                    })
+                    .unwrap_or_default();
+
                 // Extract discovery, progression, and action facts
                 summary.discovery = Some(crate::extract_discovery::extract_discovery_facts(
                     &game_root,

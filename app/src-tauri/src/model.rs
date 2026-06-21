@@ -611,6 +611,7 @@ pub struct SaveSummary {
     pub founder_species_class: Option<String>,
     pub founder_species_portrait: Option<String>,
     pub founder_species_traits: Vec<String>,
+    pub ruler_traits: Vec<String>,
     pub discovery: Option<DiscoveryFacts>,
     pub progression: Option<ProgressionFacts>,
     pub actions: Option<ActionFacts>,

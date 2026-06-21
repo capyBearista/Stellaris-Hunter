@@ -21,7 +21,8 @@ Setup dimensions are usually determined at empire creation. They are commonly pa
 | Dimension | Value Type | Examples | Notes |
 | --- | --- | --- | --- |
 | `species_class` | string | `"Humanoid"`, `"Lithoid"`, `"Machine"`, `"Aquatic"` | Existing dimension. Use for species-class requirements. |
-| `species_trait` | string | `"trait_budding"`, `"trait_brainslug"`, `"trait_venerable"` | Use when an achievement requires a specific biological or ruler trait. |
+| `species_trait` | string | `"trait_budding"`, `"trait_venerable"` | Use for founder-species biological traits only. Ruler/leader traits use `ruler_trait` instead. |
+| `ruler_trait` | string | `"leader_trait_brainslug"` | Use for ruler/leader-specific traits — parsed from `country.ruler → leaders.{id}.traits`. Not for founder-species biological traits (use `species_trait` for those). |
 | `origin` | string | `"origin_clone_army"`, `"origin_necrophage"`, `"origin_broken_shackles"` | Use for origin-gated achievements. |
 | `civic` | string | `"civic_determined_exterminator"`, `"civic_masterful_crafters"` | Existing dimension. Usually evaluated with `contains`. |
 | `ethic` | string | `"ethic_pacifist"`, `"ethic_xenophobe"` | Existing dimension. Usually evaluated with `contains`. |
@@ -74,7 +75,7 @@ Progression dimensions describe thresholds that can change through normal play. 
 | `rare_technologies_acquired` | integer | `1`, `15` | Existing dimension. Prefer this over `rare_tech_count`. |
 | `traditions_adopted` | integer | `42` | Use for tradition completion thresholds. |
 | `ascension_perks_unlocked` | integer | `1`, `8` | Existing dimension. |
-| `ascension_path` | string | `"genetic"`, `"synthetic"`, `"psionic"`, `"virtual"`, `"nanite"` | Use for completed ascension paths. |
+| `ascension_path` | string | `"genetic"`, `"synthetic"`, `"psionic"`, `"cybernetic"`, `"virtual"`, `"modularity"`, `"nanotech"` | Use for committed/completed ascension paths. When a path is detected in the save, mismatched path requirements are treated as `Impossible` (mutually exclusive). When no path is detected, path requirements evaluate as `Unknown`. |
 | `years_played` | integer | `100`, `200` | Use for elapsed-time requirements. |
 | `years_at_peace` | integer | `200` | Existing dimension. |
 | `diplomatic_weight` | integer | `9000` | Use for diplomatic-weight thresholds. |
@@ -140,7 +141,7 @@ Action and event dimensions represent player-driven milestones, discrete event-c
 | `civil_war_completed` | bool | `true` | Use for origin-specific civil war outcomes. |
 | `special_project_completed_type` | string | `"limbo"`, `"mysterious_chart"` | Use for named special project outcomes. |
 | `colony_count_with_hyperspace_not_researched` | integer | `10` | Use for The Path Not Taken. |
-| `crisis_defeated` | string | `"prethoryn"`, `"unbidden"`, `"contingency"`, `"cetana"` | Use for defeating a crisis. |
+| `crisis_defeated` | string or bool | `"prethoryn"`, `"unbidden"`, `"contingency"`, `"cetana"`, `true` | Use for defeating a crisis. Use a specific string when the achievement requires a named crisis. Use `true` when any crisis defeat qualifies or when the requirement is phrased as defeating all required crises without naming one single crisis value. |
 | `captured_prethoryn_scourge_queen` | bool | `true` | Existing dimension. Use this exact name. |
 | `crisis_path_nemesis` | bool | `true` | Use for Become the Crisis / Aetherophasic Engine achievements. |
 | `crisis_path_cosmogenesis` | bool | `true` | Use for Machine Age Cosmogenesis achievements. |

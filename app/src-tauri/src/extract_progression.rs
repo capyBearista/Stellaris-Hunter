@@ -202,29 +202,59 @@ fn count_technologies(country_value: &ClausewitzValue) -> Option<usize> {
     }
 }
 
-/// Detect the ascension path by scanning traditions and ascension perks for
-/// path-indicating keywords ("psionic", "genetic", "cybernetic", "synthetic").
+/// Detect the ascension path from committed path signals in ascension perks and
+/// adopted path traditions.
+///
+/// Uses exact-match mapping (no substring matching) to avoid false positives
+/// like `tr_purity_exemplary_genetics` matching the genetic path.
+///
+/// Order matters:
+/// 1. Ascension perks first — definitive commitment for the original paths.
+/// 2. Adopted traditions second — needed for Machine Age paths, which do not
+///    use a path-defining ascension perk.
 fn detect_ascension_path(country_value: &ClausewitzValue) -> Option<String> {
-    let sources = [
-        query_atoms(country_value, &["traditions"]),
-        query_atoms(country_value, &["ascension_perks"]),
+    const PATH_PERKS: &[(&str, &str)] = &[
+        ("ap_engineered_evolution", "genetic"),
+        ("ap_the_flesh_is_weak", "cybernetic"),
+        ("ap_organo_machine_interfacing", "cybernetic"),
+        ("ap_organo_machine_interfacing_assimilator", "cybernetic"),
+        ("ap_mind_over_matter", "psionic"),
+        ("ap_synthetic_evolution", "synthetic"),
+        ("ap_synthetic_age", "synthetic"),
     ];
-    for source in &sources {
-        for entry in source {
-            if entry.contains("psionic") {
-                return Some("psionic".to_string());
-            }
-            if entry.contains("genetic") {
-                return Some("genetic".to_string());
-            }
-            if entry.contains("cybernetic") {
-                return Some("cybernetic".to_string());
-            }
-            if entry.contains("synthetic") {
-                return Some("synthetic".to_string());
-            }
+
+    const PATH_TRADITIONS: &[(&str, &str)] = &[
+        ("tr_genetics_adopt", "genetic"),
+        ("tr_cybernetics_adopt", "cybernetic"),
+        ("tr_cybernetics_assimilator_adopt", "cybernetic"),
+        ("tr_psionics_adopt", "psionic"),
+        ("tr_psionics_shroud_adopt", "psionic"),
+        ("tr_synthetics_adopt", "synthetic"),
+        ("tr_virtuality_adopt", "virtual"),
+        ("tr_modularity_adopt", "modularity"),
+        ("tr_nanotech_adopt", "nanotech"),
+    ];
+
+    for perk in query_atoms(country_value, &["ascension_perks"]) {
+        if let Some(path) = PATH_PERKS
+            .iter()
+            .find(|(key, _)| *key == perk.as_str())
+            .map(|(_, path)| *path)
+        {
+            return Some(path.to_string());
         }
     }
+
+    for tradition in query_atoms(country_value, &["traditions"]) {
+        if let Some(path) = PATH_TRADITIONS
+            .iter()
+            .find(|(key, _)| *key == tradition.as_str())
+            .map(|(_, path)| *path)
+        {
+            return Some(path.to_string());
+        }
+    }
+
     None
 }
 
@@ -788,11 +818,11 @@ mod tests {
                 "traditions",
                 values(vec![
                     a("tr_diplomacy_adopt"),
-                    a("tr_psionic_adopt"),
-                    a("tr_psionic_the_shroud"),
+                    a("tr_psionics_adopt"),
+                    a("tr_psionics_shroud_adopt"),
                 ]),
             ),
-            ("ascension_perks", values(vec![a("ap_psionic_the_shroud")])),
+            ("ascension_perks", values(vec![a("ap_mind_over_matter")])),
         ]);
 
         let facts = extract_progression_facts(&game, &country);
@@ -832,6 +862,77 @@ mod tests {
         let facts = extract_progression_facts(&game, &country);
 
         assert_eq!(facts.ascension_path, None);
+    }
+
+    #[test]
+    fn test_ascension_path_virtual() {
+        let game = block(vec![
+            ("date", a("2205.01.01")),
+            ("player", block(vec![("country", a("0"))])),
+        ]);
+        let country = block(vec![
+            ("traditions", values(vec![a("tr_virtuality_adopt")])),
+            ("ascension_perks", values(vec![])),
+        ]);
+
+        let facts = extract_progression_facts(&game, &country);
+
+        assert_eq!(facts.ascension_path, Some("virtual".to_string()));
+    }
+
+    #[test]
+    fn test_ascension_path_modularity() {
+        let game = block(vec![
+            ("date", a("2205.01.01")),
+            ("player", block(vec![("country", a("0"))])),
+        ]);
+        let country = block(vec![
+            ("traditions", values(vec![a("tr_modularity_adopt")])),
+            ("ascension_perks", values(vec![])),
+        ]);
+
+        let facts = extract_progression_facts(&game, &country);
+
+        assert_eq!(facts.ascension_path, Some("modularity".to_string()));
+    }
+
+    #[test]
+    fn test_ascension_path_nanotech() {
+        let game = block(vec![
+            ("date", a("2205.01.01")),
+            ("player", block(vec![("country", a("0"))])),
+        ]);
+        let country = block(vec![
+            ("traditions", values(vec![a("tr_nanotech_adopt")])),
+            ("ascension_perks", values(vec![])),
+        ]);
+
+        let facts = extract_progression_facts(&game, &country);
+
+        assert_eq!(facts.ascension_path, Some("nanotech".to_string()));
+    }
+
+    #[test]
+    fn test_ascension_path_rejects_false_positive() {
+        // tr_purity_exemplary_genetics must NOT match as genetic
+        let game = block(vec![
+            ("date", a("2205.01.01")),
+            ("player", block(vec![("country", a("0"))])),
+        ]);
+        let country = block(vec![
+            (
+                "traditions",
+                values(vec![a("tr_purity_exemplary_genetics")]),
+            ),
+            ("ascension_perks", values(vec![])),
+        ]);
+
+        let facts = extract_progression_facts(&game, &country);
+
+        assert_eq!(
+            facts.ascension_path, None,
+            "tr_purity_exemplary_genetics should not match genetic path"
+        );
     }
 
     #[test]

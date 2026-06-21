@@ -1,10 +1,10 @@
 {
-  "catalog_version": "1.1.0",
+  "catalog_version": "1.2.0",
   "snapshot_kind": "full",
-  "stellaris_version": "4.3",
+  "stellaris_version": "4.4",
   "source_url": "https://stellaris.paradoxwikis.com/Achievements",
   "source_hash": null,
-  "updated_at": "2026-06-03",
+  "updated_at": "2026-06-21",
   "achievements": [
     {
       "id": "archaeologist",
@@ -34,7 +34,7 @@
             "operator": "at_least",
             "value": 1,
             "timing": "eventual",
-            "mutability": "normal_change",
+            "mutability": "event_limited",
             "severity": "soft",
             "source": "wiki-reviewed",
             "notes": "Requires completing any archaeological site; starting conditions usually do not hard-block it."
@@ -76,7 +76,7 @@
             "operator": "greater_than",
             "value": 1,
             "timing": "eventual",
-            "mutability": "normal_change",
+            "mutability": "event_limited",
             "severity": "soft",
             "source": "wiki-reviewed",
             "notes": "Requires colonizing beyond the capital."
@@ -118,7 +118,7 @@
             "operator": "at_least",
             "value": 1,
             "timing": "eventual",
-            "mutability": "normal_change",
+            "mutability": "event_limited",
             "severity": "soft",
             "source": "wiki-reviewed",
             "notes": "Requires acquiring at least one rare technology."
@@ -160,7 +160,7 @@
             "operator": "equals",
             "value": true,
             "timing": "eventual",
-            "mutability": "normal_change",
+            "mutability": "event_limited",
             "severity": "soft",
             "source": "wiki-reviewed",
             "notes": "Requires building a robot pop."
@@ -204,7 +204,7 @@
             "operator": "equals",
             "value": true,
             "timing": "eventual",
-            "mutability": "normal_change",
+            "mutability": "event_limited",
             "severity": "soft",
             "source": "wiki-reviewed",
             "notes": "Requires traveling through a wormhole after stabilizing wormhole travel."
@@ -695,11 +695,11 @@
             "dimension": "ascension_path",
             "operator": "equals",
             "value": "psionic",
-            "timing": "eventual",
-            "mutability": "slow_change",
+            "timing": "terminal",
+            "mutability": "immutable",
             "severity": "hard",
             "source": "wiki-reviewed",
-            "notes": "Requires completing the Psionic tradition tree to unlock the Breach the Shroud finisher."
+            "notes": "Must have completed the Psionic ascension path (mutually exclusive with other paths)."
           },
           {
             "condition_type": "required",
@@ -1041,10 +1041,10 @@
             "operator": "equals",
             "value": "synthetic",
             "timing": "terminal",
-            "mutability": "slow_change",
+            "mutability": "immutable",
             "severity": "hard",
             "source": "wiki-reviewed",
-            "notes": "Must complete the Synthetic Evolution ascension path."
+            "notes": "Must complete the Synthetic Evolution ascension path (mutually exclusive with other paths)."
           }
         ],
         "warnings": [
@@ -5336,14 +5336,14 @@
           },
           {
             "condition_type": "required",
-            "dimension": "species_trait",
+            "dimension": "ruler_trait",
             "operator": "contains",
-            "value": "trait_brainslug",
+            "value": "leader_trait_brainslug",
             "timing": "eventual",
             "mutability": "event_limited",
             "severity": "hard",
             "source": "wiki-reviewed",
-            "notes": "Ruler must have the Brain Slug Host trait, acquired via the Abandoned Settlements anomaly."
+            "notes": "Ruler must have the Brain Slug Host leader trait, acquired via the Abandoned Settlements anomaly."
           },
           {
             "condition_type": "required",
@@ -5363,7 +5363,7 @@
         ],
         "planner_notes": "Play as the pre-made Commonwealth of Man. Explore aggressively to trigger the Abandoned Settlements anomaly. Defeat UNE conventionally once the ruler has the trait.",
         "known_limitations": [
-          "The current save parser reads species class and origin but does not yet detect ruler traits."
+          "Ruler trait parsing depends on the leader being present in the `leaders` block of the save gamestate."
         ],
         "rule_confidence": "medium"
       }
@@ -9987,10 +9987,10 @@
             "operator": "equals",
             "value": "virtual",
             "timing": "terminal",
-            "mutability": "slow_change",
+            "mutability": "immutable",
             "severity": "hard",
             "source": "wiki-reviewed",
-            "notes": "Must complete the Virtuality tradition tree."
+            "notes": "Must complete the Virtuality tradition tree (mutually exclusive with other Machine Age paths)."
           },
           {
             "condition_type": "required",
@@ -10134,12 +10134,12 @@
             "condition_type": "required",
             "dimension": "ascension_path",
             "operator": "equals",
-            "value": "nanite",
-            "timing": "eventual",
-            "mutability": "slow_change",
+            "value": "nanotech",
+            "timing": "terminal",
+            "mutability": "immutable",
             "severity": "hard",
             "source": "wiki-reviewed",
-            "notes": "Must complete the Nanotech ascension path to unlock the Subsume World decision."
+            "notes": "Must complete the Nanotech ascension path to unlock the Subsume World decision (mutually exclusive with other Machine Age paths)."
           }
         ],
         "warnings": [
@@ -12048,6 +12048,440 @@
           "The current save parser does not yet detect planet class changes or interaction with Fallen Empire-owned worlds."
         ],
         "rule_confidence": "medium"
+      }
+    },
+    {
+      "id": "khan-of-khans",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_khan_of_khans",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Khan of Khans",
+        "description": "Seize back your throne and have at least 5 Satrapy Vassals.",
+        "requirement": "As Heirs of the Khan origin, reclaim the throne and have at least 5 Satrapy vassals.",
+        "hint": "Start as Heirs of the Khan; focus on subjugating other empires as Satrapies to reach 5 Satrapy vassals.",
+        "group": "Nomads",
+        "version_added": "4.4",
+        "difficulty": "UC"
+      },
+      "curation": {
+        "tags": [
+          "origin-gated",
+          "dlc-gated",
+          "diplomacy",
+          "subject",
+          "mid-game"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "origin",
+            "operator": "equals",
+            "value": "origin_heirs_of_the_khan",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires the Heirs of the Khan origin."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "dlc_required",
+            "operator": "equals",
+            "value": "Nomads",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "This achievement requires the Nomads DLC."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "vassal_count",
+            "operator": "at_least",
+            "value": 5,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Requires at least 5 vassals (Satrapy type preferred but unverifiable)."
+          }
+        ],
+        "warnings": [
+          "The achievement requires Satrapy-type vassals, not generic vassals — the satrapy agreement type is not currently parseable.",
+          "The Khan-title reclaim flag is not currently parseable."
+        ],
+        "planner_notes": "Heirs of the Khan start with a vassal; focus on subjugation wars until you have 5 Satrapy vassals, then reclaim the throne via the relevant decision.",
+        "known_limitations": [
+          "The current save parser does not yet distinguish Satrapy vassal agreements from other subject types.",
+          "The Khan-title reclaim state flag is not parseable."
+        ],
+        "rule_confidence": "low"
+      }
+    },
+    {
+      "id": "forever-is-a-long-time",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_forever_is_a_long_time",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Forever is a Long Time",
+        "description": "Survive for at least 200 years and reach the End Game Crisis.",
+        "requirement": "As Forever Cruise origin, survive 200+ years and the End Game Crisis must begin.",
+        "hint": "The Forever Cruise origin has mechanics to manage passenger satisfaction across long playtimes.",
+        "group": "Nomads",
+        "version_added": "4.4",
+        "difficulty": "UC"
+      },
+      "curation": {
+        "tags": [
+          "origin-gated",
+          "dlc-gated",
+          "survival",
+          "late-game"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "origin",
+            "operator": "equals",
+            "value": "origin_forever_cruise",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires the Forever Cruise origin."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "dlc_required",
+            "operator": "equals",
+            "value": "Nomads",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "This achievement requires the Nomads DLC."
+          }
+        ],
+        "warnings": [
+          "200-year survival and endgame crisis trigger requirements are only partially trackable."
+        ],
+        "planner_notes": "Pick Forever Cruise origin. Manage passenger satisfaction through mechanics; the 200-year and crisis requirements resolve naturally with time if the empire survives.",
+        "known_limitations": [
+          "The current save parser does not yet track years survived or endgame crisis start state.",
+          "The forfeit/abandonment flag is not parseable."
+        ],
+        "rule_confidence": "low"
+      }
+    },
+    {
+      "id": "the-long-way-round",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_the_long_way_round",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "The Long Way Round",
+        "description": "Complete the pilgrimage to all seven Sacred Sites.",
+        "requirement": "As Sacred Path origin, visit and complete all seven sacred sites.",
+        "hint": "Sacred sites are marked on the galaxy map for Sacred Path empires; prioritize exploration toward them.",
+        "group": "Nomads",
+        "version_added": "4.4",
+        "difficulty": "UC"
+      },
+      "curation": {
+        "tags": [
+          "origin-gated",
+          "dlc-gated",
+          "exploration",
+          "story",
+          "event-limited"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "origin",
+            "operator": "equals",
+            "value": "origin_sacred_path",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires the Sacred Path origin."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "dlc_required",
+            "operator": "equals",
+            "value": "Nomads",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "This achievement requires the Nomads DLC."
+          }
+        ],
+        "warnings": [],
+        "planner_notes": "Sacred Path starts with pilgrimage markers on the galaxy map. Explore toward each sacred site — the completion flag fires per site.",
+        "known_limitations": [
+          "The current save parser does not yet parse sacred-site pilgrimage completion flags."
+        ],
+        "rule_confidence": "low"
+      }
+    },
+    {
+      "id": "take-my-energy",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_take_my_energy",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Take My Energy",
+        "description": "Cook a homeworld with a Stellar Cannon.",
+        "requirement": "Use the Stellar Cannon megastructure to fire upon and devastate a homeworld.",
+        "hint": "Build the Stellar Cannon (requires megastructure tech) and target any empire capital world.",
+        "group": "Nomads",
+        "version_added": "4.4",
+        "difficulty": "UC"
+      },
+      "curation": {
+        "tags": [
+          "dlc-gated",
+          "megastructures",
+          "war",
+          "event-limited"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "dlc_required",
+            "operator": "equals",
+            "value": "Nomads",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "This achievement requires the Nomads DLC."
+          }
+        ],
+        "warnings": [],
+        "planner_notes": "Build the Stellar Cannon (megastructure) and fire it at an enemy homeworld. Requires megastructure engineering tech and a rival empire with a capital planet in range.",
+        "known_limitations": [
+          "The current save parser does not yet detect the fired_dyson_gun_at_homeworld flag.",
+          "Stellar Cannon build completion is not currently parseable."
+        ],
+        "rule_confidence": "low"
+      }
+    },
+    {
+      "id": "so-long-and-thanks-for-all-the-fish",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_so_long_and_thanks_for_all_the_fish",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "So Long, and Thanks for All the Fish",
+        "description": "Embark when your homeworld is at 70% devastation.",
+        "requirement": "Embark your empire (become nomadic) while your homeworld has at least 70% devastation.",
+        "hint": "Damage your own homeworld via events or war devastation; then use the Embark decision.",
+        "group": "Nomads",
+        "version_added": "4.4",
+        "difficulty": "UC"
+      },
+      "curation": {
+        "tags": [
+          "dlc-gated",
+          "exploration",
+          "event-limited",
+          "early-game"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "dlc_required",
+            "operator": "equals",
+            "value": "Nomads",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "This achievement requires the Nomads DLC."
+          }
+        ],
+        "warnings": [],
+        "planner_notes": "Damage your homeworld to 70% devastation (e.g., through events, orbital bombardment in a defensive war), then use the Embark decision to become nomadic.",
+        "known_limitations": [
+          "The current save parser does not yet detect the embarked_from_devastated_homeworld flag.",
+          "Devastation tracking is not currently implemented."
+        ],
+        "rule_confidence": "low"
+      }
+    },
+    {
+      "id": "i-win-longest-road",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_i_win_longest_road",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "I Win Longest Road!",
+        "description": "Connect 2 Capital Planets with a Wayline that is at least 20 Waystations long.",
+        "requirement": "Build a Wayline between two capital planets with 20+ Waystations in the chain.",
+        "hint": "As a Nomadic empire, construct Waystations across the galaxy to form a long chain between capitals.",
+        "group": "Nomads",
+        "version_added": "4.4",
+        "difficulty": "UC"
+      },
+      "curation": {
+        "tags": [
+          "dlc-gated",
+          "expansion",
+          "megastructures",
+          "late-game",
+          "setup-gated"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "dlc_required",
+            "operator": "equals",
+            "value": "Nomads",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "This achievement requires the Nomads DLC."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "starbase_count",
+            "operator": "at_least",
+            "value": 20,
+            "timing": "terminal",
+            "mutability": "normal_change",
+            "severity": "soft",
+            "source": "wiki-reviewed",
+            "notes": "Weak proxy — owning at least 20 starbases suggests the infrastructure for a long Wayline chain."
+          }
+        ],
+        "warnings": [
+          "The starbase_count >= 20 is a weak proxy for 20+ Waystations; actual waystation network topology and inter-capital routing are not machine-trackable."
+        ],
+        "planner_notes": "As a Nomadic empire, build Waystations across the galaxy to form a chain connecting two capital planets. The 20-Waystation minimum requires significant territory and infrastructure.",
+        "known_limitations": [
+          "The current save parser does not yet parse Waystation network topology or distinguish Waystation starbases from others.",
+          "The inter-capital routing condition is not parseable."
+        ],
+        "rule_confidence": "low"
+      }
+    },
+    {
+      "id": "its-full-of-stars",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_its_full_of_stars",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "It's Full of Stars",
+        "description": "Settle on Europa as your Empire Capital.",
+        "requirement": "As a Nomadic empire, settle on the planet Europa (Sol system) as your capital.",
+        "hint": "Find Sol (Earth's system), settle Europa, and make it your capital. Sol may not spawn in every galaxy.",
+        "group": "Nomads",
+        "version_added": "4.4",
+        "difficulty": "UC"
+      },
+      "curation": {
+        "tags": [
+          "dlc-gated",
+          "exploration",
+          "colony",
+          "story",
+          "rng-gated"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "dlc_required",
+            "operator": "equals",
+            "value": "Nomads",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "This achievement requires the Nomads DLC."
+          }
+        ],
+        "warnings": [
+          "Sol system may not spawn in every galaxy — partial RNG gate."
+        ],
+        "planner_notes": "Find the Sol system, settle Europa, and make it your empire capital. Since Sol is not guaranteed to exist in every galaxy, this may require multiple starts or modded galaxy generation settings.",
+        "known_limitations": [
+          "The current save parser does not yet detect the cross-entity carrier/system flags required for exact tracking."
+        ],
+        "rule_confidence": "low"
+      }
+    },
+    {
+      "id": "defenders-of-the-galaxy",
+      "steam_app_id": 281990,
+      "steam_api_name": "achievement_defenders_of_the_galaxy",
+      "local_key": null,
+      "deprecated": false,
+      "source": {
+        "name": "Defenders of the Galaxy",
+        "description": "Defeat all End Game Crises before abdicating as Defender of the Galaxy without any non-Arkship colonies.",
+        "requirement": "As Defender of the Galaxy (Ambition path), defeat all endgame crises without ever having non-Arkship colonies.",
+        "hint": "Remain nomadic (no settled colonies) through the entire game; defeat Prethoryn, Unbidden, and Contingency.",
+        "group": "Nomads",
+        "version_added": "4.4",
+        "difficulty": "UC"
+      },
+      "curation": {
+        "tags": [
+          "dlc-gated",
+          "crisis",
+          "challenge",
+          "late-game",
+          "setup-gated"
+        ],
+        "conditions": [
+          {
+            "condition_type": "required",
+            "dimension": "dlc_required",
+            "operator": "equals",
+            "value": "Nomads",
+            "timing": "setup",
+            "mutability": "immutable",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "This achievement requires the Nomads DLC."
+          },
+          {
+            "condition_type": "required",
+            "dimension": "crisis_defeated",
+            "operator": "equals",
+            "value": true,
+            "timing": "eventual",
+            "mutability": "normal_change",
+            "severity": "hard",
+            "source": "wiki-reviewed",
+            "notes": "Requires defeating all endgame crises (Prethoryn, Unbidden, Contingency)."
+          }
+        ],
+        "warnings": [
+          "Requires defeating ALL endgame crises in a single playthrough — a multi-crisis galaxy setting is strongly recommended.",
+          "The no-non-Arkship-colonies restriction is not currently machine-trackable."
+        ],
+        "planner_notes": "Pick the Defender of the Galaxy ambition. You must defeat all three endgame crises without ever building a non-Arkship colony. Enable multiple crises in galaxy settings for a practical attempt.",
+        "known_limitations": [
+          "The current save parser does not yet track all-crises-defeated state or distinguish crisis types defeated.",
+          "Colony ship origin tracking (ark vs. standard colony ship) is not implemented.",
+          "The current save parser does not yet track the abdication status for the Defender of the Galaxy ambition."
+        ],
+        "rule_confidence": "low"
       }
     }
   ]

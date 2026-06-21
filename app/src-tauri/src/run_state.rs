@@ -713,6 +713,7 @@ fn facts_from_save(save: &SaveSummary) -> Vec<RunFactInput> {
         "founder_species_traits",
         &save.founder_species_traits,
     );
+    push_vec(&mut facts, "empire", "ruler_trait", &save.ruler_traits);
     push_bool(&mut facts, "eligibility", "ironman", save.ironman);
     push_bool(
         &mut facts,

@@ -1,6 +1,34 @@
 # Stellaris Hunter Achievement Catalog
 
-This directory will hold the reviewed achievement catalog distributed with the app.
+This directory holds the reviewed achievement catalog distributed with the app.
+
+## Maintainer Update Tools
+
+When a new Stellaris version ships, upstream achievements may change before the
+catalog is updated. Use the tools in `tools/catalog-diff/` to import, compare,
+and review changes.
+
+### Quick diff (no HTML needed)
+
+```bash
+python3 tools/catalog-diff/catalog_diff.py
+```
+
+### Full HTML import pipeline
+
+Save the [wiki Achievements page](https://stellaris.paradoxwikis.com/Achievements)
+as offline HTML, then:
+
+```bash
+python3 tools/catalog-diff/catalog_update.py path/to/Achievements.html
+```
+
+This produces candidate files in `tools/catalog-diff/out/` without mutating
+any checked-in files. Add `--apply-snapshot` and/or `--apply-catalog-source`
+to apply changes in-place (exact-match patches only — safe rules enforced).
+
+See `tools/catalog-diff/README.md` for full maintainer workflow and update
+procedure.
 
 ## Source policy
 
@@ -12,7 +40,7 @@ This directory will hold the reviewed achievement catalog distributed with the a
 ## Files
 
 - `schema.json` — baseline JSON shape for catalog authoring and validation. The Rust importer also enforces invariants that portable JSON Schema cannot fully express, especially unique achievement `id` values after parsing.
-- `latest.json` — intentionally not committed yet; add once the full reviewed all-achievement catalog is available.
+- `latest.json` — the current reviewed full catalog snapshot shipped with the app and imported into the app-owned SQLite database.
 
 ## Import semantics
 
@@ -21,6 +49,10 @@ Catalog JSON must declare `"snapshot_kind": "full"`. Imports are authoritative f
 The published schema expects canonical curation keys: tags use lowercase hyphen slugs such as `galactic-community`, and condition key fields use lowercase snake case such as `species_class`. The Rust importer can normalize some flexible input during tests/imports, but committed catalog data should already match the schema.
 
 Importer validation remains authoritative for constraints such as duplicate achievement IDs and trimmed non-empty required text. Treat schema validation as necessary but not sufficient before committing catalog content; run the Rust catalog import tests/checks as the final gate.
+
+## Maintenance notes
+
+- The canonical `ascension_path` value for the Machine Age nanotech path is `nanotech`, not `nanite`.
 
 ## Licensing and attribution
 

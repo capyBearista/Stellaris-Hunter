@@ -39,6 +39,11 @@ fn parses_synthetic_save_zip() {
         summary.founder_species_traits,
         vec!["trait_adaptive", "trait_nomadic"]
     );
+    assert_eq!(
+        summary.ruler_traits,
+        vec!["leader_trait_brainslug"],
+        "ruler traits should be extracted from leaders block via ruler ID"
+    );
 
     // Verify extraction modules produce non-None results (fixture is minimal
     // so individual fields will be mostly defaults, but the wiring is live)

@@ -280,6 +280,7 @@ function PlannerItem({
   onNoteChange: (achievementId: string, text: string) => void;
 }) {
   const [showNotes, setShowNotes] = useState(false);
+  const [showBlockerDetail, setShowBlockerDetail] = useState(false);
   const [editNote, setEditNote] = useState(noteText);
   const [noteError, setNoteError] = useState<string | null>(null);
 
@@ -311,14 +312,14 @@ function PlannerItem({
     }
   };
 
-  const firstReason = evaluation.reasons[0] ?? 'No evaluation reason recorded.';
-  const dlcCondition = evaluation.conditions.find((condition) =>
-    ['required_dlc', 'dlc_required', 'dlc'].includes(condition.dimension),
+  // DLC condition that is blocking or unknown
+  const dlcCondition = evaluation.conditions.find((c) =>
+    ['required_dlc', 'dlc_required', 'dlc'].includes(c.dimension),
   );
-  const dlcWarning =
-    dlcCondition && dlcCondition.passed !== true
-      ? dlcCondition.reason || 'This achievement depends on DLC state that is not currently confirmed.'
-      : null;
+  const needsDlcAttention = dlcCondition && dlcCondition.passed !== true;
+
+  // First failing (or unknown) condition for compact blocker display
+  const blockerCondition = evaluation.conditions.find((c) => c.passed !== true);
   return (
     <li className="planner-item" data-status={evaluation.status}>
       <div className="planner-item-main">
@@ -330,13 +331,32 @@ function PlannerItem({
           {evaluation.planned ? 'Unplan' : 'Plan'}
         </button>
       </div>
-      <p>{firstReason}</p>
-      {dlcWarning ? <p className="planner-dlc-warning">DLC gate · {dlcWarning}</p> : null}
+      {blockerCondition ? (
+        <div className="planner-blocker">
+          <span className={needsDlcAttention ? 'planner-dlc-label' : 'planner-blocker-label'}>
+            {needsDlcAttention
+              ? (typeof dlcCondition!.condition_value === 'string'
+                  ? `Missing: ${dlcCondition!.condition_value}`
+                  : 'Missing required DLC')
+              : (blockerCondition.reason || `${blockerCondition.dimension} not satisfied`)}
+          </span>
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => setShowBlockerDetail((v) => !v)}
+          >
+            {showBlockerDetail ? 'Hide details' : 'Details'}
+          </button>
+          {showBlockerDetail && evaluation.reasons[0] ? (
+            <p className="planner-detail-reason">{evaluation.reasons[0]}</p>
+          ) : null}
+        </div>
+      ) : null}
       <div className="planner-meta">
         {evaluation.achievement.source.difficulty ? (
           <span className="badge badge-medium">{evaluation.achievement.source.difficulty}</span>
         ) : null}
-        {dlcWarning ? <span className="badge badge-dlc-warning">DLC attention</span> : null}
+        {needsDlcAttention ? <span className="badge badge-dlc-warning">DLC attention</span> : null}
         {evaluation.achievement.curation.tags.slice(0, 4).map((tag) => (
           <span key={tag} className="tag-pill">{tag}</span>
         ))}

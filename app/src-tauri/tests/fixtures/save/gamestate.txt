@@ -4,22 +4,29 @@ name="Synthetic Run"
 cheated_on_save=yes
 player={ { country=42 } }
 country={
-  42={
-    founder_species_ref=99
-    ethos={ ethic="ethic_fanatic_egalitarian" ethic="ethic_xenophile" }
-    origin=origin_default
-    government={
-      type="gov_cyber_democracy_individualist"
-      authority="auth_democratic"
-      civics={ "civic_beacon_of_liberty" "civic_meritocracy" }
-      origin="origin_default"
-    }
-  }
+   42={
+     founder_species_ref=99
+     ruler="100"
+     ethos={ ethic="ethic_fanatic_egalitarian" ethic="ethic_xenophile" }
+     origin=origin_default
+     government={
+       type="gov_cyber_democracy_individualist"
+       authority="auth_democratic"
+       civics={ "civic_beacon_of_liberty" "civic_meritocracy" }
+       origin="origin_default"
+     }
+   }
 }
 species_db={
   99={
     class="HUM"
     portrait="human"
     traits={ trait="trait_adaptive" trait="trait_nomadic" }
+  }
+}
+leaders={
+  100={
+    name="Ruler-One"
+    traits={ trait="leader_trait_brainslug" }
   }
 }
