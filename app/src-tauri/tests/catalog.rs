@@ -5,6 +5,11 @@ use stellaris_hunter_scan::catalog::{
     parse_catalog_json, set_completion_override,
 };
 
+/// The committed live catalog bundled at compile time using the same path as
+/// the runtime `db.rs` import. Used by `validates_live_catalog_latest_json` to
+/// catch structural regressions between the live catalog and the Rust importer.
+const LIVE_CATALOG_JSON: &str = include_str!("../../../catalog/latest.json");
+
 const CATALOG_FIXTURE: &str = include_str!("fixtures/catalog/catalog.json");
 
 #[test]
@@ -513,4 +518,84 @@ fn clearing_completion_overrides_rejects_unknown_achievement_ids() {
         error.to_string().contains("unknown achievement id"),
         "unexpected error: {error}"
     );
+}
+
+#[test]
+fn validates_live_catalog_latest_json() {
+    // Parse the committed catalog/latest.json using the same bundle path as
+    // the runtime db.rs import.  This catches regressions where a schema
+    // change to the catalog types or import SQL would break the live catalog
+    // before it reaches production.
+    let catalog =
+        parse_catalog_json(LIVE_CATALOG_JSON).expect("live catalog/latest.json must parse");
+
+    // Structural invariants validated by parse_catalog_json itself:
+    //   • catalog_version is valid semver
+    //   • snapshot_kind equals "full"
+    //   • all achievement ids are non-blank and unique
+    //   • difficulty values belong to the known enum
+    //   • tags follow the slug pattern
+    //   • condition dimensions follow snake_case
+    //   • no unknown fields (serde deny_unknown_fields)
+
+    assert!(
+        !catalog.achievements.is_empty(),
+        "live catalog must contain at least one achievement"
+    );
+    assert_eq!(
+        catalog.snapshot_kind, "full",
+        "live catalog must declare full snapshot semantics"
+    );
+
+    // Import into an in-memory SQLite database using the same code path as
+    // the app's initialization in db.rs.
+    let mut conn = Connection::open_in_memory().expect("in-memory sqlite");
+    initialize_catalog_schema(&conn).expect("schema init must succeed");
+    import_catalog(&mut conn, &catalog).expect("live catalog must import successfully");
+
+    // Metadata round-trips correctly.
+    let metadata = load_catalog_metadata(&conn)
+        .expect("metadata load")
+        .expect("metadata must exist after importing the live catalog");
+    assert_eq!(
+        metadata.catalog_version, catalog.catalog_version,
+        "persisted catalog_version must match the parsed value"
+    );
+    assert!(
+        !metadata.imported_at.is_empty(),
+        "imported_at timestamp must be populated"
+    );
+
+    // Every parsed entry is loadable from the DB (the full-snapshot import
+    // produced exactly as many rows as there were achievements).
+    let entries = load_catalog_entries(&conn).expect("load entries");
+    assert_eq!(
+        entries.len(),
+        catalog.achievements.len(),
+        "all {} parsed achievements must be loadable from the DB, got {}",
+        catalog.achievements.len(),
+        entries.len(),
+    );
+
+    // Sanity: the live catalog has well over 50 achievements (at the time of
+    // writing ~211).  Pinning an exact count would be brittle, but asserting
+    // a reasonable floor catches accidental truncation or near-empty catalogs.
+    assert!(
+        entries.len() > 50,
+        "live catalog should have more than 50 achievements, got {}",
+        entries.len()
+    );
+
+    // All loaded entries have non-blank ids and at least the source name.
+    for entry in &entries {
+        assert!(
+            !entry.id.is_empty(),
+            "every loaded entry must have a non-blank id"
+        );
+        assert!(
+            !entry.source.name.is_empty(),
+            "entry '{}' must have a non-blank source name",
+            entry.id
+        );
+    }
 }

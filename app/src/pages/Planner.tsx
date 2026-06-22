@@ -280,7 +280,7 @@ function PlannerItem({
   onNoteChange: (achievementId: string, text: string) => void;
 }) {
   const [showNotes, setShowNotes] = useState(false);
-  const [showBlockerDetail, setShowBlockerDetail] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const [editNote, setEditNote] = useState(noteText);
   const [noteError, setNoteError] = useState<string | null>(null);
 
@@ -317,9 +317,13 @@ function PlannerItem({
     ['required_dlc', 'dlc_required', 'dlc'].includes(c.dimension),
   );
   const needsDlcAttention = dlcCondition && dlcCondition.passed !== true;
+  const hasWarnings = evaluation.warnings.length > 0;
 
   // First failing (or unknown) condition for compact blocker display
   const blockerCondition = evaluation.conditions.find((c) => c.passed !== true);
+  const detailReason = blockerCondition ? (evaluation.reasons[0] ?? null) : null;
+  const showsAdvisoryRow = !blockerCondition && hasWarnings;
+
   return (
     <li className="planner-item" data-status={evaluation.status}>
       <div className="planner-item-main">
@@ -343,12 +347,37 @@ function PlannerItem({
           <button
             type="button"
             className="link-button"
-            onClick={() => setShowBlockerDetail((v) => !v)}
+            onClick={() => setShowDetail((v) => !v)}
           >
-            {showBlockerDetail ? 'Hide details' : 'Details'}
+            {showDetail ? 'Hide details' : 'Details'}
           </button>
-          {showBlockerDetail && evaluation.reasons[0] ? (
-            <p className="planner-detail-reason">{evaluation.reasons[0]}</p>
+        </div>
+      ) : null}
+      {showsAdvisoryRow ? (
+        <div className="planner-blocker planner-advisory">
+          <span className="detail-warning">Note</span>
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => setShowDetail((v) => !v)}
+          >
+            {showDetail ? 'Hide details' : 'Details'}
+          </button>
+        </div>
+      ) : null}
+      {showDetail && (detailReason || hasWarnings) ? (
+        <div className="planner-detail-reason">
+          {detailReason ? <p>{detailReason}</p> : null}
+          {hasWarnings ? (
+            evaluation.warnings.length === 1 ? (
+              <p>{evaluation.warnings[0]}</p>
+            ) : (
+              <ul>
+                {evaluation.warnings.map((warning) => (
+                  <li key={warning}>{warning}</li>
+                ))}
+              </ul>
+            )
           ) : null}
         </div>
       ) : null}
@@ -360,7 +389,7 @@ function PlannerItem({
         {evaluation.achievement.curation.tags.slice(0, 4).map((tag) => (
           <span key={tag} className="tag-pill">{tag}</span>
         ))}
-        {evaluation.warnings.length > 0 ? <span className="detail-warning">Warning</span> : null}
+        {hasWarnings && !showsAdvisoryRow ? <span className="detail-warning">Note</span> : null}
       </div>
       <div className="planner-note-section">
         <button

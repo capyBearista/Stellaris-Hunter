@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, expect, it, vi } from 'vitest';
@@ -570,6 +570,89 @@ it('surfaces planner toggle failures', async () => {
   expect(await screen.findByText('First Achievement')).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: /^plan$/i }));
   expect(await screen.findByRole('alert')).toHaveTextContent('planner write failed');
+});
+
+it('shows advisory details for possible planner achievements with warnings', async () => {
+  const user = userEvent.setup();
+  invoke.mockImplementation((command: string) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_a',
+          run_folder: 'run_a',
+          display_name: 'Synthetic Run',
+          latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: '2532.01.26',
+          game_version: 'Cetus v4.3.7',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 12,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (command === 'load_planner_evaluations') {
+      return Promise.resolve([
+        {
+          achievement: {
+            id: 'ach_1',
+            steam_app_id: 281990,
+            steam_api_name: 'ACH_ONE',
+            local_key: null,
+            deprecated: false,
+            source: {
+              name: 'First Achievement',
+              description: null,
+              requirement: 'Complete the thing',
+              hint: null,
+              group: 'Base Game',
+              version_added: '1.0',
+              difficulty: 'E',
+            },
+            curation: {
+              tags: ['early'],
+              conditions: [],
+              warnings: [],
+              planner_notes: null,
+              known_limitations: [],
+              rule_confidence: 'medium',
+            },
+          },
+          status: 'Possible',
+          computed_status: 'Possible',
+          planned: false,
+          ignored: false,
+          reasons: ['No hard blocker is known.'],
+          warnings: ['Requires some luck, the current facts are not a guarantee.'],
+          conditions: [],
+        },
+      ]);
+    }
+    if (command === 'load_run_achievement_notes') return Promise.resolve([]);
+    if (command === 'set_run_achievement_status') return Promise.resolve();
+    return Promise.resolve([]);
+  });
+
+  render(
+    <MemoryRouter>
+      <Planner />
+    </MemoryRouter>,
+  );
+
+  const title = await screen.findByText('First Achievement');
+  const plannerCard = title.closest('.planner-item');
+  expect(plannerCard).not.toBeNull();
+
+  const card = within(plannerCard as HTMLElement);
+  expect(card.getAllByText('Note')).toHaveLength(1);
+  expect(card.queryByText('Warning')).not.toBeInTheDocument();
+
+  await user.click(card.getByRole('button', { name: /details/i }));
+
+  expect(
+    await card.findByText('Requires some luck, the current facts are not a guarantee.'),
+  ).toBeInTheDocument();
 });
 
 it('edits a fact override from the runs page', async () => {

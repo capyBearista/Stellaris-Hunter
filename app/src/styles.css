@@ -541,7 +541,14 @@ p .link-button {
 
 .achievement-detail p { margin: var(--space-4) 0; }
 
-.detail-warning { color: var(--accent-amber); }
+.detail-warning {
+  color: var(--accent-amber);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
 /* Achievement command center */
 .achievements-command-panel {
@@ -1084,6 +1091,25 @@ p .link-button {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.planner-detail-reason p {
+  margin: 0;
+}
+
+.planner-detail-reason p + p,
+.planner-detail-reason p + ul,
+.planner-detail-reason ul + p {
+  margin-top: var(--space-8);
+}
+
+.planner-detail-reason ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.planner-detail-reason li + li {
+  margin-top: var(--space-4);
 }
 
 .planner-item-main {
