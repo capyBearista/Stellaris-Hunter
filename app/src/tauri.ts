@@ -268,10 +268,6 @@ export function rescanSaves(): Promise<PersistedRunSummary[]> {
 
 // --- Fact override wrappers ---
 
-export function loadFactOverrides(runFolderPath: string): Promise<FactOverride[]> {
-  return callInvoke<FactOverride[]>('load_fact_overrides', { runFolderPath });
-}
-
 export function setFactOverride(
   runFolderPath: string,
   dimension: string,

@@ -33,6 +33,7 @@ export function Planner() {
   const [achievementNotes, setAchievementNotes] = useState<Map<string, string>>(new Map());
   const [collapsedGroups, setCollapsedGroups] = useState<Set<PlannerStatus>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [notesWarning, setNotesWarning] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,8 +101,8 @@ export function Planner() {
           setAchievementNotes(map);
         }
       })
-      .catch(() => {
-        // Non-critical — silently ignore
+      .catch((err) => {
+        if (!cancelled) setNotesWarning(errorMessage(err));
       });
     return () => { cancelled = true; };
   }, [selectedRunPath]);
@@ -183,6 +184,7 @@ export function Planner() {
       </div>
 
       {error ? <p role="alert" className="error">{error}</p> : null}
+      {notesWarning ? <p className="muted notes-warning">Notes unavailable: {notesWarning}</p> : null}
 
       {!selectedRun ? (
         <p className="muted">

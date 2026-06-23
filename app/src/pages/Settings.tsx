@@ -31,18 +31,19 @@ export function Settings() {
   const [iconMsg, setIconMsg] = useState<string | null>(null);
   const [saveRescan, setSaveRescan] = useState<SyncState>('idle');
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAppInfo()
       .then(setAppInfo)
-      .catch((err) => console.error('loadAppInfo failed:', err));
+      .catch((err) => setLoadError(`App info unavailable: ${String(err)}`));
     loadAppConfig()
       .then((cfg) => {
         setConfig(cfg);
         setInstallPath(cfg.installPathOverride ?? '');
         setDocumentsPath(cfg.documentsPathOverride ?? '');
       })
-      .catch((err) => console.error('loadAppConfig failed:', err));
+      .catch((err) => setLoadError(`Config unavailable: ${String(err)}`));
   }, []);
 
   const handleSaveConfig = async () => {
@@ -136,6 +137,8 @@ export function Settings() {
       <div className="panel-header">
         <h2>Configuration</h2>
       </div>
+
+      {loadError ? <p className="muted notes-warning">{loadError}</p> : null}
 
       {/* App Info */}
       <div className="run-fact-panel" style={{ marginBottom: '1rem' }}>

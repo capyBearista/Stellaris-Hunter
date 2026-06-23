@@ -195,16 +195,18 @@ function RunFactPanel({
   const [overrideError, setOverrideError] = useState<string | null>(null);
   const [runNote, setRunNoteText] = useState('');
   const [runNoteSaved, setRunNoteSaved] = useState(false);
+  const [notesWarning, setNotesWarning] = useState<string | null>(null);
 
   useEffect(() => {
     if (!run) return;
     setRunNoteSaved(false);
+    setNotesWarning(null);
     loadRunNotes(run.folder_path)
       .then((note) => {
         setRunNoteText(note?.note_text ?? '');
       })
-      .catch(() => {
-        // Non-critical — ignore
+      .catch((err) => {
+        setNotesWarning(errorMessage(err));
       });
   }, [run?.folder_path]);
 
@@ -318,6 +320,7 @@ function RunFactPanel({
 
       <div className="run-note-section">
         <h4>Run notes</h4>
+        {notesWarning ? <p className="muted notes-warning">Notes unavailable: {notesWarning}</p> : null}
         <textarea
           className="filter-input"
           rows={4}
