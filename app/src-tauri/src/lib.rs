@@ -15,6 +15,7 @@ pub mod paths;
 pub mod rules;
 pub mod run_state;
 pub mod save;
+pub mod serve;
 pub mod steam;
 
 use std::path::PathBuf;

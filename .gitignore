@@ -158,8 +158,7 @@ yarn-error.log
 venv/
 env/
 ENV/
-session-ses_*.md
-.slim/deepwork/
+
 
 # ============================================================================
 # Temporary Files

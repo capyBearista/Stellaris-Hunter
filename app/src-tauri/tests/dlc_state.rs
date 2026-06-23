@@ -382,10 +382,7 @@ fn classifies_dlc_entries_from_enabled_mods() {
         "dlc/dlc028_ancient_relics.dlc".to_string(),
         "mod/alpha.mod".to_string(),
         "mod/beta.mod".to_string(),
-    ]
-    .into_iter()
-    .map(String::from)
-    .collect();
+    ];
     let disabled_dlcs: Vec<String> = vec!["dlc009_plantoids".to_string()];
 
     let state = classify_dlc_state(&enabled_mods, &disabled_dlcs);

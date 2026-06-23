@@ -1,5 +1,25 @@
 import { invoke } from '@tauri-apps/api/core';
 
+const hasTauriRuntime =
+  typeof window !== 'undefined' &&
+  // @ts-ignore — optional bridge injected by Tauri webview
+  !!(window as any).__TAURI_INTERNALS__?.invoke;
+
+async function callInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+  if (hasTauriRuntime) {
+    return invoke<T>(cmd, args);
+  }
+  const res = await fetch(`/ipc/${cmd}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: args ? JSON.stringify(args) : '{}',
+  });
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  return (await res.json()) as T;
+}
+
 // --- Achievement types ---
 
 export interface AchievementSourceFields {
@@ -231,25 +251,25 @@ export type PlannerStatus =
 // --- IPC wrappers (existing) ---
 
 export function scanLocalState() {
-  return invoke<ScanReport>('scan_local_state', {});
+  return callInvoke<ScanReport>('scan_local_state', {});
 }
 
 export function loadRuns(): Promise<PersistedRunSummary[]> {
-  return invoke<PersistedRunSummary[]>('load_runs', {});
+  return callInvoke<PersistedRunSummary[]>('load_runs', {});
 }
 
 export function loadRunFacts(runFolderPath: string): Promise<RunFactSummary[]> {
-  return invoke<RunFactSummary[]>('load_run_facts', { runFolderPath });
+  return callInvoke<RunFactSummary[]>('load_run_facts', { runFolderPath });
 }
 
 export function rescanSaves(): Promise<PersistedRunSummary[]> {
-  return invoke<PersistedRunSummary[]>('rescan_saves', {});
+  return callInvoke<PersistedRunSummary[]>('rescan_saves', {});
 }
 
 // --- Fact override wrappers ---
 
 export function loadFactOverrides(runFolderPath: string): Promise<FactOverride[]> {
-  return invoke<FactOverride[]>('load_fact_overrides', { runFolderPath });
+  return callInvoke<FactOverride[]>('load_fact_overrides', { runFolderPath });
 }
 
 export function setFactOverride(
@@ -259,7 +279,7 @@ export function setFactOverride(
   valueJson: string,
   reason: string | null,
 ): Promise<void> {
-  return invoke<void>('set_fact_override', { runFolderPath, dimension, key, valueJson, reason });
+  return callInvoke<void>('set_fact_override', { runFolderPath, dimension, key, valueJson, reason });
 }
 
 export function clearFactOverride(
@@ -267,13 +287,13 @@ export function clearFactOverride(
   dimension: string,
   key: string,
 ): Promise<void> {
-  return invoke<void>('clear_fact_override', { runFolderPath, dimension, key });
+  return callInvoke<void>('clear_fact_override', { runFolderPath, dimension, key });
 }
 
 export function loadPlannerEvaluations(
   runFolderPath: string,
 ): Promise<PlannerAchievementEvaluation[]> {
-  return invoke<PlannerAchievementEvaluation[]>('load_planner_evaluations', { runFolderPath });
+  return callInvoke<PlannerAchievementEvaluation[]>('load_planner_evaluations', { runFolderPath });
 }
 
 export function setRunAchievementStatus(
@@ -281,25 +301,25 @@ export function setRunAchievementStatus(
   achievementId: string,
   userStatus: 'planned' | 'ignored' | null,
 ): Promise<void> {
-  return invoke<void>('set_run_achievement_status', { runFolderPath, achievementId, userStatus });
+  return callInvoke<void>('set_run_achievement_status', { runFolderPath, achievementId, userStatus });
 }
 
 // --- Notes wrappers ---
 
 export function loadRunNotes(runFolderPath: string): Promise<RunNote | null> {
-  return invoke<RunNote | null>('load_run_notes', { runFolderPath });
+  return callInvoke<RunNote | null>('load_run_notes', { runFolderPath });
 }
 
 export function setRunNote(runFolderPath: string, noteText: string): Promise<void> {
-  return invoke<void>('set_run_note', { runFolderPath, noteText });
+  return callInvoke<void>('set_run_note', { runFolderPath, noteText });
 }
 
 export function clearRunNote(runFolderPath: string): Promise<void> {
-  return invoke<void>('clear_run_note', { runFolderPath });
+  return callInvoke<void>('clear_run_note', { runFolderPath });
 }
 
 export function loadRunAchievementNotes(runFolderPath: string): Promise<RunAchievementNote[]> {
-  return invoke<RunAchievementNote[]>('load_run_achievement_notes', { runFolderPath });
+  return callInvoke<RunAchievementNote[]>('load_run_achievement_notes', { runFolderPath });
 }
 
 export function setRunAchievementNote(
@@ -307,14 +327,14 @@ export function setRunAchievementNote(
   achievementId: string,
   notes: string,
 ): Promise<void> {
-  return invoke<void>('set_run_achievement_note', { runFolderPath, achievementId, notes });
+  return callInvoke<void>('set_run_achievement_note', { runFolderPath, achievementId, notes });
 }
 
 export function clearRunAchievementNote(
   runFolderPath: string,
   achievementId: string,
 ): Promise<void> {
-  return invoke<void>('clear_run_achievement_note', { runFolderPath, achievementId });
+  return callInvoke<void>('clear_run_achievement_note', { runFolderPath, achievementId });
 }
 
 // --- Catalog sync types & wrappers ---
@@ -327,17 +347,17 @@ export interface CatalogSyncResult {
 }
 
 export function syncCatalog(): Promise<CatalogSyncResult> {
-  return invoke<CatalogSyncResult>('sync_catalog', {});
+  return callInvoke<CatalogSyncResult>('sync_catalog', {});
 }
 
 // --- IPC wrappers (new) ---
 
 export function loadAchievements(): Promise<AchievementEntry[]> {
-  return invoke<AchievementEntry[]>('load_achievements', {});
+  return callInvoke<AchievementEntry[]>('load_achievements', {});
 }
 
 export function loadCatalogInfo(): Promise<CatalogInfo | null> {
-  return invoke<CatalogInfo | null>('load_catalog_info', {});
+  return callInvoke<CatalogInfo | null>('load_catalog_info', {});
 }
 
 // --- Achievement override types & wrappers ---
@@ -348,15 +368,15 @@ export interface AchievementOverride {
 }
 
 export function loadCompletionOverrides(): Promise<AchievementOverride[]> {
-  return invoke<AchievementOverride[]>('load_completion_overrides', {});
+  return callInvoke<AchievementOverride[]>('load_completion_overrides', {});
 }
 
 export function setCompletionOverride(achievementId: string, completed: boolean): Promise<void> {
-  return invoke<void>('set_completion_override', { achievementId, completed });
+  return callInvoke<void>('set_completion_override', { achievementId, completed });
 }
 
 export function clearCompletionOverride(achievementId: string): Promise<void> {
-  return invoke<void>('clear_completion_override', { achievementId });
+  return callInvoke<void>('clear_completion_override', { achievementId });
 }
 
 // --- Steam sync types & wrappers ---
@@ -369,7 +389,7 @@ export interface SteamSyncResult {
 }
 
 export function syncSteamAchievements(): Promise<SteamSyncResult> {
-  return invoke<SteamSyncResult>('sync_steam_achievements', {});
+  return callInvoke<SteamSyncResult>('sync_steam_achievements', {});
 }
 
 // --- Icon types & wrappers ---
@@ -381,12 +401,25 @@ export interface IconSyncResult {
   message: string;
 }
 
-export async function getAchievementIcon(achievementId: string): Promise<number[] | null> {
-  return invoke<number[] | null>('get_achievement_icon', { achievementId });
+export async function getAchievementIcon(achievementId: string): Promise<Uint8Array | null> {
+  if (hasTauriRuntime) {
+    return invoke<number[] | null>('get_achievement_icon', { achievementId }).then(
+      (arr) => (arr ? new Uint8Array(arr) : null),
+    );
+  }
+  const res = await fetch('/ipc/get_achievement_icon', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ achievementId }),
+  });
+  if (res.status === 204) return null;
+  if (!res.ok) throw new Error(await res.text());
+  const buf = await res.arrayBuffer();
+  return new Uint8Array(buf);
 }
 
 export async function syncIcons(): Promise<IconSyncResult> {
-  return invoke<IconSyncResult>('sync_icons');
+  return callInvoke<IconSyncResult>('sync_icons');
 }
 
 // --- App Config types & wrappers ---
@@ -406,13 +439,13 @@ export interface AppInfo {
 }
 
 export async function loadAppConfig(): Promise<AppConfig> {
-  return invoke<AppConfig>('load_app_config');
+  return callInvoke<AppConfig>('load_app_config');
 }
 
 export async function saveAppConfig(config: AppConfig): Promise<void> {
-  return invoke<void>('save_app_config', { config });
+  return callInvoke<void>('save_app_config', { config });
 }
 
 export async function loadAppInfo(): Promise<AppInfo> {
-  return invoke<AppInfo>('load_app_info');
+  return callInvoke<AppInfo>('load_app_info');
 }
