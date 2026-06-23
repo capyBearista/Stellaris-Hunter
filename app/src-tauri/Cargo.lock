@@ -3748,7 +3748,7 @@ checksum = "ae139f051204a4af015d4f0ed3a1f7a51020d03a44c7cf249168c543d88131e9"
 
 [[package]]
 name = "stellaris-hunter-scan"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "axum",
  "clap",

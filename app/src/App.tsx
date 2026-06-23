@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Nav } from './components/Nav';
 import { Overview } from './pages/Overview';
 import { Achievements } from './pages/Achievements';
+import { Notes } from './pages/Notes';
 import { Planner } from './pages/Planner';
 import { Runs } from './pages/Runs';
 import { Settings } from './pages/Settings';
@@ -55,6 +56,7 @@ export function App() {
             <Routes>
               <Route path="/" element={<Overview />} />
               <Route path="/achievements" element={<Achievements />} />
+              <Route path="/notes" element={<Notes />} />
               <Route path="/planner" element={<Planner />} />
               <Route path="/runs" element={<Runs />} />
               <Route path="/settings" element={<Settings />} />

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Terminal, Award, Radar, Database, Sliders } from 'lucide-react';
+import { Terminal, Award, StickyNote, Radar, Database, Sliders } from 'lucide-react';
 
 export function Nav() {
   return (
@@ -13,6 +13,9 @@ export function Nav() {
         className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
       >
         <Award size={18} aria-hidden="true" /> Achievements
+      </NavLink>
+      <NavLink to="/notes" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+        <StickyNote size={18} aria-hidden="true" /> Notes
       </NavLink>
       <NavLink
         to="/planner"

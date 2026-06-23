@@ -12,6 +12,7 @@ vi.mock('@tauri-apps/api/core', () => ({
 import { App } from './App';
 import { Overview } from './pages/Overview';
 import { Achievements } from './pages/Achievements';
+import { Notes } from './pages/Notes';
 import { Planner } from './pages/Planner';
 import { Runs } from './pages/Runs';
 import { invalidateScanCache, resetScanCache, scanLocalStateCached } from './scanCache';
@@ -62,9 +63,23 @@ it('renders the app shell with navigation links', async () => {
   expect(screen.getByRole('link', { name: /overview/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /achievements/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /planner/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /notes/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /runs/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /settings/i })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: /rescan saves/i })).toBeInTheDocument();
+});
+
+it('renders notes page with heading and empty state', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  const notesLink = screen.getByRole('link', { name: /notes/i });
+  expect(notesLink).toBeInTheDocument();
+
+  await user.click(notesLink);
+
+  expect(await screen.findByRole('heading', { name: /notes/i })).toBeInTheDocument();
+  expect(screen.getByText(/no notes found/i)).toBeInTheDocument();
 });
 
 it('renders overview page with heading and scan button', async () => {
