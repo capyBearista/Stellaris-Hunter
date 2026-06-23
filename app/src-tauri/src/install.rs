@@ -159,3 +159,97 @@ fn find_first_string(value: &Value, keys: &[&str]) -> Option<String> {
         _ => None,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // -----------------------------------------------------------------------
+    // parse_checksum_line
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn parses_simple_format() {
+        let scope = parse_checksum_line("common *.txt").expect("should parse simple format");
+        assert_eq!(scope.directory.as_deref(), Some("common"));
+        assert_eq!(scope.patterns, vec!["*.txt"]);
+        assert!(!scope.recursive);
+        assert_eq!(scope.raw, "common *.txt");
+    }
+
+    #[test]
+    fn parses_with_subdirectories() {
+        let scope = parse_checksum_line("common *.txt with subdirectories")
+            .expect("should parse subdirectories format");
+        assert_eq!(scope.directory.as_deref(), Some("common"));
+        assert_eq!(scope.patterns, vec!["*.txt"]);
+        assert!(scope.recursive);
+        assert_eq!(scope.raw, "common *.txt with subdirectories");
+    }
+
+    #[test]
+    fn parses_multiple_patterns() {
+        let scope =
+            parse_checksum_line("common *.txt, *.json").expect("should parse multiple patterns");
+        assert_eq!(scope.directory.as_deref(), Some("common"));
+        assert_eq!(scope.patterns, vec!["*.txt", "*.json"]);
+        assert!(!scope.recursive);
+    }
+
+    #[test]
+    fn ignores_comment_line() {
+        assert!(parse_checksum_line("# comment").is_none());
+    }
+
+    #[test]
+    fn ignores_empty_line() {
+        assert!(parse_checksum_line("").is_none());
+        assert!(parse_checksum_line("   ").is_none());
+    }
+
+    #[test]
+    fn parses_key_value_format() {
+        let scope = parse_checksum_line(r#"directory name = "common/" file_extension = ".txt""#)
+            .expect("should parse key-value format");
+        assert_eq!(scope.directory.as_deref(), Some("common"));
+        assert_eq!(scope.patterns, vec!["*.txt"]);
+        assert!(!scope.recursive);
+        assert_eq!(
+            scope.raw,
+            r#"directory name = "common/" file_extension = ".txt""#
+        );
+    }
+
+    #[test]
+    fn parses_key_value_with_subdirectories() {
+        let scope = parse_checksum_line(
+            r#"directory name = "events" sub_directories = "yes" file_extension = ".txt""#,
+        )
+        .expect("should parse key-value with subdirectories");
+        assert_eq!(scope.directory.as_deref(), Some("events"));
+        assert_eq!(scope.patterns, vec!["*.txt"]);
+        assert!(scope.recursive);
+    }
+
+    // -----------------------------------------------------------------------
+    // find_manifest_value
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn finds_existing_key() {
+        let result = find_manifest_value(r#"directory name = "common/""#, "directory name");
+        assert_eq!(result.as_deref(), Some("common/"));
+    }
+
+    #[test]
+    fn finds_missing_key() {
+        let result = find_manifest_value(r#"file_extension = ".txt""#, "directory name");
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn handles_empty_value() {
+        let result = find_manifest_value(r#"directory name = """#, "directory name");
+        assert_eq!(result, None);
+    }
+}

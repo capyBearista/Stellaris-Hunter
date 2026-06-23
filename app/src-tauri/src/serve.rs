@@ -698,6 +698,16 @@ pub async fn run(args: ServeArgs) -> std::result::Result<(), Box<dyn std::error:
     Ok(())
 }
 
+/// Build a test router with a given DB path (for integration tests).
+///
+/// Creates a router backed by a disposable `AppState` (no dist directory).
+pub fn build_test_router(db_path: PathBuf) -> Router {
+    build_router(AppState {
+        db_path,
+        dist_dir: None,
+    })
+}
+
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
