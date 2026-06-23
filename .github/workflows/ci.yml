@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install npm dependencies
+        run: npm --prefix app ci
+
+      - name: cargo fmt --check
+        run: cargo fmt --check --manifest-path app/src-tauri/Cargo.toml
+
+      - name: cargo clippy
+        run: cargo clippy --manifest-path app/src-tauri/Cargo.toml --all-targets -- -D warnings
+
+      - name: cargo test
+        run: cargo test --manifest-path app/src-tauri/Cargo.toml
+
+      - name: Build sidecar binary
+        run: cargo build --bin stellaris-hunter-serve --manifest-path app/src-tauri/Cargo.toml
+
+      - name: TypeScript typecheck
+        run: npm --prefix app run typecheck
+
+      - name: Frontend tests
+        run: npm --prefix app run test
+
+      - name: Frontend build
+        run: npm --prefix app run build
+
+      - name: Catalog drift detection
+        run: python3 tools/catalog-diff/catalog_diff.py
+
+      - name: Catalog wiki parser tests
+        run: python3 tools/catalog-diff/tests/test_wiki_parser.py
+
+      - name: Catalog update tests
+        run: python3 tools/catalog-diff/tests/test_catalog_update.py
