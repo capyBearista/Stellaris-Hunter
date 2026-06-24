@@ -568,13 +568,33 @@ fn normalize_entry(entry: &mut AchievementCatalogEntry) -> Result<()> {
 fn normalize_condition(condition: &mut AchievementCondition) -> Result<()> {
     condition.condition_type =
         normalize_required_snake("condition.condition_type", &condition.condition_type)?;
-    condition.dimension = normalize_required_snake("condition.dimension", &condition.dimension)?;
-    condition.operator = normalize_required_snake("condition.operator", &condition.operator)?;
+
+    let is_compound = matches!(
+        condition.condition_type.as_str(),
+        "any_of" | "all_of" | "not"
+    );
+
+    if is_compound {
+        // Compound conditions intentionally carry empty dimension/operator/value.
+        condition.dimension = condition.dimension.trim().to_string();
+        condition.operator = condition.operator.trim().to_string();
+    } else {
+        condition.dimension =
+            normalize_required_snake("condition.dimension", &condition.dimension)?;
+        condition.operator = normalize_required_snake("condition.operator", &condition.operator)?;
+    }
+
     condition.timing = normalize_required_snake("condition.timing", &condition.timing)?;
     condition.mutability = normalize_required_snake("condition.mutability", &condition.mutability)?;
     condition.severity = normalize_required_snake("condition.severity", &condition.severity)?;
     condition.source = normalize_optional_identifier(condition.source.take());
     condition.notes = normalize_optional_text(condition.notes.take());
+
+    // Recurse into children (compound condition branches).
+    for child in &mut condition.children {
+        normalize_condition(child)?;
+    }
+
     Ok(())
 }
 

@@ -84,6 +84,8 @@ pub struct ConditionEvaluation {
     pub timing: String,
     pub mutability: String,
     pub reason: String,
+    #[serde(default)]
+    pub children: Vec<ConditionEvaluation>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -136,14 +138,19 @@ pub struct AchievementCurationFields {
 #[serde(deny_unknown_fields)]
 pub struct AchievementCondition {
     pub condition_type: String,
+    #[serde(default)]
     pub dimension: String,
+    #[serde(default)]
     pub operator: String,
+    #[serde(default)]
     pub value: Value,
     pub timing: String,
     pub mutability: String,
     pub severity: String,
     pub source: Option<String>,
     pub notes: Option<String>,
+    #[serde(default)]
+    pub children: Vec<AchievementCondition>,
 }
 
 fn default_steam_app_id() -> u32 {

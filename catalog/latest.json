@@ -3336,15 +3336,41 @@
         ],
         "conditions": [
           {
-            "condition_type": "required",
-            "dimension": "ethic",
-            "operator": "contains",
-            "value": "ethic_xenophile",
+            "condition_type": "any_of",
+            "dimension": "",
+            "operator": "",
+            "value": null,
             "timing": "setup",
             "mutability": "slow_change",
             "severity": "hard",
-            "source": "wiki-reviewed",
-            "notes": "Requires Xenophile or Fanatic Xenophile ethic."
+            "source": null,
+            "notes": "Xenophile or Fanatic Xenophile",
+            "children": [
+              {
+                "condition_type": "required",
+                "dimension": "ethic",
+                "operator": "contains",
+                "value": "ethic_xenophile",
+                "timing": "setup",
+                "mutability": "slow_change",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": []
+              },
+              {
+                "condition_type": "required",
+                "dimension": "ethic",
+                "operator": "contains",
+                "value": "ethic_fanatic_xenophile",
+                "timing": "setup",
+                "mutability": "slow_change",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": []
+              }
+            ]
           },
           {
             "condition_type": "required",
@@ -6783,15 +6809,41 @@
             "notes": "Requires winning a war against an empire with Supremacist stance."
           },
           {
-            "condition_type": "required",
-            "dimension": "war_type",
-            "operator": "equals",
-            "value": "animosity_war",
-            "timing": "eventual",
-            "mutability": "normal_change",
+            "condition_type": "any_of",
+            "dimension": "",
+            "operator": "",
+            "value": null,
+            "timing": "current",
+            "mutability": "event_limited",
             "severity": "hard",
-            "source": "wiki-reviewed",
-            "notes": "Must use the Animosity or Imperial Rebuke casus belli specifically."
+            "source": null,
+            "notes": "Animosity or Imperial Rebuke casus belli",
+            "children": [
+              {
+                "condition_type": "required",
+                "dimension": "war_type",
+                "operator": "equals",
+                "value": "animosity_war",
+                "timing": "current",
+                "mutability": "event_limited",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": []
+              },
+              {
+                "condition_type": "required",
+                "dimension": "war_type",
+                "operator": "equals",
+                "value": "imperial_rebuke_war",
+                "timing": "current",
+                "mutability": "event_limited",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": []
+              }
+            ]
           }
         ],
         "warnings": [
@@ -6989,15 +7041,91 @@
         ],
         "conditions": [
           {
-            "condition_type": "required",
-            "dimension": "species_class",
-            "operator": "equals",
-            "value": "Necroid",
+            "condition_type": "any_of",
+            "dimension": "",
+            "operator": "",
+            "value": null,
             "timing": "setup",
             "mutability": "immutable",
             "severity": "hard",
-            "source": "wiki-reviewed",
-            "notes": "Founding species must be Necroid (the inverse — Plantoid founding species — also qualifies; see warnings)."
+            "source": null,
+            "notes": "Necroid→Plantoid or Plantoid→Necroid",
+            "children": [
+              {
+                "condition_type": "all_of",
+                "dimension": "",
+                "operator": "",
+                "value": null,
+                "timing": "setup",
+                "mutability": "immutable",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": [
+                  {
+                    "condition_type": "required",
+                    "dimension": "species_class",
+                    "operator": "equals",
+                    "value": "Necroid",
+                    "timing": "setup",
+                    "mutability": "immutable",
+                    "severity": "hard",
+                    "source": null,
+                    "notes": null,
+                    "children": []
+                  },
+                  {
+                    "condition_type": "required",
+                    "dimension": "target_species_class",
+                    "operator": "equals",
+                    "value": "Plantoid",
+                    "timing": "discovery",
+                    "mutability": "rng_locked",
+                    "severity": "hard",
+                    "source": null,
+                    "notes": null,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "condition_type": "all_of",
+                "dimension": "",
+                "operator": "",
+                "value": null,
+                "timing": "setup",
+                "mutability": "immutable",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": [
+                  {
+                    "condition_type": "required",
+                    "dimension": "species_class",
+                    "operator": "equals",
+                    "value": "Plantoid",
+                    "timing": "setup",
+                    "mutability": "immutable",
+                    "severity": "hard",
+                    "source": null,
+                    "notes": null,
+                    "children": []
+                  },
+                  {
+                    "condition_type": "required",
+                    "dimension": "target_species_class",
+                    "operator": "equals",
+                    "value": "Necroid",
+                    "timing": "discovery",
+                    "mutability": "rng_locked",
+                    "severity": "hard",
+                    "source": null,
+                    "notes": null,
+                    "children": []
+                  }
+                ]
+              }
+            ]
           },
           {
             "condition_type": "required",
@@ -7009,17 +7137,6 @@
             "severity": "hard",
             "source": "wiki-reviewed",
             "notes": "This achievement requires the Necroids DLC."
-          },
-          {
-            "condition_type": "required",
-            "dimension": "target_species_class",
-            "operator": "equals",
-            "value": "Plantoid",
-            "timing": "discovery",
-            "mutability": "rng_locked",
-            "severity": "hard",
-            "source": "wiki-reviewed",
-            "notes": "Target empire must be Plantoid when playing Necroid (the inverse — Necroid target when playing Plantoid — also qualifies)."
           }
         ],
         "warnings": [
@@ -8686,6 +8803,43 @@
             "severity": "hard",
             "source": "wiki-reviewed",
             "notes": "This achievement requires the Toxoids DLC."
+          },
+          {
+            "condition_type": "any_of",
+            "dimension": "",
+            "operator": "",
+            "value": null,
+            "timing": "current",
+            "mutability": "normal_change",
+            "severity": "hard",
+            "source": null,
+            "notes": "Must be Galactic Custodian or Galactic Emperor",
+            "children": [
+              {
+                "condition_type": "required",
+                "dimension": "galactic_custodian",
+                "operator": "equals",
+                "value": true,
+                "timing": "current",
+                "mutability": "normal_change",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": []
+              },
+              {
+                "condition_type": "required",
+                "dimension": "galactic_emperor",
+                "operator": "equals",
+                "value": true,
+                "timing": "current",
+                "mutability": "normal_change",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": []
+              }
+            ]
           }
         ],
         "warnings": [
@@ -11535,15 +11689,41 @@
             "notes": "This achievement requires the Shadows of the Shroud DLC."
           },
           {
-            "condition_type": "required",
-            "dimension": "civic",
-            "operator": "contains",
-            "value": "civic_experimental_sentencing",
+            "condition_type": "any_of",
+            "dimension": "",
+            "operator": "",
+            "value": null,
             "timing": "setup",
-            "mutability": "immutable",
+            "mutability": "normal_change",
             "severity": "hard",
-            "source": "wiki-reviewed",
-            "notes": "Must have the Experimental Sentencing civic (or Judicial R&D)."
+            "source": null,
+            "notes": "Experimental Sentencing or Judicial R&D civic",
+            "children": [
+              {
+                "condition_type": "required",
+                "dimension": "civic",
+                "operator": "contains",
+                "value": "civic_experimental_sentencing",
+                "timing": "setup",
+                "mutability": "normal_change",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": []
+              },
+              {
+                "condition_type": "required",
+                "dimension": "civic",
+                "operator": "contains",
+                "value": "civic_judicial_rd",
+                "timing": "setup",
+                "mutability": "normal_change",
+                "severity": "hard",
+                "source": null,
+                "notes": null,
+                "children": []
+              }
+            ]
           }
         ],
         "warnings": [

@@ -114,6 +114,19 @@ fn evaluate_condition(
     condition: &AchievementCondition,
     fact_lookup: &FactLookup,
 ) -> ConditionEvaluation {
+    match condition.condition_type.as_str() {
+        "any_of" => evaluate_any_of(condition, fact_lookup),
+        "all_of" => evaluate_all_of(condition, fact_lookup),
+        "not" => evaluate_not(condition, fact_lookup),
+        _ => evaluate_required(condition, fact_lookup),
+    }
+}
+
+/// Evaluate a simple "required" condition (the existing behavior).
+fn evaluate_required(
+    condition: &AchievementCondition,
+    fact_lookup: &FactLookup,
+) -> ConditionEvaluation {
     let fact_value = fact_lookup.find(&condition.dimension);
     let (passed, reason) = match fact_value.as_ref() {
         Some(value) => evaluate_operator(&condition.operator, value, &condition.value),
@@ -136,6 +149,132 @@ fn evaluate_condition(
         timing: condition.timing.clone(),
         mutability: condition.mutability.clone(),
         reason,
+        children: Vec::new(),
+    }
+}
+
+/// Evaluate an `any_of` compound condition: passes if ANY child passes.
+fn evaluate_any_of(
+    condition: &AchievementCondition,
+    fact_lookup: &FactLookup,
+) -> ConditionEvaluation {
+    let children: Vec<ConditionEvaluation> = condition
+        .children
+        .iter()
+        .map(|child| evaluate_condition(child, fact_lookup))
+        .collect();
+
+    let (passed, reason) = if children.iter().any(|c| c.passed == Some(true)) {
+        (
+            Some(true),
+            "At least one alternative condition is satisfied.".to_string(),
+        )
+    } else if children.iter().all(|c| c.passed == Some(false)) {
+        (
+            Some(false),
+            "None of the alternative conditions are satisfied.".to_string(),
+        )
+    } else {
+        (
+            None,
+            "Some alternative conditions could not be evaluated.".to_string(),
+        )
+    };
+
+    ConditionEvaluation {
+        dimension: String::new(),
+        operator: "any_of".to_string(),
+        condition_value: Value::Null,
+        fact_value: None,
+        passed,
+        severity: condition.severity.clone(),
+        timing: condition.timing.clone(),
+        mutability: condition.mutability.clone(),
+        reason,
+        children,
+    }
+}
+
+/// Evaluate an `all_of` compound condition: passes only if ALL children pass.
+fn evaluate_all_of(
+    condition: &AchievementCondition,
+    fact_lookup: &FactLookup,
+) -> ConditionEvaluation {
+    let children: Vec<ConditionEvaluation> = condition
+        .children
+        .iter()
+        .map(|child| evaluate_condition(child, fact_lookup))
+        .collect();
+
+    let (passed, reason) = if children.iter().all(|c| c.passed == Some(true)) {
+        (
+            Some(true),
+            "All required conditions are satisfied.".to_string(),
+        )
+    } else if children.iter().any(|c| c.passed == Some(false)) {
+        (
+            Some(false),
+            "At least one required condition is not satisfied.".to_string(),
+        )
+    } else {
+        (
+            None,
+            "Some required conditions could not be evaluated.".to_string(),
+        )
+    };
+
+    ConditionEvaluation {
+        dimension: String::new(),
+        operator: "all_of".to_string(),
+        condition_value: Value::Null,
+        fact_value: None,
+        passed,
+        severity: condition.severity.clone(),
+        timing: condition.timing.clone(),
+        mutability: condition.mutability.clone(),
+        reason,
+        children,
+    }
+}
+
+/// Evaluate a `not` compound condition: inverts the single child's result.
+fn evaluate_not(condition: &AchievementCondition, fact_lookup: &FactLookup) -> ConditionEvaluation {
+    let children: Vec<ConditionEvaluation> = condition
+        .children
+        .first()
+        .map(|child| evaluate_condition(child, fact_lookup))
+        .into_iter()
+        .collect();
+
+    let (passed, reason) = match children.first() {
+        Some(child) => match child.passed {
+            Some(true) => (
+                Some(false),
+                format!("Negated condition is satisfied: {}", child.reason),
+            ),
+            Some(false) => (
+                Some(true),
+                format!("Negated condition is not satisfied: {}", child.reason),
+            ),
+            None => (
+                None,
+                "Negated condition could not be evaluated.".to_string(),
+            ),
+        },
+        None => (None, "Not condition has no child to evaluate.".to_string()),
+    };
+
+    ConditionEvaluation {
+        dimension: String::new(),
+        operator: "not".to_string(),
+        condition_value: Value::Null,
+        fact_value: None,
+        passed,
+        severity: condition.severity.clone(),
+        timing: condition.timing.clone(),
+        mutability: condition.mutability.clone(),
+        reason,
+        children,
     }
 }
 
@@ -504,6 +643,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[fact("species", "founder_species_class", json!("HUM"))]),
             false,
@@ -529,6 +669,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[]),
             false,
@@ -553,6 +694,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[fact("empire", "ethics", json!(["ethic_xenophobe"]))]),
             true,
@@ -577,6 +719,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[fact("empire", "ethics", json!(["ethic_xenophile"]))]),
             false,
@@ -600,6 +743,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[fact("empire", "ethics", json!(["ethic_xenophobe"]))]),
             false,
@@ -681,6 +825,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[]),
             false,
@@ -708,6 +853,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[fact("save", "required_dlcs", json!(["dlc009_plantoids"]))]),
             false,
@@ -734,6 +880,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[fact(
                 "save",
@@ -764,6 +911,7 @@ mod tests {
                 severity: "hard".to_string(),
                 source: None,
                 notes: None,
+                children: Vec::new(),
             }),
             &FactLookup::new(&[fact("save", "required_dlcs", json!(["dlc014_leviathans"]))]),
             false,
@@ -835,6 +983,390 @@ mod tests {
         // matches first, so this only affects separator-style differences).
         assert_eq!(super::dlc_search_key("ethic_xenophile"), "ethic xenophile");
         assert_eq!(super::dlc_search_key("Lithoid"), "lithoid");
+    }
+
+    // ── Compound condition tests ─────────────────────────────────
+
+    #[test]
+    fn any_of_passes_when_one_child_passes() {
+        let condition = AchievementCondition {
+            condition_type: "any_of".to_string(),
+            dimension: String::new(),
+            operator: String::new(),
+            value: Value::Null,
+            timing: "setup".to_string(),
+            mutability: "immutable".to_string(),
+            severity: "hard".to_string(),
+            source: None,
+            notes: None,
+            children: vec![
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "species_class".to_string(),
+                    operator: "equals".to_string(),
+                    value: json!("LITH"),
+                    timing: "setup".to_string(),
+                    mutability: "immutable".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "species_class".to_string(),
+                    operator: "equals".to_string(),
+                    value: json!("NEC"),
+                    timing: "setup".to_string(),
+                    mutability: "immutable".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+            ],
+        };
+
+        let result = evaluate_achievement(
+            achievement_with_condition(condition),
+            &FactLookup::new(&[fact("species", "founder_species_class", json!("NEC"))]),
+            false,
+            None,
+        );
+
+        assert_eq!(result.status, STATUS_POSSIBLE);
+        assert_eq!(result.computed_status, STATUS_POSSIBLE);
+        assert_eq!(result.conditions[0].passed, Some(true));
+        assert!(!result.conditions[0].children.is_empty());
+    }
+
+    #[test]
+    fn any_of_fails_when_all_children_fail() {
+        let condition = AchievementCondition {
+            condition_type: "any_of".to_string(),
+            dimension: String::new(),
+            operator: String::new(),
+            value: Value::Null,
+            timing: "setup".to_string(),
+            mutability: "immutable".to_string(),
+            severity: "hard".to_string(),
+            source: None,
+            notes: None,
+            children: vec![
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "species_class".to_string(),
+                    operator: "equals".to_string(),
+                    value: json!("LITH"),
+                    timing: "setup".to_string(),
+                    mutability: "immutable".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "species_class".to_string(),
+                    operator: "equals".to_string(),
+                    value: json!("NEC"),
+                    timing: "setup".to_string(),
+                    mutability: "immutable".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+            ],
+        };
+
+        let result = evaluate_achievement(
+            achievement_with_condition(condition),
+            &FactLookup::new(&[fact("species", "founder_species_class", json!("HUM"))]),
+            false,
+            None,
+        );
+
+        assert_eq!(result.computed_status, STATUS_IMPOSSIBLE);
+        assert_eq!(result.conditions[0].passed, Some(false));
+    }
+
+    #[test]
+    fn any_of_unknown_when_no_child_passes_and_some_unknown() {
+        let condition = AchievementCondition {
+            condition_type: "any_of".to_string(),
+            dimension: String::new(),
+            operator: String::new(),
+            value: Value::Null,
+            timing: "current".to_string(),
+            mutability: "normal_change".to_string(),
+            severity: "hard".to_string(),
+            source: None,
+            notes: None,
+            children: vec![
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "species_class".to_string(),
+                    operator: "equals".to_string(),
+                    value: json!("LITH"),
+                    timing: "setup".to_string(),
+                    mutability: "immutable".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "origin".to_string(),
+                    operator: "equals".to_string(),
+                    value: json!("test_origin"),
+                    timing: "setup".to_string(),
+                    mutability: "immutable".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+            ],
+        };
+
+        // species_class = HUM (fails LITH), origin not in facts (unknown)
+        let result = evaluate_achievement(
+            achievement_with_condition(condition),
+            &FactLookup::new(&[fact("species", "founder_species_class", json!("HUM"))]),
+            false,
+            None,
+        );
+
+        assert_eq!(result.computed_status, STATUS_UNKNOWN);
+        assert_eq!(result.conditions[0].passed, None);
+    }
+
+    #[test]
+    fn all_of_passes_when_all_children_pass() {
+        let condition = AchievementCondition {
+            condition_type: "all_of".to_string(),
+            dimension: String::new(),
+            operator: String::new(),
+            value: Value::Null,
+            timing: "setup".to_string(),
+            mutability: "immutable".to_string(),
+            severity: "hard".to_string(),
+            source: None,
+            notes: None,
+            children: vec![
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "species_class".to_string(),
+                    operator: "equals".to_string(),
+                    value: json!("LITH"),
+                    timing: "setup".to_string(),
+                    mutability: "immutable".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "ethic".to_string(),
+                    operator: "contains".to_string(),
+                    value: json!("ethic_xenophile"),
+                    timing: "setup".to_string(),
+                    mutability: "slow_change".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+            ],
+        };
+
+        let result = evaluate_achievement(
+            achievement_with_condition(condition),
+            &FactLookup::new(&[
+                fact("species", "founder_species_class", json!("LITH")),
+                fact("empire", "ethics", json!(["ethic_xenophile"])),
+            ]),
+            false,
+            None,
+        );
+
+        assert_eq!(result.computed_status, STATUS_POSSIBLE);
+        assert_eq!(result.conditions[0].passed, Some(true));
+    }
+
+    #[test]
+    fn all_of_fails_when_one_child_fails() {
+        let condition = AchievementCondition {
+            condition_type: "all_of".to_string(),
+            dimension: String::new(),
+            operator: String::new(),
+            value: Value::Null,
+            timing: "current".to_string(),
+            mutability: "normal_change".to_string(),
+            severity: "hard".to_string(),
+            source: None,
+            notes: None,
+            children: vec![
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "species_class".to_string(),
+                    operator: "equals".to_string(),
+                    value: json!("LITH"),
+                    timing: "setup".to_string(),
+                    mutability: "immutable".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+                AchievementCondition {
+                    condition_type: "required".to_string(),
+                    dimension: "ethic".to_string(),
+                    operator: "contains".to_string(),
+                    value: json!("ethic_xenophile"),
+                    timing: "current".to_string(),
+                    mutability: "slow_change".to_string(),
+                    severity: "hard".to_string(),
+                    source: None,
+                    notes: None,
+                    children: Vec::new(),
+                },
+            ],
+        };
+
+        let result = evaluate_achievement(
+            achievement_with_condition(condition),
+            &FactLookup::new(&[
+                fact("species", "founder_species_class", json!("LITH")),
+                fact("empire", "ethics", json!(["ethic_xenophobe"])),
+            ]),
+            false,
+            None,
+        );
+
+        assert_eq!(result.computed_status, STATUS_INCOMPATIBLE);
+        assert_eq!(result.conditions[0].passed, Some(false));
+    }
+
+    #[test]
+    fn not_passes_when_child_fails() {
+        let condition = AchievementCondition {
+            condition_type: "not".to_string(),
+            dimension: String::new(),
+            operator: String::new(),
+            value: Value::Null,
+            timing: "current".to_string(),
+            mutability: "normal_change".to_string(),
+            severity: "hard".to_string(),
+            source: None,
+            notes: None,
+            children: vec![AchievementCondition {
+                condition_type: "required".to_string(),
+                dimension: "ethic".to_string(),
+                operator: "contains".to_string(),
+                value: json!("ethic_gestalt_consciousness"),
+                timing: "current".to_string(),
+                mutability: "immutable".to_string(),
+                severity: "hard".to_string(),
+                source: None,
+                notes: None,
+                children: Vec::new(),
+            }],
+        };
+
+        // Player is NOT gestalt — child fails, not passes
+        let result = evaluate_achievement(
+            achievement_with_condition(condition),
+            &FactLookup::new(&[fact("empire", "ethics", json!(["ethic_egalitarian"]))]),
+            false,
+            None,
+        );
+
+        assert_eq!(result.computed_status, STATUS_POSSIBLE);
+        assert_eq!(result.conditions[0].passed, Some(true));
+    }
+
+    #[test]
+    fn not_fails_when_child_passes() {
+        let condition = AchievementCondition {
+            condition_type: "not".to_string(),
+            dimension: String::new(),
+            operator: String::new(),
+            value: Value::Null,
+            timing: "current".to_string(),
+            mutability: "normal_change".to_string(),
+            severity: "hard".to_string(),
+            source: None,
+            notes: None,
+            children: vec![AchievementCondition {
+                condition_type: "required".to_string(),
+                dimension: "ethic".to_string(),
+                operator: "contains".to_string(),
+                value: json!("ethic_gestalt_consciousness"),
+                timing: "current".to_string(),
+                mutability: "immutable".to_string(),
+                severity: "hard".to_string(),
+                source: None,
+                notes: None,
+                children: Vec::new(),
+            }],
+        };
+
+        // Player IS gestalt — child passes, not fails
+        let result = evaluate_achievement(
+            achievement_with_condition(condition),
+            &FactLookup::new(&[fact(
+                "empire",
+                "ethics",
+                json!(["ethic_gestalt_consciousness"]),
+            )]),
+            false,
+            None,
+        );
+
+        assert_eq!(result.computed_status, STATUS_INCOMPATIBLE);
+        assert_eq!(result.conditions[0].passed, Some(false));
+    }
+
+    #[test]
+    fn not_unknown_when_child_unknown() {
+        let condition = AchievementCondition {
+            condition_type: "not".to_string(),
+            dimension: String::new(),
+            operator: String::new(),
+            value: Value::Null,
+            timing: "current".to_string(),
+            mutability: "normal_change".to_string(),
+            severity: "hard".to_string(),
+            source: None,
+            notes: None,
+            children: vec![AchievementCondition {
+                condition_type: "required".to_string(),
+                dimension: "origin".to_string(),
+                operator: "equals".to_string(),
+                value: json!("test_origin"),
+                timing: "setup".to_string(),
+                mutability: "immutable".to_string(),
+                severity: "hard".to_string(),
+                source: None,
+                notes: None,
+                children: Vec::new(),
+            }],
+        };
+
+        // origin not in facts — child unknown, not unknown
+        let result = evaluate_achievement(
+            achievement_with_condition(condition),
+            &FactLookup::new(&[]),
+            false,
+            None,
+        );
+
+        assert_eq!(result.computed_status, STATUS_UNKNOWN);
+        assert_eq!(result.conditions[0].passed, None);
     }
 
     fn achievement_with_condition(condition: AchievementCondition) -> AchievementCatalogEntry {

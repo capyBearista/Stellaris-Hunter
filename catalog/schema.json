@@ -110,7 +110,7 @@
     "condition": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["condition_type", "dimension", "operator", "value", "timing", "mutability", "severity"],
+      "required": ["condition_type", "timing", "mutability", "severity"],
       "properties": {
         "condition_type": { "$ref": "#/$defs/snake" },
         "dimension": { "$ref": "#/$defs/snake" },
@@ -120,7 +120,11 @@
         "mutability": { "$ref": "#/$defs/snake" },
         "severity": { "$ref": "#/$defs/snake" },
         "source": { "type": ["string", "null"] },
-        "notes": { "type": ["string", "null"] }
+        "notes": { "type": ["string", "null"] },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/condition" }
+        }
       }
     }
   }
