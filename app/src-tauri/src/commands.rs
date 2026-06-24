@@ -32,10 +32,11 @@ pub(crate) mod catalog_commands {
         rules::evaluate_planner_achievements,
         run_state::{
             clear_run_achievement_note as clear_run_achievement_note_in_db,
-            clear_run_note as clear_run_note_in_db, load_persisted_runs,
+            clear_run_note as clear_run_note_in_db, invalidate_all_evaluations,
+            invalidate_evaluations, load_evaluations, load_persisted_runs,
             load_run_achievement_notes as load_run_achievement_notes_from_db,
             load_run_achievement_statuses, load_run_facts as load_run_facts_from_db,
-            load_run_notes as load_run_notes_from_db, persist_scan_report,
+            load_run_notes as load_run_notes_from_db, persist_scan_report, save_evaluations,
             set_run_achievement_note as set_run_achievement_note_in_db,
             set_run_achievement_status as set_run_achievement_status_in_db,
             set_run_note as set_run_note_in_db,
@@ -52,8 +53,10 @@ pub(crate) mod catalog_commands {
 
         tokio::task::spawn_blocking(move || -> Result<CatalogSyncResult, String> {
             let mut conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
-            catalog_sync::sync_catalog_from_json(&mut conn, &json_text)
-                .map_err(|e| format!("sync catalog: {e}"))
+            let result = catalog_sync::sync_catalog_from_json(&mut conn, &json_text)
+                .map_err(|e| format!("sync catalog: {e}"))?;
+            let _ = invalidate_all_evaluations(&conn);
+            Ok(result)
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?
@@ -114,7 +117,9 @@ pub(crate) mod catalog_commands {
         tokio::task::spawn_blocking(move || -> Result<(), String> {
             let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
             set_completion_override_in_db(&conn, &achievement_id, completed)
-                .map_err(|e| format!("set completion override: {e}"))
+                .map_err(|e| format!("set completion override: {e}"))?;
+            let _ = invalidate_all_evaluations(&conn);
+            Ok(())
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?
@@ -129,7 +134,9 @@ pub(crate) mod catalog_commands {
         tokio::task::spawn_blocking(move || -> Result<(), String> {
             let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
             clear_completion_override_in_db(&conn, &achievement_id)
-                .map_err(|e| format!("clear completion override: {e}"))
+                .map_err(|e| format!("clear completion override: {e}"))?;
+            let _ = invalidate_all_evaluations(&conn);
+            Ok(())
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?
@@ -175,6 +182,7 @@ pub(crate) mod catalog_commands {
                 eprintln!("scan errors before persistence: {:?}", report.errors);
             }
             persist_scan_report(&mut conn, &report).map_err(|e| format!("persist scan: {e}"))?;
+            let _ = invalidate_all_evaluations(&conn);
             load_persisted_runs(&conn).map_err(|e| format!("load runs: {e}"))
         })
         .await
@@ -190,6 +198,14 @@ pub(crate) mod catalog_commands {
         tokio::task::spawn_blocking(
             move || -> Result<Vec<PlannerAchievementEvaluation>, String> {
                 let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+
+                // Try cache first
+                if let Some(cached) = load_evaluations(&conn, &run_folder_path)
+                    .map_err(|e| format!("load cache: {e}"))?
+                {
+                    return Ok(cached);
+                }
+
                 let load = load_catalog_entries_with_issues(&conn)
                     .map_err(|e| format!("load achievements: {e}"))?;
                 if !load.issues.is_empty() {
@@ -206,12 +222,10 @@ pub(crate) mod catalog_commands {
                 let user_statuses = load_run_achievement_statuses(&conn, &run_folder_path)
                     .map_err(|e| format!("load run achievement statuses: {e}"))?;
 
-                Ok(evaluate_planner_achievements(
-                    load.entries,
-                    &facts,
-                    &completed,
-                    &user_statuses,
-                ))
+                let evaluations =
+                    evaluate_planner_achievements(load.entries, &facts, &completed, &user_statuses);
+                let _ = save_evaluations(&conn, &run_folder_path, &evaluations);
+                Ok(evaluations)
             },
         )
         .await
@@ -239,7 +253,9 @@ pub(crate) mod catalog_commands {
                 &achievement_id,
                 user_status.as_deref(),
             )
-            .map_err(|e| format!("set run achievement status: {e}"))
+            .map_err(|e| format!("set run achievement status: {e}"))?;
+            let _ = invalidate_evaluations(&conn, &run_folder_path);
+            Ok(())
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?
@@ -282,7 +298,9 @@ pub(crate) mod catalog_commands {
                 &value,
                 reason.as_deref(),
             )
-            .map_err(|e| format!("set fact override: {e}"))
+            .map_err(|e| format!("set fact override: {e}"))?;
+            let _ = invalidate_evaluations(&conn, &run_folder_path);
+            Ok(())
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?
@@ -299,7 +317,9 @@ pub(crate) mod catalog_commands {
         tokio::task::spawn_blocking(move || -> Result<(), String> {
             let conn = open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
             crate::run_state::clear_fact_override(&conn, &run_folder_path, &dimension, &key)
-                .map_err(|e| format!("clear fact override: {e}"))
+                .map_err(|e| format!("clear fact override: {e}"))?;
+            let _ = invalidate_evaluations(&conn, &run_folder_path);
+            Ok(())
         })
         .await
         .map_err(|e| format!("worker failed: {e}"))?

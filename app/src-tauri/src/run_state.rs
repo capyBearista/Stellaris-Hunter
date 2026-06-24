@@ -11,8 +11,8 @@ use crate::{
     documents::order_saves_by_preference,
     error::Result,
     model::{
-        FactOverride, PersistedRunSummary, RunAchievementNote, RunAchievementUserStatus,
-        RunFactSummary, RunNote, SaveRunSummary, SaveSummary,
+        FactOverride, PersistedRunSummary, PlannerAchievementEvaluation, RunAchievementNote,
+        RunAchievementUserStatus, RunFactSummary, RunNote, SaveRunSummary, SaveSummary,
     },
     ScanReport,
 };
@@ -97,6 +97,14 @@ pub fn initialize_run_state_schema(conn: &Connection) -> Result<()> {
           PRIMARY KEY (run_folder_path, achievement_id),
           FOREIGN KEY (run_folder_path) REFERENCES runs(folder_path),
           FOREIGN KEY (achievement_id) REFERENCES achievements(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS evaluation_cache (
+          run_folder_path TEXT NOT NULL,
+          evaluations_json TEXT NOT NULL,
+          evaluated_at TEXT NOT NULL DEFAULT (datetime('now')),
+          PRIMARY KEY (run_folder_path),
+          FOREIGN KEY (run_folder_path) REFERENCES runs(folder_path)
         );
         "#,
     )?;
@@ -1389,4 +1397,57 @@ pub fn run_exists(conn: &Connection, folder_path: &Path) -> Result<bool> {
         )
         .optional()?
         .is_some())
+}
+
+// ── Evaluation cache ───────────────────────────────────────────────────────
+
+/// Save planner evaluations for a run to the cache.
+pub fn save_evaluations(
+    conn: &Connection,
+    run_folder_path: &str,
+    evaluations: &[PlannerAchievementEvaluation],
+) -> Result<()> {
+    let json = serde_json::to_string(evaluations)?;
+    conn.execute(
+        "INSERT INTO evaluation_cache (run_folder_path, evaluations_json, evaluated_at)
+         VALUES (?1, ?2, datetime('now'))
+         ON CONFLICT(run_folder_path) DO UPDATE SET
+           evaluations_json = excluded.evaluations_json,
+           evaluated_at = excluded.evaluated_at",
+        params![run_folder_path, json],
+    )?;
+    Ok(())
+}
+
+/// Load cached planner evaluations for a run, if present.
+pub fn load_evaluations(
+    conn: &Connection,
+    run_folder_path: &str,
+) -> Result<Option<Vec<PlannerAchievementEvaluation>>> {
+    let json: Option<String> = conn
+        .query_row(
+            "SELECT evaluations_json FROM evaluation_cache WHERE run_folder_path = ?1",
+            [run_folder_path],
+            |row| row.get(0),
+        )
+        .optional()?;
+    match json {
+        Some(text) => Ok(Some(serde_json::from_str(&text)?)),
+        None => Ok(None),
+    }
+}
+
+/// Invalidate cached evaluations for a specific run.
+pub fn invalidate_evaluations(conn: &Connection, run_folder_path: &str) -> Result<()> {
+    conn.execute(
+        "DELETE FROM evaluation_cache WHERE run_folder_path = ?1",
+        [run_folder_path],
+    )?;
+    Ok(())
+}
+
+/// Invalidate all cached evaluations (used on catalog sync or completion override changes).
+pub fn invalidate_all_evaluations(conn: &Connection) -> Result<()> {
+    conn.execute("DELETE FROM evaluation_cache", [])?;
+    Ok(())
 }

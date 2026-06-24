@@ -195,8 +195,10 @@ async fn handle_sync_catalog(
     let result: std::result::Result<CatalogSyncResult, String> =
         tokio::task::spawn_blocking(move || {
             let mut conn = db::open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
-            crate::catalog_sync::sync_catalog_from_json(&mut conn, &json_text)
-                .map_err(|e| format!("sync catalog: {e}"))
+            let sync_result = crate::catalog_sync::sync_catalog_from_json(&mut conn, &json_text)
+                .map_err(|e| format!("sync catalog: {e}"))?;
+            let _ = run_state::invalidate_all_evaluations(&conn);
+            Ok(sync_result)
         })
         .await
         .map_err(|e| {
@@ -234,7 +236,9 @@ async fn handle_set_completion_override(
     let id = req.achievement_id;
     let completed = req.completed;
     db_call(state.db_path, move |conn| {
-        crate::catalog::set_completion_override(conn, &id, completed)
+        crate::catalog::set_completion_override(conn, &id, completed)?;
+        run_state::invalidate_all_evaluations(conn)?;
+        Ok(())
     })
     .await
 }
@@ -245,7 +249,9 @@ async fn handle_clear_completion_override(
 ) -> std::result::Result<Json<()>, ApiError> {
     let id = req.achievement_id;
     db_call(state.db_path, move |conn| {
-        crate::catalog::clear_completion_override(conn, &id)
+        crate::catalog::clear_completion_override(conn, &id)?;
+        run_state::invalidate_all_evaluations(conn)?;
+        Ok(())
     })
     .await
 }
@@ -280,6 +286,7 @@ async fn handle_rescan_saves(
             }
             run_state::persist_scan_report(&mut conn, &report)
                 .map_err(|e| format!("persist scan: {e}"))?;
+            let _ = run_state::invalidate_all_evaluations(&conn);
             run_state::load_persisted_runs(&conn).map_err(|e| format!("load runs: {e}"))
         })
         .await
@@ -301,6 +308,14 @@ async fn handle_load_planner_evaluations(
     let result: std::result::Result<Vec<PlannerAchievementEvaluation>, String> =
         tokio::task::spawn_blocking(move || {
             let conn = db::open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+
+            // Try cache first
+            if let Some(cached) = run_state::load_evaluations(&conn, &folder)
+                .map_err(|e| format!("load cache: {e}"))?
+            {
+                return Ok(cached);
+            }
+
             let load = crate::catalog::load_catalog_entries_with_issues(&conn)
                 .map_err(|e| format!("load achievements: {e}"))?;
             if !load.issues.is_empty() {
@@ -315,12 +330,14 @@ async fn handle_load_planner_evaluations(
                 .collect();
             let user_statuses = run_state::load_run_achievement_statuses(&conn, &folder)
                 .map_err(|e| format!("load run achievement statuses: {e}"))?;
-            Ok(crate::rules::evaluate_planner_achievements(
+            let evaluations = crate::rules::evaluate_planner_achievements(
                 load.entries,
                 &facts,
                 &completed,
                 &user_statuses,
-            ))
+            );
+            let _ = run_state::save_evaluations(&conn, &folder, &evaluations);
+            Ok(evaluations)
         })
         .await
         .map_err(|e| {
@@ -348,7 +365,9 @@ async fn handle_set_run_achievement_status(
                 )));
             }
         }
-        run_state::set_run_achievement_status(conn, &folder, &id, status.as_deref())
+        run_state::set_run_achievement_status(conn, &folder, &id, status.as_deref())?;
+        run_state::invalidate_evaluations(conn, &folder)?;
+        Ok(())
     })
     .await
 }
@@ -376,7 +395,9 @@ async fn handle_set_fact_override(
     db_call(state.db_path, move |conn| {
         let value: serde_json::Value = serde_json::from_str(&value_json)
             .map_err(|e| crate::error::Error::Parse(format!("invalid value_json: {e}")))?;
-        run_state::set_fact_override(conn, &folder, &dim, &key, &value, reason.as_deref())
+        run_state::set_fact_override(conn, &folder, &dim, &key, &value, reason.as_deref())?;
+        run_state::invalidate_evaluations(conn, &folder)?;
+        Ok(())
     })
     .await
 }
@@ -389,7 +410,9 @@ async fn handle_clear_fact_override(
     let dim = req.dimension;
     let key = req.key;
     db_call(state.db_path, move |conn| {
-        run_state::clear_fact_override(conn, &folder, &dim, &key)
+        run_state::clear_fact_override(conn, &folder, &dim, &key)?;
+        run_state::invalidate_evaluations(conn, &folder)?;
+        Ok(())
     })
     .await
 }
