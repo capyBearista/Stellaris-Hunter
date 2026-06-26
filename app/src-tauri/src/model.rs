@@ -587,13 +587,17 @@ pub struct ActionFacts {
     pub quantum_catapult_used: Option<bool>,
 
     // Terraforming/decisions
-    pub blazing_scourge_decisions: Option<usize>,
+    pub blazing_scourge_decisions: Option<bool>,
     pub stars_terraform_to_red_giant: Option<usize>,
     pub planets_terraform_to_volcanic: Option<usize>,
     pub volcanic_holy_world_created: Option<bool>,
     pub galactic_memorials_on_tomb_worlds: Option<usize>,
     pub space_fauna_type_captured: Option<String>,
     pub colony_count_with_hyperspace_not_researched: Option<usize>,
+
+    // Event tracking
+    pub pre_ftl_invasion_occurred: Option<bool>,
+    pub artificial_military_ships_built: Option<bool>,
 
     // Legacy
     pub invaded_primitive_earth: Option<bool>,

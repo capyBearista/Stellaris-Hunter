@@ -1009,7 +1009,11 @@ pub(crate) fn extract_action_facts(
         species_genetically_modified: Some(has_flag(country_value, "genetically_modified")),
         species_uplifted: Some(has_flag(country_value, "species_uplifted")),
         species_on_planet_count: max_species_on_planet(game_root, player_country_id),
-        species_dna_phenotypes_collected: None, // Requires species_db analysis -- complex
+        species_dna_phenotypes_collected: query_f64(
+            country_value,
+            &["variables", "smorgasblorg_phenotypes"],
+        )
+        .map(|v| v as usize),
         slavery_type: query_atom(country_value, &["flags", "slavery_type"]),
         livestock_species_count: count_livestock_species(game_root),
         purged_pops: count_purged_pops(game_root),
@@ -1059,8 +1063,12 @@ pub(crate) fn extract_action_facts(
         quantum_catapult_used: Some(has_flag(country_value, "quantum_catapult_used")),
 
         // -- Terraforming / Decisions --
-        blazing_scourge_decisions: None, // Complex -- requires decision tracking
-        stars_terraform_to_red_giant: None, // Complex -- requires star type tracking
+        blazing_scourge_decisions: Some(has_flag(country_value, "INF_A_blazing_tomb_world")),
+        stars_terraform_to_red_giant: query_f64(
+            country_value,
+            &["variables", "hyperthermia_giant_var"],
+        )
+        .map(|v| v as usize),
         planets_terraform_to_volcanic: count_volcanic_planets(game_root, player_country_id),
         volcanic_holy_world_created: Some(has_flag(country_value, "volcanic_holy_world")),
         galactic_memorials_on_tomb_worlds: count_galactic_memorials_on_tomb_worlds(
@@ -1069,6 +1077,13 @@ pub(crate) fn extract_action_facts(
         ),
         space_fauna_type_captured: extract_space_fauna_type_captured(game_root),
         colony_count_with_hyperspace_not_researched: colony_count_without_hyperspace(country_value),
+
+        // -- Event Tracking --
+        pre_ftl_invasion_occurred: Some(has_flag(
+            country_value,
+            "with_great_power_achievement_locked",
+        )),
+        artificial_military_ships_built: Some(has_flag(country_value, "built_artificial_ship")),
 
         // -- Legacy --
         invaded_primitive_earth: Some(has_flag(country_value, "invaded_earth")),
@@ -2415,5 +2430,99 @@ mod tests {
         ]);
         let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
         assert_eq!(facts.espionage_operations_completed, Some(2));
+    }
+
+    // -----------------------------------------------------------------------
+    // Phase 7 tests: Variable/flag-based extraction
+    // -----------------------------------------------------------------------
+
+    // Helper: build a country block with variables sub-block
+    fn make_country_with_vars(
+        flags: Vec<(&str, &str)>,
+        vars: Vec<(&str, &str)>,
+    ) -> ClausewitzValue {
+        let flag_pairs: Vec<(&str, ClausewitzValue)> =
+            flags.iter().map(|(k, v)| (*k, make_atom(v))).collect();
+        let var_pairs: Vec<(&str, ClausewitzValue)> =
+            vars.iter().map(|(k, v)| (*k, make_atom(v))).collect();
+        make_block(vec![
+            ("flags", make_block(flag_pairs)),
+            ("variables", make_block(var_pairs)),
+        ])
+    }
+
+    #[test]
+    fn test_smorgasblorg_variable_read() {
+        // Country has smorgasblorg_phenotypes = 6 in variables block
+        let country = make_country_with_vars(vec![], vec![("smorgasblorg_phenotypes", "6")]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.species_dna_phenotypes_collected, Some(6));
+
+        // Country has smorgasblorg_phenotypes = 3
+        let country = make_country_with_vars(vec![], vec![("smorgasblorg_phenotypes", "3")]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.species_dna_phenotypes_collected, Some(3));
+
+        // No smorgasblorg_phenotypes variable
+        let country = make_country_with_vars(vec![], vec![]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert!(facts.species_dna_phenotypes_collected.is_none());
+    }
+
+    #[test]
+    fn test_blazing_scourge_flag_read() {
+        // Flag present -> true
+        let country = make_country(vec![("INF_A_blazing_tomb_world", "yes")]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.blazing_scourge_decisions, Some(true));
+
+        // Flag absent -> false
+        let country = make_country(vec![]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.blazing_scourge_decisions, Some(false));
+    }
+
+    #[test]
+    fn test_hyperthermia_giant_var_read() {
+        // Variable present -> numeric
+        let country = make_country_with_vars(vec![], vec![("hyperthermia_giant_var", "50")]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.stars_terraform_to_red_giant, Some(50));
+
+        // Variable present with 100
+        let country = make_country_with_vars(vec![], vec![("hyperthermia_giant_var", "100")]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.stars_terraform_to_red_giant, Some(100));
+
+        // No variable -> None
+        let country = make_country_with_vars(vec![], vec![]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert!(facts.stars_terraform_to_red_giant.is_none());
+    }
+
+    #[test]
+    fn test_pre_ftl_invasion_occurred_flag_read() {
+        // Flag present -> invaded
+        let country = make_country(vec![("with_great_power_achievement_locked", "yes")]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.pre_ftl_invasion_occurred, Some(true));
+
+        // Flag absent -> not invaded
+        let country = make_country(vec![]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.pre_ftl_invasion_occurred, Some(false));
+    }
+
+    #[test]
+    fn test_built_artificial_ship_flag_read() {
+        // Flag present -> built ships
+        let country = make_country(vec![("built_artificial_ship", "yes")]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.artificial_military_ships_built, Some(true));
+
+        // Flag absent -> no military ships built
+        let country = make_country(vec![]);
+        let facts = extract_action_facts(&make_game_root(vec![]), &country, "0");
+        assert_eq!(facts.artificial_military_ships_built, Some(false));
     }
 }

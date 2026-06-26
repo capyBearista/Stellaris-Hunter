@@ -605,6 +605,8 @@ fn fact_address(catalog_dimension: &str) -> Option<(&'static str, &'static str)>
         "galactic_memorials_on_tomb_worlds" => Some(("action", "galactic_memorials_on_tomb_worlds")),
         "space_fauna_type_captured" => Some(("action", "space_fauna_type_captured")),
         "colony_count_with_hyperspace_not_researched" => Some(("action", "colony_count_with_hyperspace_not_researched")),
+        "pre_ftl_invasion_occurred" => Some(("action", "pre_ftl_invasion_occurred")),
+        "artificial_military_ships_built" => Some(("action", "artificial_military_ships_built")),
         "invaded_primitive_earth" => Some(("action", "invaded_primitive_earth")),
 
         _ => None,

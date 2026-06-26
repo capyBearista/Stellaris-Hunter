@@ -1,9 +1,12 @@
-use std::{fs, fs::File, io::Write, path::Path};
+use std::{collections::HashSet, fs, fs::File, io::Write, path::Path};
 
 use rusqlite::Connection;
 use stellaris_hunter_scan::{
-    catalog::initialize_catalog_schema,
-    model::{SaveRunSummary, SaveSummary},
+    catalog::{
+        import_catalog, initialize_catalog_schema, load_catalog_entries, parse_catalog_json,
+    },
+    model::{ActionFacts, SaveRunSummary, SaveSummary},
+    rules::evaluate_planner_achievements,
     run_state::{
         initialize_run_state_schema, load_persisted_runs, load_run_achievement_statuses,
         load_run_facts, persist_run_for_tests, persist_scan_report, run_exists,
@@ -262,6 +265,151 @@ fn scan_prefers_ironman_save_over_newer_folder_snapshots() {
         latest_path.file_name().and_then(|name| name.to_str()),
         Some("ironman.sav")
     );
+}
+
+#[test]
+fn phase7_boolean_dimensions_end_to_end() {
+    let dir = tempdir().expect("tempdir");
+    let save_root = dir.path().join("save games");
+    let run_root = save_root.join("run_phase7");
+    fs::create_dir_all(&run_root).expect("run dir");
+    let save_path = run_root.join("ironman.sav");
+    fs::write(&save_path, b"synthetic bytes").expect("save file");
+
+    let mut conn = Connection::open_in_memory().expect("open in-memory db");
+    initialize_catalog_schema(&conn).expect("catalog schema");
+    initialize_run_state_schema(&conn).expect("run schema");
+
+    // Build a SaveSummary with the three Phase 7 boolean dimensions set to true
+    let actions = ActionFacts {
+        blazing_scourge_decisions: Some(true),
+        pre_ftl_invasion_occurred: Some(true),
+        artificial_military_ships_built: Some(true),
+        ..Default::default()
+    };
+
+    let run = SaveRunSummary {
+        run_folder: "run_phase7".to_string(),
+        save_count: 1,
+        latest_save: Some(SaveSummary {
+            path: save_path,
+            version: Some("Cetus v4.3.7".to_string()),
+            date: Some("2532.01.26".to_string()),
+            name: Some("Phase 7 Test".to_string()),
+            ironman: Some(true),
+            cheated_on_save: Some(false),
+            origin: Some("origin_default".to_string()),
+            ethics: vec!["ethic_xenophile".to_string()],
+            civics: vec!["civic_fire_cult".to_string()],
+            actions: Some(actions),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    // Step 1: Persist the run → facts are extracted and stored in DB
+    persist_run_for_tests(&mut conn, &save_root, &run).expect("persist run");
+
+    let runs = load_persisted_runs(&conn).expect("load runs");
+    assert_eq!(runs.len(), 1);
+    assert_eq!(runs[0].run_folder, "run_phase7");
+
+    // Step 2: Load facts and verify Phase 7 dimensions were persisted
+    let facts = load_run_facts(&conn, &runs[0].folder_path).expect("load facts");
+
+    let blazing = facts
+        .iter()
+        .find(|f| f.dimension == "action" && f.key == "blazing_scourge_decisions")
+        .expect("blazing_scourge_decisions fact persisted");
+    assert_eq!(blazing.value, serde_json::json!(true));
+    assert_eq!(blazing.source, "parsed_save");
+
+    let pre_ftl = facts
+        .iter()
+        .find(|f| f.dimension == "action" && f.key == "pre_ftl_invasion_occurred")
+        .expect("pre_ftl_invasion_occurred fact persisted");
+    assert_eq!(pre_ftl.value, serde_json::json!(true));
+
+    let artificial = facts
+        .iter()
+        .find(|f| f.dimension == "action" && f.key == "artificial_military_ships_built")
+        .expect("artificial_military_ships_built fact persisted");
+    assert_eq!(artificial.value, serde_json::json!(true));
+
+    // Step 3: Verify that dimensions NOT set (left as None/default) are absent
+    assert!(
+        !facts.iter().any(|f| f.key == "colossus_built"),
+        "colossus_built should not be persisted when None"
+    );
+
+    // Step 4: Import a catalog entry that uses blazing_scourge_decisions
+    let catalog_json = r#"{
+        "catalog_version": "1.0.0",
+        "snapshot_kind": "full",
+        "stellaris_version": "4.3",
+        "source_url": "",
+        "source_hash": "",
+        "updated_at": "2026-01-01",
+        "achievements": [{
+            "id": "from_bad_to_worse",
+            "steam_app_id": 281990,
+            "steam_api_name": "achievement_from_bad_to_worse",
+            "local_key": null,
+            "deprecated": false,
+            "source": {
+                "name": "From Bad to Worse",
+                "description": "Use 5 Blazing Scourge decisions on a Tomb World",
+                "requirement": "Use 5 Blazing Scourge decisions on a Tomb World",
+                "hint": "The Blazing Scourge decision requires the Fire Cult civic.",
+                "group": "Infernals",
+                "version_added": "4.2",
+                "difficulty": "E"
+            },
+            "curation": {
+                "tags": ["infernals"],
+                "conditions": [{
+                    "condition_type": "required",
+                    "dimension": "blazing_scourge_decisions",
+                    "operator": "equals",
+                    "value": true,
+                    "timing": "eventual",
+                    "mutability": "normal_change",
+                    "severity": "soft",
+                    "source": "wiki-reviewed",
+                    "notes": "Requires using the Blazing Scourge decision on a Tomb World."
+                }],
+                "warnings": [],
+                "known_limitations": [],
+                "rule_confidence": "medium"
+            }
+        }]
+    }"#;
+    let catalog = parse_catalog_json(catalog_json).expect("parse catalog");
+    import_catalog(&mut conn, &catalog).expect("import catalog");
+
+    // Step 5: Evaluate planner achievements — dimension is true → Possible
+    let entries = load_catalog_entries(&conn).expect("load catalog entries");
+    let completed: HashSet<String> = HashSet::new();
+    let statuses = load_run_achievement_statuses(&conn, &runs[0].folder_path)
+        .expect("load achievement statuses");
+    let evals = evaluate_planner_achievements(entries, &facts, &completed, &statuses);
+    assert_eq!(evals.len(), 1);
+    assert_eq!(evals[0].achievement.id, "from_bad_to_worse");
+    assert_eq!(
+        evals[0].computed_status, "Possible",
+        "blazing_scourge_decisions=true should yield Possible"
+    );
+
+    // Step 6: Verify that the planner evaluation cache is used
+    use stellaris_hunter_scan::run_state::{load_evaluations, save_evaluations};
+    let evaluations = evals.clone();
+    save_evaluations(&conn, &runs[0].folder_path, &evaluations).expect("save evaluations to cache");
+    let cached = load_evaluations(&conn, &runs[0].folder_path)
+        .expect("load cached evaluations")
+        .expect("cache should have entry");
+    assert_eq!(cached.len(), 1);
+    assert_eq!(cached[0].achievement.id, "from_bad_to_worse");
+    assert_eq!(cached[0].computed_status, "Possible");
 }
 
 fn save_run(run_folder: &str, save_path: &Path, date: &str) -> SaveRunSummary {

@@ -6993,15 +6993,76 @@
             "notes": "This achievement requires the Necroids DLC."
           },
           {
-            "condition_type": "required",
-            "dimension": "observation_station_count",
-            "operator": "at_least",
-            "value": 10,
+            "condition_type": "any_of",
+            "dimension": "",
+            "operator": "",
+            "value": null,
             "timing": "eventual",
             "mutability": "normal_change",
             "severity": "soft",
-            "source": "wiki-reviewed",
-            "notes": "Primary planner path: build at least 10 Observation Stations around Pre-FTL worlds without ever invading."
+            "source": null,
+            "notes": "Either crisis-first path or observation station path satisfies the achievement.",
+            "children": [
+              {
+                "condition_type": "all_of",
+                "dimension": "",
+                "operator": "",
+                "value": null,
+                "timing": "eventual",
+                "mutability": "normal_change",
+                "severity": "hard",
+                "source": "wiki-reviewed",
+                "notes": "Avoid all pre-FTL invasions until after the crisis is defeated.",
+                "children": [
+                  {
+                    "condition_type": "not",
+                    "dimension": "",
+                    "operator": "",
+                    "value": null,
+                    "timing": "terminal",
+                    "mutability": "immutable",
+                    "severity": "hard",
+                    "source": "wiki-reviewed",
+                    "notes": "Must not have invaded any pre-FTL civilization.",
+                    "children": [
+                      {
+                        "condition_type": "required",
+                        "dimension": "pre_ftl_invasion_occurred",
+                        "operator": "equals",
+                        "value": true,
+                        "timing": "terminal",
+                        "mutability": "immutable",
+                        "severity": "hard",
+                        "source": "wiki-reviewed",
+                        "notes": "Flag set when any pre-FTL invasion occurs."
+                      }
+                    ]
+                  },
+                  {
+                    "condition_type": "required",
+                    "dimension": "crisis_defeated",
+                    "operator": "equals",
+                    "value": true,
+                    "timing": "eventual",
+                    "mutability": "normal_change",
+                    "severity": "hard",
+                    "source": "wiki-reviewed",
+                    "notes": "An endgame crisis must have been defeated."
+                  }
+                ]
+              },
+              {
+                "condition_type": "required",
+                "dimension": "observation_station_count",
+                "operator": "at_least",
+                "value": 10,
+                "timing": "eventual",
+                "mutability": "normal_change",
+                "severity": "soft",
+                "source": "wiki-reviewed",
+                "notes": "Primary planner path: build at least 10 Observation Stations around Pre-FTL worlds without ever invading."
+              }
+            ]
           }
         ],
         "warnings": [
@@ -7011,7 +7072,7 @@
         ],
         "planner_notes": "The 10-observation-station path is the more planner-actionable route. Set Pre-FTL density high and build observation stations on eligible worlds. Alternatively, avoid all pre-FTL invasions until after the crisis is defeated.",
         "known_limitations": [
-          "The current save parser reads the origin but does not yet count observation stations or track pre-FTL invasion history."
+          "Save parser now tracks pre-FTL invasion via a country flag, but does not count observation stations built."
         ],
         "rule_confidence": "medium"
       }
@@ -10991,7 +11052,7 @@
         ],
         "planner_notes": "Start with the Beastmasters civic, rely entirely on captured and cloned space fauna for military power. Lower crisis strength to 0.25x.",
         "known_limitations": [
-          "The current save parser does not yet detect ship build history or distinguish artificial vs. fauna ships."
+          "Save parser now tracks artificial military ship construction via a country flag."
         ],
         "rule_confidence": "medium"
       }
@@ -11114,7 +11175,7 @@
         ],
         "planner_notes": "Each time the Adaptive Evolution situation completes, choose a different species for the DNA template.",
         "known_limitations": [
-          "The current save parser reads origin but does not yet track phenotype collection count."
+          "Save parser now tracks phenotype collection count via the country variable smorgasblorg_phenotypes."
         ],
         "rule_confidence": "medium"
       }
@@ -11903,21 +11964,21 @@
           {
             "condition_type": "required",
             "dimension": "blazing_scourge_decisions",
-            "operator": "at_least",
-            "value": 5,
+            "operator": "equals",
+            "value": true,
             "timing": "eventual",
             "mutability": "normal_change",
             "severity": "soft",
             "source": "wiki-reviewed",
-            "notes": "Requires using the Blazing Scourge decision at least 5 times on a Tomb World."
+            "notes": "Requires using the Blazing Scourge decision on a Tomb World (tracked by flag)."
           }
         ],
         "warnings": [
           "Requires the Fire Cult civic, which locks the empire into specific ethics and gameplay."
         ],
-        "planner_notes": "Start with the Fire Cult civic. Find a Tomb World (common from the Sol system or event outcomes) and use the Blazing Scourge planetary decision 5 times.",
+        "planner_notes": "Start with the Fire Cult civic. Find a Tomb World (common from the Sol system or event outcomes) and use the Blazing Scourge planetary decision on a Tomb World.",
         "known_limitations": [
-          "The current save parser reads civics but does not yet track planetary decision usage."
+          "The tracker records whether the Blazing Scourge decision flag is set; it does not count individual decision uses."
         ],
         "rule_confidence": "medium"
       }
@@ -12115,7 +12176,7 @@
         ],
         "planner_notes": "Use the zero-empires trick to avoid interference. Focus on star terraforming technologies and allocate resources to continually convert stars as soon as cooldowns permit.",
         "known_limitations": [
-          "The current save parser does not yet track star terraforming operations or the Infernals crisis path state."
+          "Save parser now tracks star terraforming count via the country variable hyperthermia_giant_var and the hyperthermia crisis path flag."
         ],
         "rule_confidence": "medium"
       }

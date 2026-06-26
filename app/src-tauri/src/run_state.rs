@@ -1229,7 +1229,7 @@ fn facts_from_save(save: &SaveSummary) -> Vec<RunFactInput> {
             "quantum_catapult_used",
             a.quantum_catapult_used,
         );
-        push_usize(
+        push_bool(
             &mut facts,
             "action",
             "blazing_scourge_decisions",
@@ -1270,6 +1270,18 @@ fn facts_from_save(save: &SaveSummary) -> Vec<RunFactInput> {
             "action",
             "colony_count_with_hyperspace_not_researched",
             a.colony_count_with_hyperspace_not_researched,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "pre_ftl_invasion_occurred",
+            a.pre_ftl_invasion_occurred,
+        );
+        push_bool(
+            &mut facts,
+            "action",
+            "artificial_military_ships_built",
+            a.artificial_military_ships_built,
         );
         push_bool(
             &mut facts,

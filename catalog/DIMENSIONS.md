@@ -115,8 +115,10 @@ Action and event dimensions represent player-driven milestones, discrete event-c
 | `megastructure_type` | string | `"dyson_sphere"`, `"science_nexus"`, `"ring_world"`, `"arc_furnace"`, `"dyson_swarm"` | Use with `contains` for built/owned megastructure types. |
 | `archaeological_site_completed` | integer | `1`, `5` | Existing dimension. |
 | `robot_pop_built` | bool | `true` | Existing dimension. |
+| `artificial_military_ships_built` | bool | `true` | Use for artificial-intelligence military shipbuilding achievements. Tracked in-save via a country flag (`built_artificial_ship`). |
 | `wormhole_travel_completed` | bool | `true` | Existing dimension. |
 | `pre_ftl_infiltration_completed` | bool | `true` | Existing dimension. |
+| `pre_ftl_invasion_occurred` | bool | `true` | Use for pre-FTL invasion achievements. Tracked in-save via a country flag (`with_great_power_achievement_locked`). |
 | `first_contact_result` | string | `"peaceful"`, `"aggressive"`, `"shoot_to_kill"` | Use for First Contact outcome achievements. |
 | `espionage_operations_completed` | integer | `1`, `5` | Use for operation count requirements. |
 | `migration_treaty_count` | integer | `10` | Use for migration-treaty thresholds. |
@@ -155,7 +157,7 @@ Action and event dimensions represent player-driven milestones, discrete event-c
 | `space_fauna_type_captured` | string | `"amoeba"`, `"tiyanki"`, `"crystalline_entity"`, `"asteroid"` | Use for Grand Archive capture achievements. |
 | `legendary_paragon_recruited` | string | `"azaryn"`, `"keides"` | Use for Galactic Paragons story achievements. |
 | `galactic_memorials_on_tomb_worlds` | integer | `5` | Use for Necroids memorial achievements. |
-| `blazing_scourge_decisions` | integer | `5` | Use for Infernals Blazing Scourge achievements. |
+| `blazing_scourge_decisions` | bool | `true` | Use for Infernals Blazing Scourge achievements. Tracked in-save via a country flag (`INF_A_blazing_tomb_world`). |
 | `stars_terraform_to_red_giant` | integer | `100` | Use for Infernals red-giant transformation achievements. |
 | `planets_terraform_to_volcanic` | integer | `10` | Use for Infernals volcanic planet transformation achievements. |
 | `volcanic_holy_world_created` | bool | `true` | Use for Infernals holy-world transformation achievements. |
