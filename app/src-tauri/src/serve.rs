@@ -23,6 +23,7 @@ use crate::{
     db,
     error::Result,
     icons::IconSyncResult,
+    ipc_helpers,
     model::{
         AchievementCatalogEntry, AchievementOverride, AppConfig, AppInfo, CatalogSyncResult,
         FactOverride, PersistedRunSummary, PlannerAchievementEvaluation, RunAchievementNote,
@@ -160,6 +161,18 @@ where
     ))
 }
 
+async fn run_call<T, F>(work: F) -> std::result::Result<Json<T>, ApiError>
+where
+    T: serde::Serialize + Send + 'static,
+    F: FnOnce() -> std::result::Result<T, String> + Send + 'static,
+{
+    let inner = ipc_helpers::run_blocking_split(work)
+        .await
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err))?;
+
+    Ok(Json(inner.map_err(|err| (StatusCode::BAD_REQUEST, err))?))
+}
+
 fn default_db_path() -> PathBuf {
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
     PathBuf::from(home).join(".local/share/com.stellaris-hunter.scan/stellaris-hunter.db")
@@ -167,21 +180,23 @@ fn default_db_path() -> PathBuf {
 
 fn default_dist_dir() -> PathBuf {
     let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest.parent().unwrap().join("dist")
+    manifest
+        .parent()
+        .map(|path| path.join("dist"))
+        .unwrap_or_else(|| manifest.join("dist"))
 }
 
 // ── IPC handlers ───────────────────────────────────────────────────────────
 
 async fn handle_scan_local_state() -> std::result::Result<Json<ScanReport>, ApiError> {
-    let result = tokio::task::spawn_blocking(|| scan_all(None, None))
+    run_call(|| Ok(scan_all(None, None)))
         .await
-        .map_err(|e| {
+        .map_err(|(status, err)| {
             (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("scan worker failed: {e}"),
+                status,
+                err.replacen("worker failed", "scan worker failed", 1),
             )
-        })?;
-    Ok(Json(result))
+        })
 }
 
 async fn handle_sync_catalog(
@@ -192,23 +207,17 @@ async fn handle_sync_catalog(
         .await
         .map_err(|e| (StatusCode::BAD_REQUEST, format!("fetch catalog: {e}")))?;
 
-    let result: std::result::Result<CatalogSyncResult, String> =
-        tokio::task::spawn_blocking(move || {
-            let mut conn = db::open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
-            let sync_result = crate::catalog_sync::sync_catalog_from_json(&mut conn, &json_text)
+    Ok(Json(
+        ipc_helpers::with_app_db_mut_split(path, move |conn| {
+            let sync_result = crate::catalog_sync::sync_catalog_from_json(conn, &json_text)
                 .map_err(|e| format!("sync catalog: {e}"))?;
-            let _ = run_state::invalidate_all_evaluations(&conn);
+            let _ = run_state::invalidate_all_evaluations(conn);
             Ok(sync_result)
         })
         .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("worker failed: {e}"),
-            )
-        })?;
-
-    Ok(Json(result.map_err(|e| (StatusCode::BAD_REQUEST, e))?))
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err))?
+        .map_err(|err| (StatusCode::BAD_REQUEST, err))?,
+    ))
 }
 
 async fn handle_load_achievements(
@@ -277,26 +286,21 @@ async fn handle_rescan_saves(
     State(state): State<AppState>,
 ) -> std::result::Result<Json<Vec<PersistedRunSummary>>, ApiError> {
     let path = state.db_path;
-    let result: std::result::Result<Vec<PersistedRunSummary>, String> =
-        tokio::task::spawn_blocking(move || {
-            let mut conn = db::open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
+    Ok(Json(
+        ipc_helpers::with_app_db_mut_split(path, move |conn| {
             let report = scan_all(None, None);
             if !report.errors.is_empty() {
                 eprintln!("scan errors before persistence: {:?}", report.errors);
             }
-            run_state::persist_scan_report(&mut conn, &report)
+            run_state::persist_scan_report(conn, &report)
                 .map_err(|e| format!("persist scan: {e}"))?;
-            let _ = run_state::invalidate_all_evaluations(&conn);
-            run_state::load_persisted_runs(&conn).map_err(|e| format!("load runs: {e}"))
+            let _ = run_state::invalidate_all_evaluations(conn);
+            run_state::load_persisted_runs(conn).map_err(|e| format!("load runs: {e}"))
         })
         .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("worker failed: {e}"),
-            )
-        })?;
-    Ok(Json(result.map_err(|e| (StatusCode::BAD_REQUEST, e))?))
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err))?
+        .map_err(|err| (StatusCode::BAD_REQUEST, err))?,
+    ))
 }
 
 async fn handle_load_planner_evaluations(
@@ -305,30 +309,28 @@ async fn handle_load_planner_evaluations(
 ) -> std::result::Result<Json<Vec<PlannerAchievementEvaluation>>, ApiError> {
     let path = state.db_path;
     let folder = req.run_folder_path;
-    let result: std::result::Result<Vec<PlannerAchievementEvaluation>, String> =
-        tokio::task::spawn_blocking(move || {
-            let conn = db::open_app_db(&path).map_err(|e| format!("open db: {e}"))?;
-
+    Ok(Json(
+        ipc_helpers::with_app_db_split(path, move |conn| {
             // Try cache first
-            if let Some(cached) = run_state::load_evaluations(&conn, &folder)
+            if let Some(cached) = run_state::load_evaluations(conn, &folder)
                 .map_err(|e| format!("load cache: {e}"))?
             {
                 return Ok(cached);
             }
 
-            let load = crate::catalog::load_catalog_entries_with_issues(&conn)
+            let load = crate::catalog::load_catalog_entries_with_issues(conn)
                 .map_err(|e| format!("load achievements: {e}"))?;
             if !load.issues.is_empty() {
                 eprintln!("catalog load issues: {:?}", load.issues);
             }
-            let facts = run_state::load_run_facts(&conn, &folder)
+            let facts = run_state::load_run_facts(conn, &folder)
                 .map_err(|e| format!("load run facts: {e}"))?;
-            let completed = crate::catalog::load_displayed_completion_map(&conn)
+            let completed = crate::catalog::load_displayed_completion_map(conn)
                 .map_err(|e| format!("load displayed completion: {e}"))?
                 .into_iter()
                 .filter_map(|(id, displayed)| displayed.then_some(id))
                 .collect();
-            let user_statuses = run_state::load_run_achievement_statuses(&conn, &folder)
+            let user_statuses = run_state::load_run_achievement_statuses(conn, &folder)
                 .map_err(|e| format!("load run achievement statuses: {e}"))?;
             let evaluations = crate::rules::evaluate_planner_achievements(
                 load.entries,
@@ -336,17 +338,13 @@ async fn handle_load_planner_evaluations(
                 &completed,
                 &user_statuses,
             );
-            let _ = run_state::save_evaluations(&conn, &folder, &evaluations);
+            let _ = run_state::save_evaluations(conn, &folder, &evaluations);
             Ok(evaluations)
         })
         .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("worker failed: {e}"),
-            )
-        })?;
-    Ok(Json(result.map_err(|e| (StatusCode::BAD_REQUEST, e))?))
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err))?
+        .map_err(|err| (StatusCode::BAD_REQUEST, err))?,
+    ))
 }
 
 async fn handle_set_run_achievement_status(
@@ -517,29 +515,28 @@ async fn handle_get_achievement_icon(
     let path = state.db_path;
     let achievement_id = req.achievement_id;
 
-    let result: std::result::Result<Option<Vec<u8>>, String> =
-        tokio::task::spawn_blocking(move || {
-            let app_data_dir = path.parent().ok_or("invalid db path")?.to_path_buf();
-            let cache = crate::icons::IconCache::new(&app_data_dir);
-            cache
-                .read(&achievement_id)
-                .map_err(|e| format!("read icon: {e}"))
-        })
-        .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("worker failed: {e}"),
-            )
-        })?;
+    let result = ipc_helpers::run_blocking_split(move || {
+        let app_data_dir = path.parent().ok_or("invalid db path")?.to_path_buf();
+        let cache = crate::icons::IconCache::new(&app_data_dir);
+        cache
+            .read(&achievement_id)
+            .map_err(|e| format!("read icon: {e}"))
+    })
+    .await
+    .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err))?
+    .map_err(|err| (StatusCode::BAD_REQUEST, err))?;
 
     match result {
-        Ok(Some(bytes)) => Ok(Response::builder()
+        Some(bytes) => Response::builder()
             .header(header::CONTENT_TYPE, "application/octet-stream")
             .body(axum::body::Body::from(bytes))
-            .unwrap()),
-        Ok(None) => Ok(StatusCode::NO_CONTENT.into_response()),
-        Err(e) => Err((StatusCode::BAD_REQUEST, e)),
+            .map_err(|err| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("build icon response: {err}"),
+                )
+            }),
+        None => Ok(StatusCode::NO_CONTENT.into_response()),
     }
 }
 
@@ -548,8 +545,7 @@ async fn handle_sync_icons(
 ) -> std::result::Result<Json<IconSyncResult>, ApiError> {
     let path = state.db_path;
 
-    let result: std::result::Result<IconSyncResult, String> =
-        tokio::task::spawn_blocking(move || {
+    let result = ipc_helpers::run_blocking_split(move || {
             let app_data_dir = path.parent().ok_or("invalid db path")?.to_path_buf();
             let db_file = path;
             let cache = crate::icons::IconCache::new(&app_data_dir);
@@ -576,14 +572,10 @@ async fn handle_sync_icons(
                 .map_err(|e| format!("sync icons: {e}"))
         })
         .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("worker failed: {e}"),
-            )
-        })?;
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err))?
+        .map_err(|err| (StatusCode::BAD_REQUEST, err))?;
 
-    Ok(Json(result.map_err(|e| (StatusCode::BAD_REQUEST, e))?))
+    Ok(Json(result))
 }
 
 /// WSL stub — returns the exact error string from commands.rs line 507.

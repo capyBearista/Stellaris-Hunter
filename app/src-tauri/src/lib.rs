@@ -10,6 +10,7 @@ pub mod extract_discovery;
 pub mod extract_progression;
 pub mod icons;
 pub mod install;
+pub mod ipc_helpers;
 pub mod model;
 pub mod paths;
 pub mod rules;
