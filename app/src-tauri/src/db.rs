@@ -137,6 +137,19 @@ pub fn load_app_info(conn: &Connection) -> Result<AppInfo> {
         .query_row("SELECT MAX(updated_at) FROM runs", [], |row| row.get(0))
         .ok();
 
+    let last_steam_sync_event: Option<(String, Option<String>)> = conn
+        .query_row(
+            r#"
+            SELECT status, error_message
+            FROM steam_sync_events
+            ORDER BY synced_at DESC
+            LIMIT 1
+            "#,
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .ok();
+
     Ok(AppInfo {
         app_version: env!("CARGO_PKG_VERSION").to_string(),
         catalog_version: catalog_meta.as_ref().map(|m| m.catalog_version.clone()),
@@ -145,6 +158,8 @@ pub fn load_app_info(conn: &Connection) -> Result<AppInfo> {
             .and_then(|m| m.stellaris_version.clone()),
         last_catalog_sync: catalog_meta.map(|m| m.imported_at),
         last_steam_sync,
+        last_steam_sync_status: last_steam_sync_event.as_ref().map(|event| event.0.clone()),
+        last_steam_sync_error: last_steam_sync_event.and_then(|event| event.1),
         last_save_scan,
     })
 }
@@ -208,6 +223,36 @@ mod tests {
         assert!(
             !imported_again,
             "should skip when bundled version matches DB version"
+        );
+    }
+
+    #[test]
+    fn load_app_info_includes_latest_steam_sync_event() {
+        let conn = Connection::open_in_memory().expect("open in-memory db");
+        initialize_catalog_schema(&conn).expect("catalog schema");
+        initialize_run_state_schema(&conn).expect("run schema");
+        initialize_config_schema(&conn).expect("config schema");
+        conn.execute_batch(
+            r#"
+            CREATE TABLE steam_sync_events (
+              status TEXT NOT NULL,
+              error_message TEXT,
+              synced_at TEXT NOT NULL
+            );
+
+            INSERT INTO steam_sync_events (status, error_message, synced_at)
+            VALUES
+              ('ok', NULL, '2026-01-01 00:00:00'),
+              ('failed', 'steam unavailable', '2026-01-02 00:00:00');
+            "#,
+        )
+        .expect("insert steam sync events");
+
+        let info = load_app_info(&conn).expect("load app info");
+        assert_eq!(info.last_steam_sync_status.as_deref(), Some("failed"));
+        assert_eq!(
+            info.last_steam_sync_error.as_deref(),
+            Some("steam unavailable")
         );
     }
 }

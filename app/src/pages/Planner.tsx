@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 import {
   clearRunAchievementNote,
@@ -25,6 +26,7 @@ const STATUS_ORDER: PlannerStatus[] = [
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
 export function Planner() {
+  const { runId } = useParams();
   const [runs, setRuns] = useState<PersistedRunSummary[]>([]);
   const [selectedRunPath, setSelectedRunPath] = useState<string | null>(null);
   const [evaluations, setEvaluations] = useState<PlannerAchievementEvaluation[]>([]);
@@ -41,8 +43,13 @@ export function Planner() {
     loadRuns()
       .then((loadedRuns) => {
         if (!cancelled) {
+          const requestedRunId = runId ? decodeURIComponent(runId) : null;
+          const initialRun =
+            requestedRunId && loadedRuns.some((run) => run.folder_path === requestedRunId)
+              ? requestedRunId
+              : loadedRuns[0]?.folder_path ?? null;
           setRuns(loadedRuns);
-          setSelectedRunPath(loadedRuns[0]?.folder_path ?? null);
+          setSelectedRunPath(initialRun);
           setStatus('ready');
         }
       })
@@ -55,7 +62,7 @@ export function Planner() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [runId]);
 
   useEffect(() => {
     if (!selectedRunPath) {

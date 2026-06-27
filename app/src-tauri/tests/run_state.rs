@@ -8,9 +8,9 @@ use stellaris_hunter_scan::{
     model::{ActionFacts, SaveRunSummary, SaveSummary},
     rules::evaluate_planner_achievements,
     run_state::{
-        initialize_run_state_schema, load_persisted_runs, load_run_achievement_statuses,
-        load_run_facts, persist_run_for_tests, persist_scan_report, run_exists,
-        set_run_achievement_status,
+        initialize_run_state_schema, load_persisted_runs, load_planner_status_counts,
+        load_run_achievement_statuses, load_run_facts, persist_run_for_tests, persist_scan_report,
+        reparse_run_save, run_exists, save_evaluations, set_run_achievement_status,
     },
 };
 use tempfile::tempdir;
@@ -265,6 +265,78 @@ fn scan_prefers_ironman_save_over_newer_folder_snapshots() {
         latest_path.file_name().and_then(|name| name.to_str()),
         Some("ironman.sav")
     );
+}
+
+#[test]
+fn planner_status_counts_reads_cached_user_facing_statuses() {
+    let conn = Connection::open_in_memory().expect("open in-memory db");
+    initialize_run_state_schema(&conn).expect("run schema");
+    conn.execute(
+        "INSERT INTO runs (folder_path, run_folder, updated_at) VALUES (?1, ?2, datetime('now'))",
+        ["/tmp/run_a", "run_a"],
+    )
+    .expect("insert run");
+
+    let evaluations = vec![
+        planner_eval("completed"),
+        planner_eval("planned"),
+        planner_eval("planned"),
+        planner_eval("unknown"),
+    ];
+    save_evaluations(&conn, "/tmp/run_a", &evaluations).expect("save evaluations");
+
+    let counts = load_planner_status_counts(&conn, "/tmp/run_a").expect("load counts");
+    assert_eq!(counts.completed, 1);
+    assert_eq!(counts.planned, 2);
+    assert_eq!(counts.unknown, 1);
+    assert_eq!(counts.possible, 0);
+}
+
+#[test]
+fn reparse_run_save_refreshes_latest_save_and_facts() {
+    let dir = tempdir().expect("tempdir");
+    let save_root = dir.path().join("save games");
+    let run_root = save_root.join("run_a");
+    fs::create_dir_all(&run_root).expect("run dir");
+    let save_path = run_root.join("ironman.sav");
+    write_save_fixture(&save_path);
+
+    let mut conn = Connection::open_in_memory().expect("open in-memory db");
+    initialize_run_state_schema(&conn).expect("run schema");
+    let run = SaveRunSummary {
+        run_folder: "run_a".to_string(),
+        save_count: 1,
+        latest_save: Some(SaveSummary {
+            path: save_path.clone(),
+            name: Some("Old Name".to_string()),
+            version: Some("Old Version".to_string()),
+            date: Some("2200.01.01".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    persist_run_for_tests(&mut conn, &save_root, &run).expect("persist run");
+
+    let reparsed = reparse_run_save(&mut conn, &run_root.to_string_lossy()).expect("reparse");
+    assert_eq!(reparsed.run_folder, "run_a");
+    assert!(reparsed.latest_save.is_some());
+    assert!(reparsed.issues.is_empty());
+
+    let runs = load_persisted_runs(&conn).expect("load runs");
+    assert_eq!(runs[0].parse_status.as_deref(), Some("parsed"));
+    assert!(runs[0].fact_count > 0);
+
+    let facts = load_run_facts(&conn, &runs[0].folder_path).expect("load facts");
+    assert!(facts
+        .iter()
+        .any(|fact| fact.dimension == "save" && fact.key == "name"));
+}
+
+fn planner_eval(status: &str) -> stellaris_hunter_scan::model::PlannerAchievementEvaluation {
+    stellaris_hunter_scan::model::PlannerAchievementEvaluation {
+        status: status.to_string(),
+        ..Default::default()
+    }
 }
 
 #[test]

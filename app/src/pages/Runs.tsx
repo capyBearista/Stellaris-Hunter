@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import {
   clearFactOverride,
   clearRunNote,
   loadRunFacts,
+  reparseRunSave,
   loadRunNotes,
   loadRuns,
   rescanSaves,
@@ -12,6 +14,7 @@ import {
   type PersistedRunSummary,
   type RunFactSummary,
   type RunDlcInfo,
+  type SaveEligibility,
   type ScanReport,
 } from '../tauri';
 import { getCachedScanReport, scanLocalStateCached } from '../scanCache';
@@ -60,6 +63,33 @@ export function Runs() {
 
   const handleRescan = async () => {
     await refreshRuns(rescanSaves, 'loading', { forceScan: true });
+  };
+
+  const reloadSelectedRunFacts = async (runFolderPath: string) => {
+    setFactStatus('loading');
+    try {
+      const loadedFacts = await loadRunFacts(runFolderPath);
+      setFacts(loadedFacts);
+      setFactStatus('ready');
+    } catch (err) {
+      setError(errorMessage(err));
+      setFactStatus('error');
+    }
+  };
+
+  const handleReparseRun = async (runFolderPath: string) => {
+    setStatus('loading');
+    setError(null);
+    try {
+      await reparseRunSave(runFolderPath);
+      await refreshRuns(loadRuns, 'loading', { forceScan: true });
+      if (selectedRunPath === runFolderPath) {
+        await reloadSelectedRunFacts(runFolderPath);
+      }
+    } catch (err) {
+      setError(errorMessage(err));
+      setStatus('error');
+    }
   };
 
   async function refreshRuns(
@@ -132,6 +162,18 @@ export function Runs() {
                     <span>{run.fact_count} facts</span>
                   </span>
                 </button>
+                <div className="fact-actions">
+                  <Link className="link-button" to={`/planner/${encodeURIComponent(run.folder_path)}`}>
+                    Open in Planner
+                  </Link>
+                  <button
+                    type="button"
+                    className="link-button"
+                    onClick={() => void handleReparseRun(run.folder_path)}
+                  >
+                    Parse Latest Save
+                  </button>
+                </div>
                 {run.parse_error ? <p className="error run-error">{run.parse_error}</p> : null}
               </li>
             ))}
@@ -140,21 +182,13 @@ export function Runs() {
           <RunFactPanel
             run={selectedRun}
             runDlcInfo={selectedRunSnapshot?.dlc_info ?? null}
+            eligibility={selectedRunSnapshot?.eligibility ?? null}
             requiredDlcs={selectedRunSnapshot?.latest_save?.required_dlcs ?? []}
             facts={facts}
             factStatus={factStatus}
             onFactsChanged={() => {
               if (selectedRunPath) {
-                setFactStatus('loading');
-                loadRunFacts(selectedRunPath)
-                  .then((loadedFacts) => {
-                    setFacts(loadedFacts);
-                    setFactStatus('ready');
-                  })
-                  .catch((err) => {
-                    setError(errorMessage(err));
-                    setFactStatus('error');
-                  });
+                void reloadSelectedRunFacts(selectedRunPath);
               }
             }}
           />
@@ -171,6 +205,7 @@ export function Runs() {
 function RunFactPanel({
   run,
   runDlcInfo,
+  eligibility,
   requiredDlcs,
   facts,
   factStatus,
@@ -178,6 +213,7 @@ function RunFactPanel({
 }: {
   run: PersistedRunSummary | null;
   runDlcInfo: RunDlcInfo | null;
+  eligibility: SaveEligibility | null;
   requiredDlcs: string[];
   facts: RunFactSummary[];
   factStatus: LoadState;
@@ -315,6 +351,35 @@ function RunFactPanel({
         <div className="run-dlc-section">
           <h4>DLC status</h4>
           <p className="muted">This save reports DLC requirements, but no local DLC state is available.</p>
+        </div>
+      ) : null}
+
+      {eligibility ? (
+        <div className="run-dlc-section">
+          <h4>Save eligibility</h4>
+          <p>
+            <strong>{eligibility.conclusion}</strong>
+          </p>
+          {eligibility.reasons.length > 0 ? (
+            <div>
+              <p className="muted">Reasons</p>
+              <ul className="fact-list">
+                {eligibility.reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {eligibility.warnings.length > 0 ? (
+            <div>
+              <p className="muted">Warnings</p>
+              <ul className="fact-list">
+                {eligibility.warnings.map((warning) => (
+                  <li key={warning}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       ) : null}
 

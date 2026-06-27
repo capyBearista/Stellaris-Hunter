@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, expect, it, vi } from 'vitest';
 
 const invoke = vi.hoisted(() => vi.fn());
@@ -31,6 +31,29 @@ beforeEach(() => {
     if (command === 'load_achievements') {
       return Promise.resolve([]);
     }
+    if (command === 'load_app_info') {
+      return Promise.resolve({
+        appVersion: '1.0.0',
+        catalogVersion: null,
+        stellarisVersion: null,
+        lastCatalogSync: null,
+        lastSteamSync: null,
+        lastSteamSyncStatus: null,
+        lastSteamSyncError: null,
+        lastSaveScan: null,
+      });
+    }
+    if (command === 'load_planner_status_counts') {
+      return Promise.resolve({
+        completed: 0,
+        planned: 0,
+        possible: 0,
+        incompatible: 0,
+        impossible: 0,
+        unknown: 0,
+        incomplete: 0,
+      });
+    }
     if (command === 'load_run_facts') {
       return Promise.resolve([]);
     }
@@ -48,6 +71,9 @@ beforeEach(() => {
     }
     if (command === 'rescan_saves') {
       return Promise.resolve([]);
+    }
+    if (command === 'reparse_run_save') {
+      return Promise.resolve(null);
     }
     if (command === 'scan_local_state') {
       return Promise.resolve({ errors: [] });
@@ -146,6 +172,226 @@ it('loads persisted overview state and rescans saves', async () => {
   expect(await screen.findByText('Synthetic Run')).toBeInTheDocument();
   expect(screen.getByText('12 facts')).toBeInTheDocument();
   expect(invoke).toHaveBeenCalledWith('rescan_saves', {});
+});
+
+it('shows steam sync info and planner status counts on overview', async () => {
+  invoke.mockImplementation((command: string, args?: Record<string, unknown>) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/tmp/documents/save games/run_a',
+          run_folder: 'run_a',
+          display_name: 'Synthetic Run',
+          latest_save_path: '/tmp/documents/save games/run_a/ironman.sav',
+          latest_save_file_name: 'ironman.sav',
+          latest_ingame_date: '2532.01.26',
+          game_version: 'Cetus v4.3.7',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 12,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (command === 'load_catalog_info') {
+      return Promise.resolve(null);
+    }
+    if (command === 'load_achievements') {
+      return Promise.resolve([{ id: 'ach_1' }]);
+    }
+    if (command === 'load_app_info') {
+      return Promise.resolve({
+        appVersion: '1.0.0',
+        catalogVersion: '1.0.1',
+        stellarisVersion: '4.0',
+        lastCatalogSync: null,
+        lastSteamSync: '2026-06-04T12:34:56Z',
+        lastSteamSyncStatus: 'failed',
+        lastSteamSyncError: 'Steam client not running',
+        lastSaveScan: null,
+      });
+    }
+    if (command === 'load_planner_status_counts') {
+      expect(args).toEqual({ runId: '/tmp/documents/save games/run_a' });
+      return Promise.resolve({
+        completed: 1,
+        planned: 2,
+        possible: 3,
+        incompatible: 4,
+        impossible: 5,
+        unknown: 6,
+        incomplete: 7,
+      });
+    }
+    return Promise.resolve({ errors: [] });
+  });
+
+  render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText('failed')).toBeInTheDocument();
+  expect(screen.getByText('2026-06-04T12:34:56Z')).toBeInTheDocument();
+  expect(screen.getByText(/steam client not running/i)).toBeInTheDocument();
+  expect(screen.getByText('Completed')).toBeInTheDocument();
+  expect(screen.getByText('1 achievements')).toBeInTheDocument();
+  expect(screen.getByText('Incomplete')).toBeInTheDocument();
+  expect(screen.getByText('7 achievements')).toBeInTheDocument();
+});
+
+it('uses the planner run id route param as the initial selection', async () => {
+  invoke.mockImplementation((command: string, args?: Record<string, unknown>) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/runs/a',
+          run_folder: 'run-a',
+          display_name: 'Run A',
+          latest_save_path: null,
+          latest_save_file_name: null,
+          latest_ingame_date: null,
+          game_version: null,
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 2,
+          updated_at: '2026-06-03',
+        },
+        {
+          folder_path: '/runs/b',
+          run_folder: 'run-b',
+          display_name: 'Run B',
+          latest_save_path: null,
+          latest_save_file_name: null,
+          latest_ingame_date: '2400.01.01',
+          game_version: null,
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 4,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (command === 'load_planner_evaluations') {
+      if (args?.runFolderPath === '/runs/b') {
+        return Promise.resolve([
+          {
+            achievement: {
+              id: 'ach_1',
+              steam_app_id: 281990,
+              steam_api_name: null,
+              local_key: null,
+              deprecated: false,
+              source: { name: 'Planner Target', description: null, requirement: null, hint: null, group: null, version_added: null, difficulty: null },
+              curation: { tags: [], conditions: [], warnings: [], planner_notes: null, known_limitations: [], rule_confidence: null },
+            },
+            status: 'Possible',
+            computed_status: 'Possible',
+            planned: false,
+            ignored: false,
+            reasons: [],
+            warnings: [],
+            conditions: [],
+          },
+        ]);
+      }
+      return Promise.resolve([]);
+    }
+    if (command === 'load_run_achievement_notes') {
+      return Promise.resolve([]);
+    }
+    return Promise.resolve(null);
+  });
+
+  render(
+    <MemoryRouter initialEntries={['/planner/%2Fruns%2Fb']}>
+      <Routes>
+        <Route path="/planner/:runId" element={<Planner />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  expect(await screen.findByText(/evaluating run b/i)).toBeInTheDocument();
+  expect(invoke).toHaveBeenCalledWith('load_planner_evaluations', { runFolderPath: '/runs/b' });
+});
+
+it('shows run eligibility and reparses the latest save from the runs page', async () => {
+  const user = userEvent.setup();
+  invoke.mockImplementation((command: string, args?: Record<string, unknown>) => {
+    if (command === 'load_runs') {
+      return Promise.resolve([
+        {
+          folder_path: '/runs/a',
+          run_folder: 'run-a',
+          display_name: 'Run A',
+          latest_save_path: '/runs/a/latest.sav',
+          latest_save_file_name: 'latest.sav',
+          latest_ingame_date: '2400.01.01',
+          game_version: '4.0',
+          parse_status: 'parsed',
+          parse_error: null,
+          fact_count: 2,
+          updated_at: '2026-06-03',
+        },
+      ]);
+    }
+    if (command === 'load_run_facts') {
+      return Promise.resolve([{ run_folder_path: '/runs/a', dimension: 'empire', key: 'origin', value: 'origin_default', source: 'save', confidence: 'confirmed', updated_from_save_path: null, updated_at: '2026-06-03', is_override: false }]);
+    }
+    if (command === 'load_run_notes') {
+      return Promise.resolve(null);
+    }
+    if (command === 'scan_local_state') {
+      return Promise.resolve({
+        errors: [],
+        documents: {
+          save_runs: [
+            {
+              run_folder: 'run-a',
+              latest_save: { required_dlcs: ['Utopia'] },
+              eligibility: {
+                conclusion: 'likely_eligible',
+                cheated_on_save: false,
+                ironman: true,
+                mod_risk: 'none',
+                reasons: ['Ironman save detected'],
+                warnings: ['Checksum data unavailable'],
+              },
+              dlc_info: {
+                enabled_and_required: ['Utopia'],
+                disabled_but_required: [],
+                unknown_status_required: [],
+                all_enabled_dlcs: ['Utopia'],
+                all_disabled_dlcs: [],
+              },
+            },
+          ],
+        },
+      });
+    }
+    if (command === 'reparse_run_save') {
+      expect(args).toEqual({ runId: '/runs/a' });
+      return Promise.resolve(null);
+    }
+    return Promise.resolve(null);
+  });
+
+  render(
+    <MemoryRouter>
+      <Runs />
+    </MemoryRouter>,
+  );
+
+  await user.click(await screen.findByRole('button', { name: /run a/i }));
+  expect(await screen.findByText(/likely_eligible/i)).toBeInTheDocument();
+  expect(screen.getByText(/ironman save detected/i)).toBeInTheDocument();
+  expect(screen.getByText(/checksum data unavailable/i)).toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: /parse latest save/i }));
+
+  expect(invoke).toHaveBeenCalledWith('reparse_run_save', { runId: '/runs/a' });
+  expect(screen.getByRole('link', { name: /open in planner/i })).toHaveAttribute('href', '/planner/%2Fruns%2Fa');
 });
 
 it('renders achievements page with mocked data', async () => {
@@ -703,7 +949,11 @@ it('edits a fact override from the runs page', async () => {
     return null;
   });
 
-  render(<Runs />);
+  render(
+    <MemoryRouter>
+      <Runs />
+    </MemoryRouter>,
+  );
   expect((await screen.findAllByText('Test Run')).length).toBeGreaterThanOrEqual(1);
 
   // Click the run to load facts
@@ -767,7 +1017,11 @@ it('clears a fact override from the runs page', async () => {
     return null;
   });
 
-  render(<Runs />);
+  render(
+    <MemoryRouter>
+      <Runs />
+    </MemoryRouter>,
+  );
   expect((await screen.findAllByText('Test Run')).length).toBeGreaterThanOrEqual(1);
 
   // Click the run to load facts
@@ -808,7 +1062,11 @@ it('saves a run note from the runs page', async () => {
     return null;
   });
 
-  render(<Runs />);
+  render(
+    <MemoryRouter>
+      <Runs />
+    </MemoryRouter>,
+  );
   expect((await screen.findAllByText('Test Run')).length).toBeGreaterThanOrEqual(1);
 
   // Click the run to select it

@@ -220,6 +220,8 @@ pub fn run_app() -> tauri::Result<()> {
             commands::catalog_commands::load_run_facts,
             commands::catalog_commands::rescan_saves,
             commands::catalog_commands::load_planner_evaluations,
+            commands::catalog_commands::load_planner_status_counts,
+            commands::catalog_commands::reparse_run_save,
             commands::catalog_commands::set_run_achievement_status,
             commands::catalog_commands::load_fact_overrides,
             commands::catalog_commands::set_fact_override,

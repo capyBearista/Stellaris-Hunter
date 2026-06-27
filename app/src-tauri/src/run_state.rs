@@ -11,8 +11,9 @@ use crate::{
     documents::order_saves_by_preference,
     error::Result,
     model::{
-        FactOverride, PersistedRunSummary, PlannerAchievementEvaluation, RunAchievementNote,
-        RunAchievementUserStatus, RunFactSummary, RunNote, SaveRunSummary, SaveSummary,
+        FactOverride, PersistedRunSummary, PlannerAchievementEvaluation, PlannerStatusCounts,
+        RunAchievementNote, RunAchievementUserStatus, RunFactSummary, RunNote, SaveRunSummary,
+        SaveSummary,
     },
     ScanReport,
 };
@@ -530,6 +531,99 @@ pub fn persist_run_for_tests(
     persist_run(&tx, save_root, run)?;
     tx.commit()?;
     Ok(())
+}
+
+pub fn reparse_run_save(db: &mut Connection, run_id: &str) -> Result<SaveRunSummary> {
+    let normalized_run_id = normalize_path(Path::new(run_id));
+    let (folder_path, run_folder, latest_save_path): (String, String, String) = db.query_row(
+        r#"
+        SELECT folder_path, run_folder, latest_save_path
+        FROM runs
+        WHERE folder_path = ?1
+        "#,
+        [normalized_run_id.clone()],
+        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+    )?;
+
+    let save_file_path: String = db.query_row(
+        "SELECT file_path FROM save_files WHERE file_path = ?1",
+        [latest_save_path.clone()],
+        |row| row.get(0),
+    )?;
+
+    let tx = db.transaction()?;
+    let parsed_save = crate::save::parse_save(&save_file_path);
+
+    let latest_save = match parsed_save {
+        Ok(save) => {
+            persist_save_file(
+                &tx,
+                &folder_path,
+                Path::new(&save_file_path),
+                "parsed",
+                None,
+            )?;
+            replace_run_facts(&tx, &folder_path, &save)?;
+            tx.execute(
+                r#"
+                UPDATE runs
+                SET display_name = ?2,
+                    game_version = ?3,
+                    latest_ingame_date = ?4,
+                    updated_at = datetime('now')
+                WHERE folder_path = ?1
+                "#,
+                params![folder_path, save.name, save.version, save.date],
+            )?;
+            Some(save)
+        }
+        Err(error) => {
+            persist_save_file(
+                &tx,
+                &folder_path,
+                Path::new(&save_file_path),
+                "failed",
+                Some(&error.to_string()),
+            )?;
+            tx.execute(
+                "DELETE FROM run_facts WHERE run_folder_path = ?1",
+                [folder_path.as_str()],
+            )?;
+            tx.execute(
+                r#"
+                UPDATE runs
+                SET display_name = NULL,
+                    game_version = NULL,
+                    latest_ingame_date = NULL,
+                    updated_at = datetime('now')
+                WHERE folder_path = ?1
+                "#,
+                [folder_path.as_str()],
+            )?;
+            None
+        }
+    };
+
+    let save_count: i64 = tx.query_row(
+        "SELECT COUNT(*) FROM save_files WHERE run_folder_path = ?1",
+        [folder_path.as_str()],
+        |row| row.get(0),
+    )?;
+    tx.commit()?;
+
+    let issues = if latest_save.is_some() {
+        Vec::new()
+    } else {
+        vec![format!("failed to parse latest save for {run_folder}")]
+    };
+
+    Ok(SaveRunSummary {
+        run_folder,
+        save_count: save_count.max(0) as usize,
+        latest_save,
+        issues,
+        ..Default::default()
+    })
 }
 
 fn persist_run(conn: &Connection, save_root: &Path, run: &SaveRunSummary) -> Result<()> {
@@ -1447,6 +1541,39 @@ pub fn load_evaluations(
         Some(text) => Ok(Some(serde_json::from_str(&text)?)),
         None => Ok(None),
     }
+}
+
+pub fn load_planner_status_counts(conn: &Connection, run_id: &str) -> Result<PlannerStatusCounts> {
+    let normalized_run_id = normalize_path(Path::new(run_id));
+    let mut counts = PlannerStatusCounts::default();
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT COALESCE(json_extract(value, '$.status'), ''), COUNT(*)
+        FROM evaluation_cache, json_each(evaluations_json)
+        WHERE run_folder_path = ?1
+        GROUP BY 1
+        "#,
+    )?;
+    let rows = stmt.query_map([normalized_run_id], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
+    })?;
+
+    for row in rows {
+        let (status, count) = row?;
+        let count = count.max(0) as usize;
+        match status.as_str() {
+            "completed" => counts.completed = count,
+            "planned" => counts.planned = count,
+            "possible" => counts.possible = count,
+            "incompatible" => counts.incompatible = count,
+            "impossible" => counts.impossible = count,
+            "unknown" => counts.unknown = count,
+            "incomplete" => counts.incomplete = count,
+            _ => {}
+        }
+    }
+
+    Ok(counts)
 }
 
 /// Invalidate cached evaluations for a specific run.

@@ -26,8 +26,8 @@ use crate::{
     ipc_helpers,
     model::{
         AchievementCatalogEntry, AchievementOverride, AppConfig, AppInfo, CatalogSyncResult,
-        FactOverride, PersistedRunSummary, PlannerAchievementEvaluation, RunAchievementNote,
-        RunFactSummary, RunNote, SteamSyncResult,
+        FactOverride, PersistedRunSummary, PlannerAchievementEvaluation, PlannerStatusCounts,
+        RunAchievementNote, RunFactSummary, RunNote, SaveRunSummary, SteamSyncResult,
     },
     run_state, scan_all, ScanReport,
 };
@@ -67,6 +67,12 @@ type ApiError = (StatusCode, String);
 #[serde(rename_all = "camelCase")]
 struct SingleFolderReq {
     run_folder_path: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RunIdReq {
+    run_id: String,
 }
 
 #[derive(Deserialize)]
@@ -347,6 +353,36 @@ async fn handle_load_planner_evaluations(
     ))
 }
 
+async fn handle_load_planner_status_counts(
+    State(state): State<AppState>,
+    Json(req): Json<RunIdReq>,
+) -> std::result::Result<Json<PlannerStatusCounts>, ApiError> {
+    let run_id = req.run_id;
+    db_call(state.db_path, move |conn| {
+        run_state::load_planner_status_counts(conn, &run_id)
+    })
+    .await
+}
+
+async fn handle_reparse_run_save(
+    State(state): State<AppState>,
+    Json(req): Json<RunIdReq>,
+) -> std::result::Result<Json<SaveRunSummary>, ApiError> {
+    let path = state.db_path;
+    let run_id = req.run_id;
+    Ok(Json(
+        ipc_helpers::with_app_db_mut_split(path, move |conn| {
+            let run = run_state::reparse_run_save(conn, &run_id)
+                .map_err(|e| format!("reparse run save: {e}"))?;
+            let _ = run_state::invalidate_evaluations(conn, &run_id);
+            Ok(run)
+        })
+        .await
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err))?
+        .map_err(|err| (StatusCode::BAD_REQUEST, err))?,
+    ))
+}
+
 async fn handle_set_run_achievement_status(
     State(state): State<AppState>,
     Json(req): Json<SetRunAchievementStatusReq>,
@@ -578,7 +614,7 @@ async fn handle_sync_icons(
     Ok(Json(result))
 }
 
-/// WSL stub — returns the exact error string from commands.rs line 507.
+/// WSL stub — returns the same error string as `commands::sync_steam_achievements`.
 async fn handle_sync_steam_achievements() -> std::result::Result<Json<SteamSyncResult>, ApiError> {
     Err((
         StatusCode::BAD_REQUEST,
@@ -613,6 +649,11 @@ fn build_router(state: AppState) -> Router {
             "/ipc/load_planner_evaluations",
             post(handle_load_planner_evaluations),
         )
+        .route(
+            "/ipc/load_planner_status_counts",
+            post(handle_load_planner_status_counts),
+        )
+        .route("/ipc/reparse_run_save", post(handle_reparse_run_save))
         .route(
             "/ipc/set_run_achievement_status",
             post(handle_set_run_achievement_status),

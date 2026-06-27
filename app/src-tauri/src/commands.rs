@@ -27,16 +27,18 @@ pub(crate) mod catalog_commands {
         model::{
             AchievementCatalogEntry, AchievementOverride, AppConfig, AppInfo, CatalogSyncResult,
             CatalogVersionMetadata, PersistedRunSummary, PlannerAchievementEvaluation,
-            RunAchievementNote, RunFactSummary, RunNote,
+            PlannerStatusCounts, RunAchievementNote, RunFactSummary, RunNote, SaveRunSummary,
         },
         rules::evaluate_planner_achievements,
         run_state::{
             clear_run_achievement_note as clear_run_achievement_note_in_db,
             clear_run_note as clear_run_note_in_db, invalidate_all_evaluations,
             invalidate_evaluations, load_evaluations, load_persisted_runs,
+            load_planner_status_counts as load_planner_status_counts_from_db,
             load_run_achievement_notes as load_run_achievement_notes_from_db,
             load_run_achievement_statuses, load_run_facts as load_run_facts_from_db,
-            load_run_notes as load_run_notes_from_db, persist_scan_report, save_evaluations,
+            load_run_notes as load_run_notes_from_db, persist_scan_report,
+            reparse_run_save as reparse_run_save_in_db, save_evaluations,
             set_run_achievement_note as set_run_achievement_note_in_db,
             set_run_achievement_status as set_run_achievement_status_in_db,
             set_run_note as set_run_note_in_db,
@@ -205,6 +207,34 @@ pub(crate) mod catalog_commands {
                 evaluate_planner_achievements(load.entries, &facts, &completed, &user_statuses);
             let _ = save_evaluations(&conn, &run_folder_path, &evaluations);
             Ok(evaluations)
+        })
+        .await
+    }
+
+    #[tauri::command]
+    pub async fn load_planner_status_counts(
+        db_path: State<'_, AppDbPath>,
+        run_id: String,
+    ) -> Result<PlannerStatusCounts, String> {
+        let path = db_path.0.clone();
+        ipc_helpers::with_app_db(path, move |conn| {
+            load_planner_status_counts_from_db(&conn, &run_id)
+                .map_err(|e| format!("load planner status counts: {e}"))
+        })
+        .await
+    }
+
+    #[tauri::command]
+    pub async fn reparse_run_save(
+        db_path: State<'_, AppDbPath>,
+        run_id: String,
+    ) -> Result<SaveRunSummary, String> {
+        let path = db_path.0.clone();
+        ipc_helpers::with_app_db_mut(path, move |conn| {
+            let run = reparse_run_save_in_db(&mut conn, &run_id)
+                .map_err(|e| format!("reparse run save: {e}"))?;
+            let _ = invalidate_evaluations(&conn, &run_id);
+            Ok(run)
         })
         .await
     }

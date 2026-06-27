@@ -2,10 +2,14 @@ import { useEffect, useState } from 'react';
 
 import {
   loadAchievements,
+  loadAppInfo,
   loadCatalogInfo,
+  loadPlannerStatusCounts,
   loadRuns,
   rescanSaves,
+  type AppInfo,
   type CatalogInfo,
+  type PlannerStatusCounts,
   type PersistedRunSummary,
   type ScanReport,
 } from '../tauri';
@@ -16,6 +20,8 @@ type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 export function Overview() {
   const [runs, setRuns] = useState<PersistedRunSummary[]>([]);
   const [catalogInfo, setCatalogInfo] = useState<CatalogInfo | null>(null);
+  const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
+  const [plannerStatusCounts, setPlannerStatusCounts] = useState<PlannerStatusCounts | null>(null);
   const [achievementCount, setAchievementCount] = useState<number>(0);
   const [scanReport, setScanReport] = useState<ScanReport | null>(null);
   const [status, setStatus] = useState<LoadState>('idle');
@@ -34,7 +40,11 @@ export function Overview() {
         rescanSaves(),
         scanLocalStateCached({ force: true }),
       ]);
+      const rescannedPlannerStatusCounts = rescannedRuns[0]
+        ? await loadPlannerStatusCounts(rescannedRuns[0].folder_path)
+        : null;
       setRuns(rescannedRuns);
+      setPlannerStatusCounts(rescannedPlannerStatusCounts);
       setScanReport(latestScanReport);
       setStatus('ready');
     } catch (unknownError) {
@@ -49,14 +59,20 @@ export function Overview() {
 
     try {
       const existing = getCachedScanReport();
-      const [loadedRuns, loadedCatalogInfo, achievements, latestScanReport] = await Promise.all([
+      const [loadedRuns, loadedCatalogInfo, loadedAppInfo, achievements, latestScanReport] = await Promise.all([
         loadRuns(),
         loadCatalogInfo(),
+        loadAppInfo(),
         loadAchievements(),
         existing ? Promise.resolve(existing) : scanLocalStateCached(),
       ]);
+      const loadedPlannerStatusCounts = loadedRuns[0]
+        ? await loadPlannerStatusCounts(loadedRuns[0].folder_path)
+        : null;
       setRuns(loadedRuns);
       setCatalogInfo(loadedCatalogInfo);
+      setAppInfo(loadedAppInfo);
+      setPlannerStatusCounts(loadedPlannerStatusCounts);
       setAchievementCount(achievements.length);
       setScanReport(latestScanReport);
       setStatus('ready');
@@ -96,6 +112,17 @@ export function Overview() {
               : scanErrors[0]
                 ? `Live scan error: ${scanErrors[0]}`
                 : `No launcher DLC rows were discovered under ${documentsRoot ?? 'the detected Documents folder'}.`;
+  const plannerCounts = plannerStatusCounts
+    ? [
+        ['Completed', plannerStatusCounts.completed],
+        ['Planned', plannerStatusCounts.planned],
+        ['Possible', plannerStatusCounts.possible],
+        ['Incompatible', plannerStatusCounts.incompatible],
+        ['Impossible', plannerStatusCounts.impossible],
+        ['Unknown', plannerStatusCounts.unknown],
+        ['Incomplete', plannerStatusCounts.incomplete],
+      ]
+    : [];
 
   return (
     <>
@@ -159,6 +186,43 @@ export function Overview() {
             {error}
           </p>
         ) : null}
+      </section>
+
+      <section aria-labelledby="steam-sync-heading" className="panel">
+        <h2 id="steam-sync-heading">Steam Sync</h2>
+        <dl className="summary-grid">
+          <div>
+            <dt>Status</dt>
+            <dd>{appInfo?.lastSteamSyncStatus ?? 'Not run'}</dd>
+          </div>
+          <div>
+            <dt>Last synced</dt>
+            <dd>{appInfo?.lastSteamSync ?? 'Never'}</dd>
+          </div>
+        </dl>
+        {appInfo?.lastSteamSyncError ? (
+          <p className="muted panel-subtitle">Last error: {appInfo.lastSteamSyncError}</p>
+        ) : null}
+      </section>
+
+      <section aria-labelledby="planner-summary-heading" className="panel">
+        <h2 id="planner-summary-heading">Planner Status</h2>
+        {plannerCounts.length > 0 ? (
+          <ul className="run-list" aria-label="Planner status counts">
+            {plannerCounts.map(([label, count]) => (
+              <li key={label} className="run-list-item">
+                <div className="run-list-main">
+                  <strong>{label}</strong>
+                </div>
+                <div className="run-list-meta">
+                  <span>{count} achievements</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">No planner counts yet. Rescan saves to populate planner coverage.</p>
+        )}
       </section>
 
       <section aria-labelledby="runs-heading" className="panel">

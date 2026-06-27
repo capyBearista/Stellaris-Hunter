@@ -659,6 +659,18 @@ pub struct PersistedRunSummary {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlannerStatusCounts {
+    pub completed: usize,
+    pub planned: usize,
+    pub possible: usize,
+    pub incompatible: usize,
+    pub impossible: usize,
+    pub unknown: usize,
+    pub incomplete: usize,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct FactOverride {
     pub run_folder_path: String,
     pub dimension: String,
@@ -747,6 +759,8 @@ pub struct AppInfo {
     pub stellaris_version: Option<String>,
     pub last_catalog_sync: Option<String>,
     pub last_steam_sync: Option<String>,
+    pub last_steam_sync_status: Option<String>,
+    pub last_steam_sync_error: Option<String>,
     pub last_save_scan: Option<String>,
 }
 

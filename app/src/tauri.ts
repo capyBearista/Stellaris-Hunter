@@ -174,6 +174,16 @@ export interface PersistedRunSummary {
   updated_at: string;
 }
 
+export interface PlannerStatusCounts {
+  completed: number;
+  planned: number;
+  possible: number;
+  incompatible: number;
+  impossible: number;
+  unknown: number;
+  incomplete: number;
+}
+
 export interface RunFactSummary {
   run_folder_path: string;
   dimension: string;
@@ -290,6 +300,14 @@ export function loadPlannerEvaluations(
   runFolderPath: string,
 ): Promise<PlannerAchievementEvaluation[]> {
   return callInvoke<PlannerAchievementEvaluation[]>('load_planner_evaluations', { runFolderPath });
+}
+
+export function loadPlannerStatusCounts(runId: string): Promise<PlannerStatusCounts> {
+  return callInvoke<PlannerStatusCounts>('load_planner_status_counts', { runId });
+}
+
+export function reparseRunSave(runId: string): Promise<PersistedRunSummary> {
+  return callInvoke<PersistedRunSummary>('reparse_run_save', { runId });
 }
 
 export function setRunAchievementStatus(
@@ -431,6 +449,8 @@ export interface AppInfo {
   stellarisVersion: string | null;
   lastCatalogSync: string | null;
   lastSteamSync: string | null;
+  lastSteamSyncStatus?: string | null;
+  lastSteamSyncError?: string | null;
   lastSaveScan: string | null;
 }
 

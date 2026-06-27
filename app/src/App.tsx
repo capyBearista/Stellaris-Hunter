@@ -57,7 +57,7 @@ export function App() {
               <Route path="/" element={<Overview />} />
               <Route path="/achievements" element={<Achievements />} />
               <Route path="/notes" element={<Notes />} />
-              <Route path="/planner" element={<Planner />} />
+              <Route path="/planner/:runId?" element={<Planner />} />
               <Route path="/runs" element={<Runs />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
