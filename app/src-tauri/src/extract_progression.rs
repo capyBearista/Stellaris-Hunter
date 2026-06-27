@@ -732,6 +732,10 @@ mod tests {
         ClausewitzValue::Block(items.into_iter().map(ClausewitzNode::Value).collect())
     }
 
+    fn country_with_budget(entries: Vec<(&str, ClausewitzValue)>) -> ClausewitzValue {
+        block(vec![("budget", block(entries))])
+    }
+
     // ── tests ──────────────────────────────────────────────────
 
     #[test]
@@ -766,6 +770,56 @@ mod tests {
         assert_eq!(facts.traditions_adopted, Some(2));
         assert_eq!(facts.ascension_perks_unlocked, Some(0));
         assert_eq!(facts.years_played, Some(30.0));
+    }
+
+    #[test]
+    fn test_resource_helpers_use_fallback_paths() {
+        let country = country_with_budget(vec![
+            ("stored", block(vec![("energy", a("250"))])),
+            (
+                "last_month",
+                block(vec![(
+                    "income",
+                    block(vec![("energy", a("14")), ("minerals", a("9"))]),
+                )]),
+            ),
+            ("income", block(vec![("alloys", a("5"))])),
+        ]);
+
+        assert_eq!(try_resource_stored(&country, "energy"), Some(250.0));
+        assert_eq!(try_monthly_income(&country, "energy"), Some(14.0));
+        assert_eq!(try_monthly_income(&country, "minerals"), Some(9.0));
+        assert_eq!(try_monthly_income(&country, "alloys"), Some(5.0));
+    }
+
+    #[test]
+    fn test_count_technologies_counts_all_technology_pairs() {
+        let country = block(vec![(
+            "tech_status",
+            block(vec![
+                ("technology", a("tech_1")),
+                ("level", a("1")),
+                ("technology", a("tech_2")),
+                ("technology", a("tech_3")),
+            ]),
+        )]);
+
+        assert_eq!(count_technologies(&country), Some(3));
+    }
+
+    #[test]
+    fn test_count_country_flags_counts_repeated_top_level_keys() {
+        let country = block(vec![
+            ("built_observation_post", a("yes")),
+            ("built_observation_post", a("yes")),
+            ("10yr_patronage", a("yes")),
+        ]);
+
+        assert_eq!(
+            count_country_flags(&country, "built_observation_post"),
+            Some(2)
+        );
+        assert_eq!(count_country_flags(&country, "10yr_patronage"), Some(1));
     }
 
     #[test]

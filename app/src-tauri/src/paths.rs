@@ -134,8 +134,37 @@ pub fn first_existing(paths: &[PathBuf]) -> Option<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    use super::{documents_default_candidates, windows_path_to_wsl_mount};
-    use std::path::PathBuf;
+    use super::{
+        candidate_paths, documents_candidates, documents_default_candidates, install_candidates,
+        windows_path_to_wsl_mount,
+    };
+    use std::{path::PathBuf, sync::Mutex};
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    fn with_env_vars(vars: &[(&str, Option<&str>)], f: impl FnOnce()) {
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|err| err.into_inner());
+        let previous: Vec<(String, Option<String>)> = vars
+            .iter()
+            .map(|(name, _)| ((*name).to_string(), std::env::var(name).ok()))
+            .collect();
+
+        for (name, value) in vars {
+            match value {
+                Some(value) => unsafe { std::env::set_var(name, value) },
+                None => unsafe { std::env::remove_var(name) },
+            }
+        }
+
+        f();
+
+        for (name, value) in previous {
+            match value {
+                Some(value) => unsafe { std::env::set_var(name, value) },
+                None => unsafe { std::env::remove_var(name) },
+            }
+        }
+    }
 
     #[test]
     fn converts_windows_path_to_wsl_mount() {
@@ -174,5 +203,70 @@ mod tests {
         assert!(candidates.contains(&PathBuf::from(
             "/mnt/c/Users/Arjun/OneDrive/Documents/Paradox Interactive/Stellaris"
         )));
+    }
+
+    #[test]
+    fn candidate_paths_prioritizes_explicit_then_env_then_defaults() {
+        with_env_vars(&[("STELLARIS_INSTALL_PATH", Some("/env/install"))], || {
+            let paths = candidate_paths(
+                Some(PathBuf::from("/explicit/install")),
+                &["STELLARIS_INSTALL_PATH"],
+                &[PathBuf::from("/default/install")],
+            );
+
+            assert_eq!(
+                paths,
+                vec![
+                    PathBuf::from("/explicit/install"),
+                    PathBuf::from("/env/install"),
+                    PathBuf::from("/default/install"),
+                ]
+            );
+        });
+    }
+
+    #[test]
+    fn install_candidates_dedupe_explicit_and_env_duplicates() {
+        let duplicate = "/mnt/c/Games/Steam/steamapps/common/Stellaris";
+        with_env_vars(&[("STELLARIS_INSTALL_PATH", Some(duplicate))], || {
+            let paths = install_candidates(Some(PathBuf::from(duplicate)));
+            assert_eq!(paths.first(), Some(&PathBuf::from(duplicate)));
+            assert_eq!(
+                paths
+                    .iter()
+                    .filter(|path| **path == PathBuf::from(duplicate))
+                    .count(),
+                1
+            );
+        });
+    }
+
+    #[test]
+    fn documents_candidates_include_explicit_env_and_generated_defaults() {
+        with_env_vars(
+            &[
+                ("USERNAME", Some("Arjun")),
+                ("USER", None),
+                ("USERPROFILE", Some(r"C:\Users\Arjun")),
+                ("OneDrive", Some(r"C:\Users\Arjun\OneDrive")),
+                ("STELLARIS_DOCUMENTS_PATH", Some("/custom/documents")),
+                ("PARADOX_STELLARIS_DOCUMENTS_PATH", None),
+            ],
+            || {
+                let paths = documents_candidates(Some(PathBuf::from("/explicit/documents")));
+
+                assert_eq!(paths.first(), Some(&PathBuf::from("/explicit/documents")));
+                assert!(paths.contains(&PathBuf::from("/custom/documents")));
+                assert!(paths.contains(
+                    &PathBuf::from(r"C:\Users\Arjun")
+                        .join("Documents")
+                        .join("Paradox Interactive")
+                        .join("Stellaris")
+                ));
+                assert!(paths.contains(&PathBuf::from(
+                    "/mnt/c/Users/Arjun/OneDrive/Documents/Paradox Interactive/Stellaris"
+                )));
+            },
+        );
     }
 }

@@ -248,4 +248,40 @@ mod tests {
         assert_eq!(result.conclusion, EligibilityConclusion::LikelyEligible);
         assert_eq!(result.mod_risk, ModChecksumRisk::None);
     }
+
+    #[test]
+    fn missing_ironman_flag_adds_warning_without_changing_positive_conclusion() {
+        let result = compute_save_eligibility(&save(None, Some(false)), Some(&[]), Some(&[]), &[]);
+
+        assert_eq!(result.conclusion, EligibilityConclusion::LikelyEligible);
+        assert!(result
+            .warnings
+            .iter()
+            .any(|warning| warning.contains("did not expose an ironman flag")));
+    }
+
+    #[test]
+    fn empty_launcher_state_with_missing_dlc_load_is_ambiguous() {
+        let result = compute_save_eligibility(&save(Some(true), Some(false)), Some(&[]), None, &[]);
+
+        assert_eq!(result.conclusion, EligibilityConclusion::Unknown);
+        assert!(result
+            .warnings
+            .iter()
+            .any(|warning| warning.contains("incomplete or ambiguous")));
+    }
+
+    #[test]
+    fn missing_cheat_flag_still_records_no_mods_reason() {
+        let result = compute_save_eligibility(&save(Some(true), None), Some(&[]), Some(&[]), &[]);
+
+        assert!(result
+            .reasons
+            .iter()
+            .any(|reason| reason.contains("No enabled launcher mods were detected")));
+        assert!(result
+            .warnings
+            .iter()
+            .any(|warning| warning.contains("did not expose a cheated_on_save flag")));
+    }
 }
