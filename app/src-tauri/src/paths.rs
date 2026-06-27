@@ -234,7 +234,7 @@ mod tests {
             assert_eq!(
                 paths
                     .iter()
-                    .filter(|path| **path == PathBuf::from(duplicate))
+                    .filter(|path| **path == std::path::Path::new(duplicate))
                     .count(),
                 1
             );
