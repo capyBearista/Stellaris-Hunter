@@ -24,6 +24,7 @@ pub(crate) mod catalog_commands {
             load_app_config as load_app_config_from_db, load_app_info as load_app_info_from_db,
             save_app_config as save_app_config_in_db, AppDbPath,
         },
+        ipc_helpers,
         model::{
             AchievementCatalogEntry, AchievementOverride, AppConfig, AppInfo, CatalogSyncResult,
             CatalogVersionMetadata, PersistedRunSummary, PlannerAchievementEvaluation,
@@ -54,7 +55,7 @@ pub(crate) mod catalog_commands {
             .map_err(|e| format!("fetch catalog: {e}"))?;
 
         ipc_helpers::with_app_db_mut(path, move |conn| {
-            let result = catalog_sync::sync_catalog_from_json(&mut conn, &json_text)
+            let result = catalog_sync::sync_catalog_from_json(conn, &json_text)
                 .map_err(|e| format!("sync catalog: {e}"))?;
             let _ = invalidate_all_evaluations(&conn);
             Ok(result)
@@ -166,7 +167,7 @@ pub(crate) mod catalog_commands {
             if !report.errors.is_empty() {
                 eprintln!("scan errors before persistence: {:?}", report.errors);
             }
-            persist_scan_report(&mut conn, &report).map_err(|e| format!("persist scan: {e}"))?;
+            persist_scan_report(conn, &report).map_err(|e| format!("persist scan: {e}"))?;
             let _ = invalidate_all_evaluations(&conn);
             load_persisted_runs(&conn).map_err(|e| format!("load runs: {e}"))
         })
@@ -231,7 +232,7 @@ pub(crate) mod catalog_commands {
     ) -> Result<SaveRunSummary, String> {
         let path = db_path.0.clone();
         ipc_helpers::with_app_db_mut(path, move |conn| {
-            let run = reparse_run_save_in_db(&mut conn, &run_id)
+            let run = reparse_run_save_in_db(conn, &run_id)
                 .map_err(|e| format!("reparse run save: {e}"))?;
             let _ = invalidate_evaluations(&conn, &run_id);
             Ok(run)
